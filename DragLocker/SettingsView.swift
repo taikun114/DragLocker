@@ -54,7 +54,7 @@ struct SettingsView: View {
         .padding()
         .frame(width: 400, height: 350)
         .navigationTitle("DragLocker 設定")
-        .onChange(of: lockDelay) { newValue in
+        .onChange(of: lockDelay) { _, newValue in
             eventManager.lockDelay = newValue
         }
     }

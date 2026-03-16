@@ -3,7 +3,7 @@ import Combine
 import CoreGraphics
 import Foundation
 
-enum EventManagerState: Equatable {
+enum EventManagerState: Equatable, Sendable {
     case idle
     case holding // マウスダウン中、待機
     case locked  // ロック状態
@@ -11,6 +11,8 @@ enum EventManagerState: Equatable {
 
 class EventManager: ObservableObject {
     static let shared = EventManager()
+    
+    private let ownPID = ProcessInfo.processInfo.processIdentifier
     
     @Published var isTrusted: Bool = false
     @Published var isEnabled: Bool = true // 一時的な機能の有効・無効状態
@@ -88,8 +90,9 @@ class EventManager: ObservableObject {
         // Cのコールバック関数に self を渡すため、Unmanaged を使用
         let userInfo = UnsafeMutableRawPointer(Unmanaged.passUnretained(self).toOpaque())
         
+        // cghidEventTap を使用することで、どのアプリにフォーカスがあっても全イベントをキャッチできる
         eventTap = CGEvent.tapCreate(
-            tap: .cgSessionEventTap,
+            tap: .cghidEventTap,
             place: .headInsertEventTap,
             options: .defaultTap,
             eventsOfInterest: CGEventMask(eventMask),
@@ -104,14 +107,30 @@ class EventManager: ObservableObject {
         
         runLoopSource = CFMachPortCreateRunLoopSource(kCFAllocatorDefault, tap, 0)
         if let source = runLoopSource {
-            CFRunLoopAddSource(CFRunLoopGetCurrent(), source, .commonModes)
+            // メインRunLoopに追加することで確実にイベントが処理される
+            CFRunLoopAddSource(CFRunLoopGetMain(), source, .commonModes)
             CGEvent.tapEnable(tap: tap, enable: true)
             print("Event tap successfully set up")
         }
     }
     
+    // イベントの送信先がDragLockerアプリ自身かどうかをPIDで判定する（スレッドセーフ）
+    private func isEventTargetingOwnApp(event: CGEvent) -> Bool {
+        let targetPID = event.getIntegerValueField(.eventTargetUnixProcessID)
+        return targetPID == Int64(ownPID)
+    }
+    
     // イベント処理のエントリーポイント
     func handleEvent(proxy: CGEventTapProxy, type: CGEventType, event: CGEvent) -> Unmanaged<CGEvent>? {
+        
+        // macOSがタイムアウト等でイベントタップを無効化した場合、再有効化する
+        if type == .tapDisabledByTimeout || type == .tapDisabledByUserInput {
+            print("Event tap was disabled by system, re-enabling...")
+            if let tap = eventTap {
+                CGEvent.tapEnable(tap: tap, enable: true)
+            }
+            return Unmanaged.passRetained(event)
+        }
         
         // アプリケーション機能が一時停止中の場合は何も処理せずイベントを流す
         guard isEnabled else { return Unmanaged.passRetained(event) }
@@ -131,6 +150,17 @@ class EventManager: ObservableObject {
         }
         
         if type == .leftMouseDown {
+            // DragLockerアプリ自身へのクリックではロック機能を発動しない
+            if isEventTargetingOwnApp(event: event) {
+                print("Mouse down: Targeting own app (PID: \(ownPID)), ignoring")
+                if state == .locked {
+                    releaseLock()
+                } else if state == .holding {
+                    cancelHold()
+                }
+                return Unmanaged.passRetained(event)
+            }
+            
             if state == .idle {
                 print("Mouse down: Starting hold timer")
                 state = .holding
@@ -173,14 +203,19 @@ class EventManager: ObservableObject {
     
     private func startTimer() {
         holdTimer?.invalidate()
-        holdTimer = Timer.scheduledTimer(withTimeInterval: lockDelay, repeats: false) { [weak self] _ in
-            guard let self = self else { return }
-            if self.state == .holding {
-                print("Timer fired: Lock active!")
-                self.state = .locked
-                // 後でここに触覚フィードバック（Haptic feedback）などを追加できます
+        // RunLoop.commonモードで登録することで、メニューバーのメニュー表示中などでもタイマーが動作する
+        let timer = Timer(timeInterval: lockDelay, repeats: false) { [weak self] _ in
+            // stateプロパティへのアクセスはメインスレッドで行う
+            DispatchQueue.main.async { [weak self] in
+                guard let self = self else { return }
+                if self.state == .holding {
+                    print("Timer fired: Lock active!")
+                    self.state = .locked
+                }
             }
         }
+        RunLoop.main.add(timer, forMode: .common)
+        holdTimer = timer
     }
     
     private func cancelHold() {
