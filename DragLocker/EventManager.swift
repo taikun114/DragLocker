@@ -28,8 +28,21 @@ class EventManager: ObservableObject {
         }
     }
     
-    @Published var isLocked: Bool = false
+    @Published var isLocked: Bool = false {
+        didSet {
+            if isSoundEnabled && oldValue != isLocked {
+                // ロック時、または解除時にシステム音を鳴らす
+                NSSound.beep()
+            }
+        }
+    }
     private var holdTimer: Timer?
+    
+    @Published var isSoundEnabled: Bool = false {
+        didSet {
+            UserDefaults.standard.set(isSoundEnabled, forKey: "isSoundEnabled")
+        }
+    }
     
     @Published var lockDelay: TimeInterval = 1.0 {
         didSet {
@@ -45,6 +58,8 @@ class EventManager: ObservableObject {
         } else {
             self.lockDelay = 1.0
         }
+        
+        self.isSoundEnabled = UserDefaults.standard.bool(forKey: "isSoundEnabled")
         
         // アプリがアクティブになったときに権限を再チェックする（システム設定で変更された場合に対応）
         NotificationCenter.default.addObserver(
