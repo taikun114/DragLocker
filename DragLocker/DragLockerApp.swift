@@ -16,10 +16,10 @@ struct DragLockerApp: App {
         MenuBarExtra {
             // 状態表示用のラベル（クリック不可）
             HStack {
-            Label(
-                eventManager.isEnabled ? "DragLocker: 動作中" : "DragLocker: 停止中",
-                systemImage: eventManager.isEnabled ? "checkmark.circle" : "pause.circle"
-            )
+                Label(
+                    eventManager.isEnabled ? "DragLocker: 動作中" : "DragLocker: 停止中",
+                    systemImage: eventManager.isEnabled ? "checkmark.circle" : "pause.circle"
+                )
             }
             
             // 一時的にロック検知を無効化・有効化する切り替えボタン
@@ -61,6 +61,7 @@ struct DragLockerApp: App {
         Settings {
             SettingsView()
                 .environmentObject(eventManager)
+                .frame(width: 400, height: 350)
         }
     }
 }
