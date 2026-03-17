@@ -45,15 +45,25 @@ class EventManager: ObservableObject {
         } else {
             self.lockDelay = 1.0
         }
+        
+        // アプリがアクティブになったときに権限を再チェックする（システム設定で変更された場合に対応）
+        NotificationCenter.default.addObserver(
+            self,
+            selector: #selector(checkAccessibilityPermissions),
+            name: NSApplication.didBecomeActiveNotification,
+            object: nil
+        )
     }
     
     func start() {
         checkAccessibilityPermissions()
     }
     
-    func checkAccessibilityPermissions() {
+    @objc func checkAccessibilityPermissions() {
         let options: NSDictionary = [kAXTrustedCheckOptionPrompt.takeUnretainedValue() as String: false]
         let accessEnabled = AXIsProcessTrustedWithOptions(options)
+        
+        print("Checking Accessibility Permissions: \(accessEnabled)")
         
         DispatchQueue.main.async {
             self.isTrusted = accessEnabled
@@ -64,23 +74,26 @@ class EventManager: ObservableObject {
     }
     
     func requestAccessibilityPermissions() {
-        // Here we pass true to force the system to prompt if permissions are missing
-        let options: NSDictionary = [kAXTrustedCheckOptionPrompt.takeUnretainedValue() as String: true]
-        let accessEnabled = AXIsProcessTrustedWithOptions(options)
+        print("Requesting Accessibility Permissions...")
         
-        DispatchQueue.main.async {
-            self.isTrusted = accessEnabled
-            if self.isTrusted {
-                self.setupEventTap()
-            }
-        }
+        // 1. システムにプロンプトを表示させる標準的な方法を試行
+        let options: NSDictionary = [kAXTrustedCheckOptionPrompt.takeUnretainedValue() as String: true]
+        _ = AXIsProcessTrustedWithOptions(options)
+        
+        // 2. 実際にEvent Tapを作成しようと試みることで、システムに権限が必要であることを示し、プロンプトを誘発する
+        // (isTrustedがfalseでも、プロンプトを出すためにあえて呼び出す)
+        setupEventTap(force: true)
+        
+        // 3. 状態を再チェック
+        checkAccessibilityPermissions()
     }
     
-    private func setupEventTap() {
-        guard isTrusted else { return }
+    private func setupEventTap(force: Bool = false) {
+        // 通常は権限がある場合のみ実行するが、forceがtrueの場合はプロンプト誘発のために続行する
+        if !isTrusted && !force { return }
         if eventTap != nil { return }
         
-        // 監視するイベント
+        print("Attempting to create event tap to trigger system prompt if needed...")
         let eventMask = (1 << CGEventType.leftMouseDown.rawValue) |
                         (1 << CGEventType.leftMouseUp.rawValue) |
                         (1 << CGEventType.leftMouseDragged.rawValue) |
