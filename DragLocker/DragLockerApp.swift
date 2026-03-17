@@ -48,13 +48,7 @@ struct DragLockerApp: App {
             }
             .keyboardShortcut("q")
         } label: {
-            if #available(macOS 26.0, *) {
-                Image(systemName: "pointer.arrow.click.2", variableValue: eventManager.isLocked ? 1.0 : 0.0)
-                    .environment(\.symbolVariants, .none)
-            } else {
-                Image(systemName: "cursorarrow.click.2", variableValue: eventManager.isLocked ? 1.0 : 0.0)
-                    .environment(\.symbolVariants, .none)
-            }
+            Image(eventManager.isLocked ? "MenuBarIcon_Locked" : "MenuBarIcon")
         }
         
         // 設定画面のWindow定義
