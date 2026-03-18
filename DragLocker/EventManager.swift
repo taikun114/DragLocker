@@ -37,8 +37,8 @@ class EventManager: ObservableObject {
     @Published var isLocked: Bool = false {
         didSet {
             if isSoundEnabled && oldValue != isLocked {
-                // ロック時、または解除時にシステム音を鳴らす
-                NSSound.beep()
+                // ロック時、または解除時にサウンドを再生
+                SoundManager.shared.play(style: soundStyle, volume: soundVolume, isLocked: isLocked, isInverted: isSoundInverted)
             }
             
             // アイコン表示設定が有効な場合のみカーソルの表示切り替え
@@ -56,6 +56,24 @@ class EventManager: ObservableObject {
     @Published var isSoundEnabled: Bool = false {
         didSet {
             UserDefaults.standard.set(isSoundEnabled, forKey: "isSoundEnabled")
+        }
+    }
+    
+    @Published var soundStyle: SoundStyle = .system {
+        didSet {
+            UserDefaults.standard.set(soundStyle.rawValue, forKey: "soundStyle")
+        }
+    }
+    
+    @Published var soundVolume: Double = 0.5 {
+        didSet {
+            UserDefaults.standard.set(soundVolume, forKey: "soundVolume")
+        }
+    }
+    
+    @Published var isSoundInverted: Bool = false {
+        didSet {
+            UserDefaults.standard.set(isSoundInverted, forKey: "isSoundInverted")
         }
     }
     
@@ -103,6 +121,13 @@ class EventManager: ObservableObject {
         }
         
         self.isSoundEnabled = UserDefaults.standard.bool(forKey: "isSoundEnabled")
+        if let savedSoundStyle = UserDefaults.standard.string(forKey: "soundStyle"), let style = SoundStyle(rawValue: savedSoundStyle) {
+            self.soundStyle = style
+        }
+        let savedVolume = UserDefaults.standard.double(forKey: "soundVolume")
+        self.soundVolume = (savedVolume == 0 && !UserDefaults.standard.dictionaryRepresentation().keys.contains("soundVolume")) ? 0.5 : savedVolume
+        self.isSoundInverted = UserDefaults.standard.bool(forKey: "isSoundInverted")
+        
         self.isIconEnabled = UserDefaults.standard.bool(forKey: "isIconEnabled")
         if let savedStyle = UserDefaults.standard.string(forKey: "pointerIconStyle"), let style = IconStyle(rawValue: savedStyle) {
             self.pointerIconStyle = style

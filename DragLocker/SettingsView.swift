@@ -4,6 +4,7 @@ struct SettingsView: View {
     @EnvironmentObject var eventManager: EventManager
     @Environment(\.accessibilityDifferentiateWithoutColor) var differentiateWithoutColor
     @AppStorage("lockDelay") private var lockDelay: Double = 1.0
+    @State private var hoverTask: Task<Void, Never>? = nil
     
     private var dotImage: Image {
         let view = ZStack(alignment: .center) {
@@ -86,6 +87,82 @@ struct SettingsView: View {
                         .font(.subheadline)
                         .foregroundStyle(.secondary)
                 }
+                
+                HStack(alignment: .top) {
+                    Picker(selection: $eventManager.soundStyle) {
+                        Text(SoundStyle.system.rawValue).tag(SoundStyle.system)
+                        
+                        Divider()
+                        
+                        ForEach(SoundStyle.allCases.filter { $0 != .system }, id: \.self) { style in
+                            Text(style.rawValue)
+                                .tag(style)
+                                .onHover { isHovering in
+                                    if isHovering {
+                                        hoverTask?.cancel()
+                                        hoverTask = Task {
+                                            try? await Task.sleep(nanoseconds: 500_000_000) // 0.5秒
+                                            if !Task.isCancelled {
+                                                SoundManager.shared.preview(style: style, volume: eventManager.soundVolume, isInverted: eventManager.isSoundInverted)
+                                            }
+                                        }
+                                    } else {
+                                        hoverTask?.cancel()
+                                    }
+                                }
+                        }
+                    } label: {
+                        Text("サウンドスタイル")
+                            .foregroundStyle(eventManager.isSoundEnabled ? .primary : .secondary)
+                        Text("再生するサウンドを選択します。")
+                            .font(.subheadline)
+                            .foregroundStyle(eventManager.isSoundEnabled ? .secondary : .tertiary)
+                    }
+                    .pickerStyle(.menu)
+                    .disabled(!eventManager.isSoundEnabled)
+                    
+                    Button {
+                        SoundManager.shared.preview(style: eventManager.soundStyle, volume: eventManager.soundVolume, isInverted: eventManager.isSoundInverted)
+                    } label: {
+                        Image(systemName: "play.circle")
+                            .font(.title2)
+                    }
+                    .buttonStyle(.plain)
+                    .foregroundStyle(.secondary)
+                    .disabled(!eventManager.isSoundEnabled)
+                    .help("現在のサウンドをプレビュー再生します。")
+                }
+                
+                VStack(alignment: .leading) {
+                    HStack(alignment: .center, spacing: 8) {
+                        Slider(value: $eventManager.soundVolume, in: 0.0...1.0, step: 0.05) {
+                            Text("サウンドの音量")
+                                .foregroundStyle(eventManager.isSoundEnabled && eventManager.soundStyle != .system ? .primary : .secondary)
+                        }
+                        .disabled(!eventManager.isSoundEnabled || eventManager.soundStyle == .system)
+                        Text(String(format: "%.0f %%", eventManager.soundVolume * 100))
+                            .foregroundStyle((!eventManager.isSoundEnabled || eventManager.soundStyle == .system) ? .tertiary : .secondary)
+                            .frame(width: 45, alignment: .trailing)
+                    }
+                    if eventManager.soundStyle == .system {
+                        Text("システムの通知音の音量はmacOSのシステム設定に従います。")
+                            .font(.caption)
+                            .foregroundStyle(.tertiary)
+                    } else {
+                        Text("カスタムサウンドの再生音量を調整します。")
+                            .font(.subheadline)
+                            .foregroundStyle(eventManager.isSoundEnabled ? .secondary : .tertiary)
+                    }
+                }
+                
+                Toggle(isOn: $eventManager.isSoundInverted) {
+                    Text("サウンドを反転")
+                        .foregroundStyle(eventManager.isSoundEnabled && eventManager.soundStyle != .system ? .primary : .secondary)
+                    Text("ロック時と解除時のサウンドを入れ替えます。")
+                        .font(.subheadline)
+                        .foregroundStyle(eventManager.isSoundEnabled && eventManager.soundStyle != .system ? .secondary : .tertiary)
+                }
+                .disabled(!eventManager.isSoundEnabled || eventManager.soundStyle == .system)
             }
             Section(header: Text("権限")) {
                 HStack(alignment: .top) {
