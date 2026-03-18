@@ -8,6 +8,16 @@ struct SettingsView: View {
     var body: some View {
         Form {
             Section(header: Text("一般")) {
+                Toggle(isOn: Binding(
+                    get: { eventManager.isLaunchAtLoginEnabled },
+                    set: { eventManager.isLaunchAtLoginEnabled = $0 }
+                )) {
+                    Text("ログイン時に開く")
+                    Text("Macのログイン時にDragLockerを自動で起動します。")
+                        .font(.subheadline)
+                        .foregroundStyle(.secondary)
+                }
+
                 VStack(alignment: .leading) {
                     HStack(alignment: .center, spacing: 8) {
                         Slider(value: $lockDelay, in: 0.2...3.0, step: 0.1) {

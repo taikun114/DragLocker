@@ -2,6 +2,7 @@ import AppKit
 import Combine
 import CoreGraphics
 import Foundation
+import ServiceManagement
 
 enum EventManagerState: Equatable, Sendable {
     case idle
@@ -65,6 +66,16 @@ class EventManager: ObservableObject {
         }
     }
     
+    @Published var isLaunchAtLoginEnabled: Bool = false {
+        didSet {
+            // 現在の状態と異なる場合のみ更新（無限ループ防止）
+            let currentStatus = SMAppService.mainApp.status
+            if (isLaunchAtLoginEnabled && currentStatus != .enabled) || (!isLaunchAtLoginEnabled && currentStatus == .enabled) {
+                updateLaunchAtLogin(enabled: isLaunchAtLoginEnabled)
+            }
+        }
+    }
+    
     @Published var lockDelay: TimeInterval = 1.0 {
         didSet {
             UserDefaults.standard.set(lockDelay, forKey: "lockDelay")
@@ -82,6 +93,7 @@ class EventManager: ObservableObject {
         
         self.isSoundEnabled = UserDefaults.standard.bool(forKey: "isSoundEnabled")
         self.isIconEnabled = UserDefaults.standard.bool(forKey: "isIconEnabled")
+        self.isLaunchAtLoginEnabled = SMAppService.mainApp.status == .enabled
         
         // アプリがアクティブになったときに権限を再チェックする（システム設定で変更された場合に対応）
         NotificationCenter.default.addObserver(
@@ -308,6 +320,35 @@ class EventManager: ObservableObject {
         // 合成されたイベントをタップにキャッチされないようにシステムのイベントキューにポストする
         mouseUpEvent.post(tap: .cghidEventTap)
         print("Synthetic mouse up posted")
+    }
+    
+    private func updateLaunchAtLogin(enabled: Bool) {
+        let service = SMAppService.mainApp
+        
+        if enabled {
+            do {
+                try service.register()
+                print("Successfully registered launch at login")
+            } catch {
+                print("Failed to register launch at login: \(error)")
+                // 失敗した場合は状態を戻す（UIに反映させるためメインスレッドで実行）
+                DispatchQueue.main.async {
+                    self.isLaunchAtLoginEnabled = false
+                }
+            }
+        } else {
+            // unregister(completionHandler:) は Swift では直接呼び出せないので unregister() を使用
+            do {
+                try service.unregister()
+                print("Successfully unregistered launch at login")
+            } catch {
+                print("Failed to unregister launch at login: \(error)")
+                // 失敗した場合は状態を戻す（UIに反映させるためメインスレッドで実行）
+                DispatchQueue.main.async {
+                    self.isLaunchAtLoginEnabled = true
+                }
+            }
+        }
     }
 }
 
