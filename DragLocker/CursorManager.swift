@@ -11,58 +11,80 @@ class CursorManager {
     }
     
     private func setupCursorWindow() {
-        // ウィンドウサイズ
         let window = NSWindow(
             contentRect: NSRect(x: 0, y: 0, width: 32, height: 32),
             styleMask: [.borderless],
             backing: .buffered,
             defer: false
         )
-
+        
         window.isOpaque = false
         window.backgroundColor = .clear
         window.level = NSWindow.Level(Int(CGWindowLevelForKey(.cursorWindow)))
         window.ignoresMouseEvents = true
         window.collectionBehavior = [.canJoinAllSpaces, .stationary]
-
-        // 新たに追加されたPointer_Locked画像を本来のサイズで表示
-        let contentView = NSHostingView(rootView:
-            ZStack(alignment: .center) {
-                Image("Pointer_Locked")
-            }
-            .frame(width: 32, height: 32)
-        )
-
-        window.contentView = contentView
+        
         self.cursorWindow = window
     }
-
-    /// インジケーターを表示
-    func showCustomCursor() {
-        guard let window = cursorWindow else { return }
-        updatePosition()
-        window.orderFront(nil)
-    }
-
+    
     /// インジケーターを非表示
     func hideCustomCursor() {
         cursorWindow?.orderOut(nil)
     }
-
+    
+    /// インジケーターを表示
+    func showCustomCursor() {
+        guard let window = cursorWindow else { return }
+        
+        let style = EventManager.shared.pointerIconStyle
+        
+        let contentView = NSHostingView(rootView:
+            ZStack(alignment: .center) {
+                if style == .padlock {
+                    Image("Pointer_Locked")
+                } else {
+                    ZStack(alignment: .center) {
+                        Circle().fill(Color.white).frame(width: 8, height: 8)
+                        Circle().fill(Color.black).frame(width: 6, height: 6)
+                    }
+                }
+            }
+        )
+        // コンテンツのサイズに合わせてウィンドウサイズを自動調整
+        contentView.setFrameSize(contentView.fittingSize)
+        window.contentView = contentView
+        window.setContentSize(contentView.fittingSize)
+        
+        updatePosition()
+        window.orderFront(nil)
+    }
+    
     /// ウィンドウの位置を現在のマウス位置の右側に更新
     func updatePosition() {
         guard let window = cursorWindow else { return }
-
+        
         // AppKitの座標系（左下が0,0）でマウス位置を取得
         let mouseLocation = NSEvent.mouseLocation
-
-        // 横：以前の+2ptを維持
-        // 縦：以前の-15ptから1pt上へ移動（-14pt）
+        
+        // スタイルごとの位置調整
+        let style = EventManager.shared.pointerIconStyle
+        let xOffset: Double
+        let yOffset: Double
+        
+        switch style {
+        case .padlock:
+            xOffset = 12.0
+            yOffset = -7.0
+        case .dot:
+            xOffset = 12.0
+            yOffset = -4.0
+        }
+        
         let newOrigin = NSPoint(
-            x: mouseLocation.x + 2,
-            y: mouseLocation.y - 14
+            x: mouseLocation.x + xOffset,
+            y: mouseLocation.y + yOffset
         )
-
+        
         window.setFrameOrigin(newOrigin)
     }
-    }
+}

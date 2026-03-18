@@ -10,6 +10,11 @@ enum EventManagerState: Equatable, Sendable {
     case locked  // ロック状態
 }
 
+enum IconStyle: String, CaseIterable, Sendable {
+    case padlock = "南京錠"
+    case dot = "ドット"
+}
+
 class EventManager: ObservableObject {
     static let shared = EventManager()
     
@@ -66,6 +71,12 @@ class EventManager: ObservableObject {
         }
     }
     
+    @Published var pointerIconStyle: IconStyle = .padlock {
+        didSet {
+            UserDefaults.standard.set(pointerIconStyle.rawValue, forKey: "pointerIconStyle")
+        }
+    }
+    
     @Published var isLaunchAtLoginEnabled: Bool = false {
         didSet {
             // 現在の状態と異なる場合のみ更新（無限ループ防止）
@@ -93,6 +104,9 @@ class EventManager: ObservableObject {
         
         self.isSoundEnabled = UserDefaults.standard.bool(forKey: "isSoundEnabled")
         self.isIconEnabled = UserDefaults.standard.bool(forKey: "isIconEnabled")
+        if let savedStyle = UserDefaults.standard.string(forKey: "pointerIconStyle"), let style = IconStyle(rawValue: savedStyle) {
+            self.pointerIconStyle = style
+        }
         self.isLaunchAtLoginEnabled = SMAppService.mainApp.status == .enabled
         
         // アプリがアクティブになったときに権限を再チェックする（システム設定で変更された場合に対応）

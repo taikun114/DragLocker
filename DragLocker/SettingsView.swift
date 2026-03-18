@@ -5,6 +5,21 @@ struct SettingsView: View {
     @Environment(\.accessibilityDifferentiateWithoutColor) var differentiateWithoutColor
     @AppStorage("lockDelay") private var lockDelay: Double = 1.0
     
+    private var dotImage: Image {
+        let view = ZStack(alignment: .center) {
+            Circle().fill(Color.white).frame(width: 8, height: 8)
+            Circle().fill(Color.black).frame(width: 6, height: 6)
+        }.frame(width: 8, height: 8)
+        
+        let hostingView = NSHostingView(rootView: view)
+        hostingView.setFrameSize(CGSize(width: 8, height: 8))
+        
+        let bitmap = hostingView.bitmapImageRepForCachingDisplay(in: NSRect(x: 0, y: 0, width: 8, height: 8))!
+        hostingView.cacheDisplay(in: NSRect(x: 0, y: 0, width: 8, height: 8), to: bitmap)
+        
+        return Image(nsImage: NSImage(cgImage: bitmap.cgImage!, size: CGSize(width: 8, height: 8)))
+    }
+    
     var body: some View {
         Form {
             Section(header: Text("一般")) {
@@ -17,7 +32,9 @@ struct SettingsView: View {
                         .font(.subheadline)
                         .foregroundStyle(.secondary)
                 }
-
+            }
+            
+            Section(header: Text("ドラッグロック")) {
                 VStack(alignment: .leading) {
                     HStack(alignment: .center, spacing: 8) {
                         Slider(value: $lockDelay, in: 0.2...3.0, step: 0.1) {
@@ -30,7 +47,7 @@ struct SettingsView: View {
                         .font(.subheadline)
                         .foregroundStyle(.secondary)
                 }
-
+                
                 Toggle(isOn: Binding(
                     get: { eventManager.isIconEnabled },
                     set: { eventManager.isIconEnabled = $0 }
@@ -40,7 +57,26 @@ struct SettingsView: View {
                         .font(.subheadline)
                         .foregroundStyle(.secondary)
                 }
-
+                
+                Picker(selection: $eventManager.pointerIconStyle) {
+                    Label { Text("南京錠") } icon: {
+                        Image("Pointer_Locked")
+                    }.tag(IconStyle.padlock)
+                    
+                    Label { Text("ドット") } icon: {
+                        dotImage
+                    }.tag(IconStyle.dot)
+                } label: {
+                    Text("アイコンスタイル")
+                        .foregroundStyle(eventManager.isIconEnabled ? .primary : .secondary)
+                    Text("ドラッグロック中にマウスポインタ付近に表示されるアイコンのスタイルを選択します。")
+                        .font(.subheadline)
+                        .foregroundStyle(eventManager.isIconEnabled ? .secondary : .tertiary)
+                }
+                .labelStyle(.titleAndIcon)
+                .pickerStyle(.menu)
+                .disabled(!eventManager.isIconEnabled)
+                
                 Toggle(isOn: Binding(
                     get: { eventManager.isSoundEnabled },
                     set: { eventManager.isSoundEnabled = $0 }
