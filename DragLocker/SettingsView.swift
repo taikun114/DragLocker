@@ -9,20 +9,13 @@ struct SettingsView: View {
         Form {
             Section(header: Text("一般")) {
                 VStack(alignment: .leading) {
-                    HStack(alignment: .center, spacing: 0) {
+                    HStack(alignment: .center, spacing: 8) {
                         Slider(value: $lockDelay, in: 0.2...3.0, step: 0.1) {
                             Text("ロックまでの時間")
-                        } minimumValueLabel: {
-                            Text("0.2")
-                        } maximumValueLabel: {
-                            Text("3.0")
                         }
-                        
                         Text(String(format: "%.1f 秒", lockDelay))
                             .foregroundStyle(.secondary)
-                            .frame(width: 45, alignment: .trailing)
                     }
-                    
                     Text("ドラッグロック開始までクリックし続ける時間を設定します。")
                         .font(.subheadline)
                         .foregroundStyle(.secondary)
