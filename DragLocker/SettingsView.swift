@@ -29,6 +29,16 @@ struct SettingsView: View {
                 }
 
                 Toggle(isOn: Binding(
+                    get: { eventManager.isIconEnabled },
+                    set: { eventManager.isIconEnabled = $0 }
+                )) {
+                    Text("アイコンをポインタ付近に表示")
+                    Text("ドラッグロックされている間、マウスポインタ付近にアイコンを表示します。")
+                        .font(.subheadline)
+                        .foregroundStyle(.secondary)
+                }
+
+                Toggle(isOn: Binding(
                     get: { eventManager.isSoundEnabled },
                     set: { eventManager.isSoundEnabled = $0 }
                 )) {

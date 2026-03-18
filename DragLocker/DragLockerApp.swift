@@ -5,6 +5,11 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         // 初期化とアクセシビリティ権限のチェック開始
         EventManager.shared.start()
     }
+    
+    func applicationWillTerminate(_ notification: Notification) {
+        // アプリ終了時に確実にカスタムカーソルを解除する
+        CursorManager.shared.hideCustomCursor()
+    }
 }
 
 @main

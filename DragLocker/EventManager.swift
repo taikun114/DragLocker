@@ -34,6 +34,15 @@ class EventManager: ObservableObject {
                 // ロック時、または解除時にシステム音を鳴らす
                 NSSound.beep()
             }
+            
+            // アイコン表示設定が有効な場合のみカーソルの表示切り替え
+            DispatchQueue.main.async {
+                if self.isLocked && self.isIconEnabled {
+                    CursorManager.shared.showCustomCursor()
+                } else {
+                    CursorManager.shared.hideCustomCursor()
+                }
+            }
         }
     }
     private var holdTimer: Timer?
@@ -41,6 +50,18 @@ class EventManager: ObservableObject {
     @Published var isSoundEnabled: Bool = false {
         didSet {
             UserDefaults.standard.set(isSoundEnabled, forKey: "isSoundEnabled")
+        }
+    }
+    
+    @Published var isIconEnabled: Bool = false {
+        didSet {
+            UserDefaults.standard.set(isIconEnabled, forKey: "isIconEnabled")
+            // 設定がオフになった瞬間に、もし表示されていれば隠す
+            if !isIconEnabled {
+                DispatchQueue.main.async {
+                    CursorManager.shared.hideCustomCursor()
+                }
+            }
         }
     }
     
@@ -60,6 +81,7 @@ class EventManager: ObservableObject {
         }
         
         self.isSoundEnabled = UserDefaults.standard.bool(forKey: "isSoundEnabled")
+        self.isIconEnabled = UserDefaults.standard.bool(forKey: "isIconEnabled")
         
         // アプリがアクティブになったときに権限を再チェックする（システム設定で変更された場合に対応）
         NotificationCenter.default.addObserver(
@@ -218,6 +240,11 @@ class EventManager: ObservableObject {
         
         if type == .leftMouseDragged || type == .mouseMoved {
             if state == .locked {
+                // カスタムカーソルの位置を更新
+                DispatchQueue.main.async {
+                    CursorManager.shared.updatePosition()
+                }
+                
                 if type == .mouseMoved {
                     // 通常のマウス移動イベントをドラッグイベントに変換してOSに渡す
                     event.type = .leftMouseDragged
