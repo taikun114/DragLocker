@@ -21,7 +21,11 @@ class EventManager: ObservableObject {
     private let ownPID = ProcessInfo.processInfo.processIdentifier
     
     @Published var isTrusted: Bool = false
-    @Published var isEnabled: Bool = true // 一時的な機能の有効・無効状態
+    @Published var isEnabled: Bool = true {
+        didSet {
+            UserDefaults.standard.set(isEnabled, forKey: "isEnabled")
+        }
+    }
     
     private var eventTap: CFMachPort?
     private var runLoopSource: CFRunLoopSource?
@@ -133,6 +137,12 @@ class EventManager: ObservableObject {
             self.pointerIconStyle = style
         }
         self.isLaunchAtLoginEnabled = SMAppService.mainApp.status == .enabled
+        
+        if UserDefaults.standard.object(forKey: "isEnabled") == nil {
+            self.isEnabled = true
+        } else {
+            self.isEnabled = UserDefaults.standard.bool(forKey: "isEnabled")
+        }
         
         // アプリがアクティブになったときに権限を再チェックする（システム設定で変更された場合に対応）
         NotificationCenter.default.addObserver(
