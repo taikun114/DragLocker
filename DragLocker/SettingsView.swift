@@ -148,7 +148,7 @@ struct SettingsView: View {
                     }
                     Text("カスタムサウンドの再生音量を調整します。")
                         .font(.subheadline)
-                        .foregroundStyle(eventManager.isSoundEnabled ? .secondary : .tertiary)
+                        .foregroundStyle(eventManager.isSoundEnabled && eventManager.soundStyle != .system ? .secondary : .tertiary)
                 }
                 
                 Toggle(isOn: $eventManager.isSoundInverted) {

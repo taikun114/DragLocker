@@ -215,10 +215,33 @@ class EventManager: ObservableObject {
         }
     }
     
-    // イベントの送信先がDragLockerアプリ自身かどうかをPIDで判定する（スレッドセーフ）
+    // マウス座標にあるアプリがDragLocker自身かどうかを判定する
     private func isEventTargetingOwnApp(event: CGEvent) -> Bool {
-        let targetPID = event.getIntegerValueField(.eventTargetUnixProcessID)
-        return targetPID == Int64(ownPID)
+        let mouseLocation = event.location
+        
+        // 自アプリのプロセスIDを持つ、画面上のウィンドウ一覧を取得
+        let windowList = CGWindowListCopyWindowInfo([.optionOnScreenOnly, .excludeDesktopElements], kCGNullWindowID) as? [[String: Any]] ?? []
+        
+        for windowInfo in windowList {
+            guard let windowPID = windowInfo[kCGWindowOwnerPID as String] as? Int,
+                  windowPID == Int(ownPID),
+                  let boundsDict = windowInfo[kCGWindowBounds as String] as? [String: Any],
+                  let bounds = CGRect(dictionaryRepresentation: boundsDict as CFDictionary) else {
+                continue
+            }
+            
+            // マウス位置が自アプリのウィンドウ範囲内（かつレイヤーが通常のウィンドウ）かチェック
+            // レイヤー0は通常のウィンドウ、メニューバーなどはより高いレイヤー
+            if bounds.contains(mouseLocation) {
+                let layer = windowInfo[kCGWindowLayer as String] as? Int ?? 0
+                if layer == 0 {
+                    return true
+                }
+            }
+        }
+        
+        // ウィンドウが見つからない場合は、自アプリへのイベントではないと判断
+        return false
     }
     
     // イベント処理のエントリーポイント
