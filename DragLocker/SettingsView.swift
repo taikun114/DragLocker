@@ -33,9 +33,7 @@ struct SettingsView: View {
                         .font(.subheadline)
                         .foregroundStyle(.secondary)
                 }
-            }
-            
-            Section(header: Text("ドラッグロック")) {
+                
                 VStack(alignment: .leading) {
                     HStack(alignment: .center, spacing: 8) {
                         Slider(value: $lockDelay, in: 0.2...3.0, step: 0.1) {
@@ -48,7 +46,9 @@ struct SettingsView: View {
                         .font(.subheadline)
                         .foregroundStyle(.secondary)
                 }
-                
+            }
+            
+            Section(header: Text("アイコン")) {
                 Toggle(isOn: Binding(
                     get: { eventManager.isIconEnabled },
                     set: { eventManager.isIconEnabled = $0 }
@@ -77,7 +77,9 @@ struct SettingsView: View {
                 .labelStyle(.titleAndIcon)
                 .pickerStyle(.menu)
                 .disabled(!eventManager.isIconEnabled)
-                
+            }
+            
+            Section(header: Text("サウンド")) {
                 Toggle(isOn: Binding(
                     get: { eventManager.isSoundEnabled },
                     set: { eventManager.isSoundEnabled = $0 }
@@ -158,6 +160,7 @@ struct SettingsView: View {
                 }
                 .disabled(!eventManager.isSoundEnabled || eventManager.soundStyle == .system)
             }
+            
             Section(header: Text("権限")) {
                 HStack(alignment: .top) {
                     Group {
@@ -208,5 +211,5 @@ struct SettingsView: View {
 #Preview {
     SettingsView()
         .environmentObject(EventManager())
-        .frame(width: 400, height: 350)
+        .frame(width: 400, height: 500)
 }
