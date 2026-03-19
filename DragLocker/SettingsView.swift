@@ -90,11 +90,7 @@ struct SettingsView: View {
                 
                 HStack(alignment: .top) {
                     Picker(selection: $eventManager.soundStyle) {
-                        Text(SoundStyle.system.rawValue).tag(SoundStyle.system)
-                        
-                        Divider()
-                        
-                        ForEach(SoundStyle.allCases.filter { $0 != .system }, id: \.self) { style in
+                        ForEach(SoundStyle.allCases, id: \.self) { style in
                             Text(style.rawValue)
                                 .tag(style)
                                 .onHover { isHovering in
@@ -110,11 +106,15 @@ struct SettingsView: View {
                                         hoverTask?.cancel()
                                     }
                                 }
+                            
+                            if style == .system {
+                                Divider()
+                            }
                         }
                     } label: {
                         Text("サウンドスタイル")
                             .foregroundStyle(eventManager.isSoundEnabled ? .primary : .secondary)
-                        Text("再生するサウンドを選択します。")
+                        Text("再生するサウンドを選択します。マウスホバーでサウンドをプレビューできます。")
                             .font(.subheadline)
                             .foregroundStyle(eventManager.isSoundEnabled ? .secondary : .tertiary)
                     }
@@ -125,7 +125,7 @@ struct SettingsView: View {
                         SoundManager.shared.preview(style: eventManager.soundStyle, volume: eventManager.soundVolume, isInverted: eventManager.isSoundInverted)
                     } label: {
                         Image(systemName: "play.circle")
-                            .font(.title2)
+                            .font(.title3)
                     }
                     .buttonStyle(.plain)
                     .foregroundStyle(.secondary)
@@ -144,15 +144,9 @@ struct SettingsView: View {
                             .foregroundStyle((!eventManager.isSoundEnabled || eventManager.soundStyle == .system) ? .tertiary : .secondary)
                             .frame(width: 45, alignment: .trailing)
                     }
-                    if eventManager.soundStyle == .system {
-                        Text("システムの通知音の音量はmacOSのシステム設定に従います。")
-                            .font(.caption)
-                            .foregroundStyle(.tertiary)
-                    } else {
-                        Text("カスタムサウンドの再生音量を調整します。")
-                            .font(.subheadline)
-                            .foregroundStyle(eventManager.isSoundEnabled ? .secondary : .tertiary)
-                    }
+                    Text("カスタムサウンドの再生音量を調整します。")
+                        .font(.subheadline)
+                        .foregroundStyle(eventManager.isSoundEnabled ? .secondary : .tertiary)
                 }
                 
                 Toggle(isOn: $eventManager.isSoundInverted) {

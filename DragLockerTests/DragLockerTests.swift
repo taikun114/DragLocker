@@ -10,8 +10,34 @@ import Testing
 
 struct DragLockerTests {
 
-    @Test func example() async throws {
-        // Write your test here and use APIs like `#expect(...)` to check expected conditions.
+    @Test func testSoundManagerGetFileName() {
+        let soundManager = SoundManager.shared
+        
+        // 各スタイルと期待されるベースファイル名の定義
+        let expectedFiles: [(SoundStyle, String)] = [
+            (.system, ""),
+            (.snap, "snap"),
+            (.click, "click"),
+            (.clickLow, "click_low"),
+            (.click2, "click_2"),
+            (.ping, "ping"),
+            (.pingLow, "ping_low"),
+            (.ping2, "ping_2"),
+            (.ping2Low, "ping_2_low"),
+            (.soft, "soft"),
+            (.silkey, "silkey"),
+            (.marimba, "marimba"),
+            (.marimbaLow, "marimba_low"),
+            (.miniMarimba, "mini_marimba"),
+            (.eightBit, "8bit"),
+            (.eightBitLow, "8bit_low"),
+            (.drum, "drum")
+        ]
+        
+        for (style, expectedName) in expectedFiles {
+            let actualName = soundManager.getFileName(for: style)
+            #expect(actualName == expectedName, "Style \(style.rawValue) should return file name '\(expectedName)', but got '\(actualName)'")
+        }
     }
 
 }

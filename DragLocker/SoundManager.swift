@@ -4,17 +4,22 @@ import Foundation
 
 enum SoundStyle: String, CaseIterable, Sendable {
     case system = "システム"
+    case snap = "スナップ"
     case click = "クリック"
     case clickLow = "クリック（低）"
-    case ping = "ピンッ"
-    case pingLow = "ピンッ（低）"
-    case ping2 = "ピンッ 2"
-    case ping2Low = "ピンッ 2（低）"
-    case plink = "はじく"
+    case click2 = "クリック 2"
+    case ping = "ピッ"
+    case pingLow = "ピッ（低）"
+    case ping2 = "ピッ 2"
+    case ping2Low = "ピッ 2（低）"
+    case soft = "ソフト"
+    case silkey = "シルキー"
     case marimba = "マリンバ"
     case marimbaLow = "マリンバ（低）"
+    case miniMarimba = "ミニマリンバ"
     case eightBit = "8ビット"
     case eightBitLow = "8ビット（低）"
+    case drum = "ドラム"
 }
 
 class SoundManager {
@@ -109,20 +114,25 @@ class SoundManager {
         }
     }
     
-    private func getFileName(for style: SoundStyle) -> String {
+    func getFileName(for style: SoundStyle) -> String {
         switch style {
         case .system: return ""
+        case .snap: return "snap"
         case .click: return "click"
         case .clickLow: return "click_low"
+        case .click2: return "click_2"
         case .ping: return "ping"
         case .pingLow: return "ping_low"
         case .ping2: return "ping_2"
         case .ping2Low: return "ping_2_low"
+        case .soft: return "soft"
+        case .silkey: return "silkey"
         case .marimba: return "marimba"
         case .marimbaLow: return "marimba_low"
+        case .miniMarimba: return "mini_marimba"
         case .eightBit: return "8bit"
         case .eightBitLow: return "8bit_low"
-        case .plink: return "plink"
+        case .drum: return "drum"
         }
     }
 }
