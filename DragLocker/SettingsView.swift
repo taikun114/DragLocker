@@ -97,6 +97,7 @@ struct SettingsView: View {
                                 .tag(style)
                                 .onHover { isHovering in
                                     if isHovering {
+                                        SoundManager.shared.loadSound(style: style)
                                         hoverTask?.cancel()
                                         hoverTask = Task {
                                             try? await Task.sleep(nanoseconds: 500_000_000) // 0.5秒
@@ -124,6 +125,7 @@ struct SettingsView: View {
                     .disabled(!eventManager.isSoundEnabled)
                     
                     Button {
+                        SoundManager.shared.loadSound(style: eventManager.soundStyle)
                         SoundManager.shared.preview(style: eventManager.soundStyle, volume: eventManager.soundVolume, isInverted: eventManager.isSoundInverted)
                     } label: {
                         Image(systemName: "play.circle")
@@ -204,6 +206,10 @@ struct SettingsView: View {
         .navigationTitle("DragLocker 設定")
         .onChange(of: lockDelay) { _, newValue in
             eventManager.lockDelay = newValue
+        }
+        .onDisappear {
+            // 設定画面を閉じるときにメモリを整理
+            SoundManager.shared.cleanupExcept(activeStyle: eventManager.soundStyle)
         }
     }
 }

@@ -138,6 +138,9 @@ class EventManager: ObservableObject {
         }
         self.isLaunchAtLoginEnabled = SMAppService.mainApp.status == .enabled
         
+        // 現在のサウンドをメモリにプリロードして遅延をなくす
+        SoundManager.shared.loadSound(style: self.soundStyle)
+        
         if UserDefaults.standard.object(forKey: "isEnabled") == nil {
             self.isEnabled = true
         } else {

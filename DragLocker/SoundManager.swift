@@ -29,29 +29,43 @@ class SoundManager {
     private var players: [String: AVAudioPlayer] = [:]
     private let queue = DispatchQueue(label: "com.draglocker.soundmanager", qos: .utility)
     
-    private init() {
-        preloadSounds()
-    }
+    private init() {}
     
-    private func preloadSounds() {
-        // バックグラウンドで全サウンドをプリロード
+    // 指定されたスタイルをロードする（すでにロード済みの場合は何もしない）
+    func loadSound(style: SoundStyle) {
+        if style == .system { return }
+        
         queue.async {
-            for style in SoundStyle.allCases where style != .system {
-                for suffix in ["_up", "_down"] {
+            for suffix in ["_up", "_down"] {
+                let key = "\(style.rawValue)\(suffix)"
+                if self.players[key] == nil {
                     let baseName = self.getFileName(for: style)
                     let fileName = baseName + suffix
                     if let url = Bundle.main.url(forResource: fileName, withExtension: "mp3") {
                         do {
                             let player = try AVAudioPlayer(contentsOf: url)
                             player.prepareToPlay()
-                            let key = "\(style.rawValue)\(suffix)"
                             self.players[key] = player
                         } catch {
-                            print("Failed to preload sound: \(fileName), error: \(error)")
+                            print("Failed to load sound: \(fileName), error: \(error)")
                         }
                     }
                 }
             }
+        }
+    }
+    
+    // 指定されたスタイル以外をメモリから解放する
+    func cleanupExcept(activeStyle: SoundStyle) {
+        queue.async {
+            let activeUpKey = "\(activeStyle.rawValue)_up"
+            let activeDownKey = "\(activeStyle.rawValue)_down"
+            
+            let keysToRemove = self.players.keys.filter { $0 != activeUpKey && $0 != activeDownKey }
+            for key in keysToRemove {
+                self.players.removeValue(forKey: key)
+            }
+            print("Sound memory cleaned up. Remaining players: \(self.players.keys.count)")
         }
     }
     
