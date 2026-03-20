@@ -112,7 +112,7 @@ struct ManagedAppPickerPopover: View {
                         .contentShape(Rectangle())
                     }
                     .buttonStyle(.plain)
-                    .help("PID: \(String(describing: app.processIdentifier))")
+                    .help("PID: \(String(describing: app.processIdentifier))、\(displayName(for: app))")
                     .padding(.vertical, 4)
                 }
             }

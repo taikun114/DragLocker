@@ -2,6 +2,98 @@ import AppKit
 import SwiftUI
 import UniformTypeIdentifiers
 
+private struct ResolvedManagedApplicationInfo {
+    let name: String
+    let icon: NSImage?
+}
+
+private final class ManagedApplicationDisplayResolver {
+    static let shared = ManagedApplicationDisplayResolver()
+
+    private let fileManager = FileManager.default
+    private let lock = NSLock()
+    private var cache: [String: ResolvedManagedApplicationInfo] = [:]
+    private var searchedBundleIdentifiers: Set<String> = []
+
+    func resolvedInfo(for bundleIdentifier: String) -> ResolvedManagedApplicationInfo? {
+        lock.lock()
+        if let cachedInfo = cache[bundleIdentifier] {
+            lock.unlock()
+            return cachedInfo
+        }
+        let hasSearched = searchedBundleIdentifiers.contains(bundleIdentifier)
+        lock.unlock()
+
+        if let runningApplication = NSRunningApplication.runningApplications(withBundleIdentifier: bundleIdentifier).first(where: { !$0.isTerminated }) {
+            let resolvedInfo = ResolvedManagedApplicationInfo(
+                name: runningApplication.localizedName ?? bundleIdentifier,
+                icon: runningApplication.icon
+            )
+            store(resolvedInfo, for: bundleIdentifier)
+            return resolvedInfo
+        }
+
+        if let applicationURL = NSWorkspace.shared.urlForApplication(withBundleIdentifier: bundleIdentifier),
+           let resolvedInfo = resolvedInfo(from: applicationURL, fallbackName: bundleIdentifier) {
+            store(resolvedInfo, for: bundleIdentifier)
+            return resolvedInfo
+        }
+
+        if !hasSearched,
+           let applicationURL = searchApplicationURLInUserApplications(bundleIdentifier: bundleIdentifier),
+           let resolvedInfo = resolvedInfo(from: applicationURL, fallbackName: bundleIdentifier) {
+            store(resolvedInfo, for: bundleIdentifier)
+            return resolvedInfo
+        }
+
+        lock.lock()
+        searchedBundleIdentifiers.insert(bundleIdentifier)
+        lock.unlock()
+        return nil
+    }
+
+    private func store(_ info: ResolvedManagedApplicationInfo, for bundleIdentifier: String) {
+        lock.lock()
+        cache[bundleIdentifier] = info
+        searchedBundleIdentifiers.insert(bundleIdentifier)
+        lock.unlock()
+    }
+
+    private func resolvedInfo(from applicationURL: URL, fallbackName: String) -> ResolvedManagedApplicationInfo? {
+        guard let appBundle = Bundle(url: applicationURL) else { return nil }
+
+        let resolvedName = appBundle.localizedInfoDictionary?["CFBundleDisplayName"] as? String
+            ?? appBundle.localizedInfoDictionary?["CFBundleName"] as? String
+            ?? appBundle.infoDictionary?["CFBundleName"] as? String
+            ?? applicationURL.deletingPathExtension().lastPathComponent
+
+        let icon = NSWorkspace.shared.icon(forFile: applicationURL.path)
+        return ResolvedManagedApplicationInfo(name: resolvedName, icon: icon)
+    }
+
+    private func searchApplicationURLInUserApplications(bundleIdentifier: String) -> URL? {
+        let userApplicationsURL = fileManager.homeDirectoryForCurrentUser.appendingPathComponent("Applications", isDirectory: true)
+        guard let enumerator = fileManager.enumerator(
+            at: userApplicationsURL,
+            includingPropertiesForKeys: [.isApplicationKey, .isDirectoryKey],
+            options: [.skipsHiddenFiles, .skipsPackageDescendants]
+        ) else {
+            return nil
+        }
+
+        for case let applicationURL as URL in enumerator {
+            guard applicationURL.pathExtension == "app" else { continue }
+            guard let bundle = Bundle(url: applicationURL),
+                  bundle.bundleIdentifier == bundleIdentifier else {
+                continue
+            }
+            return applicationURL
+        }
+
+        return nil
+    }
+}
+
 struct ManagedAppSettingsSection: View {
     @ObservedObject var eventManager: EventManager
 
@@ -26,8 +118,8 @@ struct ManagedAppSettingsSection: View {
 
     private var sortedManagedAppIdentifiers: [String] {
         eventManager.managedAppBundleIdentifiers.sorted { id1, id2 in
-            let name1 = applicationName(bundleIdentifier: id1)
-            let name2 = applicationName(bundleIdentifier: id2)
+            let name1 = applicationInfo(bundleIdentifier: id1)?.name
+            let name2 = applicationInfo(bundleIdentifier: id2)?.name
 
             switch (name1, name2) {
             case let (.some(n1), .some(n2)):
@@ -42,19 +134,8 @@ struct ManagedAppSettingsSection: View {
         }
     }
 
-    private func applicationURL(bundleIdentifier: String) -> URL? {
-        NSWorkspace.shared.urlForApplication(withBundleIdentifier: bundleIdentifier)
-    }
-
-    private func applicationName(bundleIdentifier: String) -> String? {
-        guard let appURL = applicationURL(bundleIdentifier: bundleIdentifier),
-              let appBundle = Bundle(url: appURL) else {
-            return nil
-        }
-
-        return appBundle.localizedInfoDictionary?["CFBundleDisplayName"] as? String
-            ?? appBundle.localizedInfoDictionary?["CFBundleName"] as? String
-            ?? appBundle.infoDictionary?["CFBundleName"] as? String
+    private func applicationInfo(bundleIdentifier: String) -> ResolvedManagedApplicationInfo? {
+        ManagedApplicationDisplayResolver.shared.resolvedInfo(for: bundleIdentifier)
     }
 
     private func addManagedApplication(bundleIdentifier: String) {
@@ -153,16 +234,16 @@ struct ManagedAppSettingsSection: View {
 
     @ViewBuilder
     private func managedAppRow(bundleIdentifier: String) -> some View {
-        if let appURL = applicationURL(bundleIdentifier: bundleIdentifier),
-           let appName = applicationName(bundleIdentifier: bundleIdentifier) {
-            let appIcon = NSWorkspace.shared.icon(forFile: appURL.path)
-
+        if let appInfo = applicationInfo(bundleIdentifier: bundleIdentifier) {
             HStack {
-                Image(nsImage: appIcon)
-                    .resizable()
-                    .frame(width: 16, height: 16)
-                Text(appName)
+                if let appIcon = appInfo.icon {
+                    Image(nsImage: appIcon)
+                        .resizable()
+                        .frame(width: 16, height: 16)
+                }
+                Text(appInfo.name)
             }
+            .help(appInfo.name)
             .contextMenu {
                 Button(role: .destructive) {
                     requestContextMenuRemoval(for: bundleIdentifier)
@@ -174,6 +255,7 @@ struct ManagedAppSettingsSection: View {
         } else {
             Text(bundleIdentifier)
                 .foregroundStyle(.secondary)
+                .help(bundleIdentifier)
                 .contextMenu {
                     Button(role: .destructive) {
                         requestContextMenuRemoval(for: bundleIdentifier)
