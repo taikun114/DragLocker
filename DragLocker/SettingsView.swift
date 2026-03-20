@@ -95,22 +95,49 @@ struct SettingsView: View {
                         }
                         .environment(\.layoutDirection, .leftToRight)
                     }
-                    Text("ドラッグロックを有効化するボタンを選択します。")
+                    Text("ドラッグロックを使用するマウスボタンを選択します。")
                         .font(.subheadline)
                         .foregroundStyle(.secondary)
                 }
                 
-                VStack(alignment: .leading) {
-                    HStack(alignment: .center, spacing: 8) {
-                        Slider(value: $lockDelay, in: 0.2...3.0, step: 0.1) {
-                            Text("ロックまでの時間")
-                        }
-                        Text(String(format: "%.1f 秒", lockDelay))
-                            .foregroundStyle(.secondary)
+                Picker(selection: $eventManager.lockType) {
+                    ForEach(LockType.allCases, id: \.self) { type in
+                        Text(type.rawValue).tag(type)
                     }
-                    Text("ドラッグロック開始までクリックし続ける時間を設定します。")
+                } label: {
+                    Text("ロック方法")
+                    Text("ドラッグロックを開始する方法を選択します。")
                         .font(.subheadline)
                         .foregroundStyle(.secondary)
+                }
+                .pickerStyle(.radioGroup)
+                
+                if eventManager.lockType == .time {
+                    VStack(alignment: .leading) {
+                        HStack(alignment: .center, spacing: 8) {
+                            Slider(value: $lockDelay, in: 0.2...3.0, step: 0.1) {
+                                Text("ロックまでの時間")
+                            }
+                            Text(String(format: "%.1f 秒", lockDelay))
+                                .foregroundStyle(.secondary)
+                        }
+                        Text("ドラッグロック開始までクリックし続ける時間を設定します。")
+                            .font(.subheadline)
+                            .foregroundStyle(.secondary)
+                    }
+                } else {
+                    VStack(alignment: .leading) {
+                        HStack(alignment: .center, spacing: 8) {
+                            Slider(value: $eventManager.lockDistance, in: 10...500, step: 10) {
+                                Text("ロックまでの距離")
+                            }
+                            Text(String(format: "%.0f px", eventManager.lockDistance))
+                                .foregroundStyle(.secondary)
+                        }
+                        Text("ドラッグロック開始までドラッグし続ける距離を設定します。")
+                            .font(.subheadline)
+                            .foregroundStyle(.secondary)
+                    }
                 }
             }
             
@@ -212,7 +239,6 @@ struct SettingsView: View {
                         .disabled(!eventManager.isSoundEnabled || eventManager.soundStyle == .system)
                         Text(String(format: "%.0f %%", eventManager.soundVolume * 100))
                             .foregroundStyle((!eventManager.isSoundEnabled || eventManager.soundStyle == .system) ? .tertiary : .secondary)
-                            .frame(width: 45, alignment: .trailing)
                     }
                     Text("カスタムサウンドの再生音量を調整します。")
                         .font(.subheadline)
@@ -222,7 +248,7 @@ struct SettingsView: View {
                 Toggle(isOn: $eventManager.isSoundInverted) {
                     Text("サウンドを反転")
                         .foregroundStyle(eventManager.isSoundEnabled && eventManager.soundStyle != .system ? .primary : .secondary)
-                    Text("ロック時と解除時のサウンドを入れ替えます。")
+                    Text("ドラッグロックされた時と解除された時に再生されるサウンドを入れ替えます。")
                         .font(.subheadline)
                         .foregroundStyle(eventManager.isSoundEnabled && eventManager.soundStyle != .system ? .secondary : .tertiary)
                 }

@@ -53,6 +53,11 @@ enum IconStyle: String, CaseIterable, Sendable {
     case dot = "ドット"
 }
 
+enum LockType: String, CaseIterable, Sendable {
+    case time = "時間"
+    case distance = "距離"
+}
+
 class EventManager: ObservableObject {
     static let shared = EventManager()
 
@@ -152,6 +157,20 @@ class EventManager: ObservableObject {
         }
     }
 
+    @Published var lockType: LockType = .time {
+        didSet {
+            UserDefaults.standard.set(lockType.rawValue, forKey: "lockType")
+        }
+    }
+
+    @Published var lockDistance: Double = 100.0 {
+        didSet {
+            UserDefaults.standard.set(lockDistance, forKey: "lockDistance")
+        }
+    }
+
+    private var dragStartLocations: [MouseButton: CGPoint] = [:]
+
     init() {
         // 保存された設定の読み込み
         let savedDelay = UserDefaults.standard.double(forKey: "lockDelay")
@@ -160,6 +179,15 @@ class EventManager: ObservableObject {
         } else {
             self.lockDelay = 1.0
         }
+
+        if let savedLockTypeRaw = UserDefaults.standard.string(forKey: "lockType"), let type = LockType(rawValue: savedLockTypeRaw) {
+            self.lockType = type
+        } else {
+            self.lockType = .time
+        }
+
+        let savedDistance = UserDefaults.standard.double(forKey: "lockDistance")
+        self.lockDistance = (savedDistance == 0 && !UserDefaults.standard.dictionaryRepresentation().keys.contains("lockDistance")) ? 100.0 : savedDistance
 
         if let savedButtons = UserDefaults.standard.array(forKey: "enabledButtonRawValues") as? [Int] {
             self.enabledButtonRawValues = Set(savedButtons)
@@ -356,10 +384,14 @@ class EventManager: ObservableObject {
                 }
 
                 if buttonStates[button] == .idle {
-                    print("\(button) down: Starting hold timer")
+                    print("\(button) down: Starting tracking")
                     updateButtonState(button, to: .holding)
-                    DispatchQueue.main.async {
-                        self.startTimer(for: button)
+                    dragStartLocations[button] = event.location
+                    
+                    if lockType == .time {
+                        DispatchQueue.main.async {
+                            self.startTimer(for: button)
+                        }
                     }
                 } else if buttonStates[button] == .locked {
                     print("\(button) down while locked: Releasing lock")
@@ -387,6 +419,22 @@ class EventManager: ObservableObject {
 
         // ドラッグイベントの処理
         if type == .leftMouseDragged || type == .rightMouseDragged || type == .otherMouseDragged || type == .mouseMoved {
+            // 自動ロック判定（ドラッグ中かつ未ロックの場合）
+            if lockType == .distance && !isLocked {
+                for button in MouseButton.allCases {
+                    if buttonStates[button] == .holding, let startLocation = dragStartLocations[button] {
+                        let currentLocation = event.location
+                        let distance = sqrt(pow(currentLocation.x - startLocation.x, 2) + pow(currentLocation.y - startLocation.y, 2))
+                        
+                        if distance >= lockDistance {
+                            print("\(button) distance (\(distance)) exceeded threshold (\(lockDistance)): Locking")
+                            updateButtonState(button, to: .locked)
+                            break
+                        }
+                    }
+                }
+            }
+
             // いずれかのボタンがロック中なら、カスタムカーソルの位置を更新
             if isLocked {
                 DispatchQueue.main.async {
@@ -449,6 +497,7 @@ class EventManager: ObservableObject {
 
     private func cancelHold(for button: MouseButton) {
         updateButtonState(button, to: .idle)
+        dragStartLocations[button] = nil
         DispatchQueue.main.async {
             self.holdTimers[button]?.invalidate()
             self.holdTimers[button] = nil
@@ -457,6 +506,7 @@ class EventManager: ObservableObject {
 
     private func releaseLock(for button: MouseButton) {
         updateButtonState(button, to: .idle)
+        dragStartLocations[button] = nil
         postSyntheticMouseUp(for: button)
     }
 
