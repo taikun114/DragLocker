@@ -3,6 +3,7 @@ import SwiftUI
 struct SettingsView: View {
     @EnvironmentObject var eventManager: EventManager
     @Environment(\.accessibilityDifferentiateWithoutColor) var differentiateWithoutColor
+    @Environment(\.layoutDirection) private var systemLayoutDirection
     @AppStorage("lockDelay") private var lockDelay: Double = 1.0
     @State private var hoverTask: Task<Void, Never>? = nil
     
@@ -30,6 +31,71 @@ struct SettingsView: View {
                 )) {
                     Text("ログイン時に開く")
                     Text("Macのログイン時にDragLockerを自動で起動します。")
+                        .font(.subheadline)
+                        .foregroundStyle(.secondary)
+                }
+                
+                VStack(alignment: .leading, spacing: 8) {
+                    HStack {
+                        Text("ロック対象ボタン")
+                        
+                        Spacer()
+                        
+                        HStack(spacing: 16) {
+                            Toggle(isOn: Binding(
+                                get: { eventManager.enabledButtonRawValues.contains(MouseButton.left.rawValue) },
+                                set: { isOn in
+                                    if isOn {
+                                        eventManager.enabledButtonRawValues.insert(MouseButton.left.rawValue)
+                                    } else {
+                                        eventManager.enabledButtonRawValues.remove(MouseButton.left.rawValue)
+                                    }
+                                }
+                            )) {
+                                Text("左")
+                                    .lineLimit(1)
+                                    .fixedSize(horizontal: true, vertical: false)
+                            }
+                            .toggleStyle(.checkbox)
+                            .environment(\.layoutDirection, systemLayoutDirection)
+                            
+                            Toggle(isOn: Binding(
+                                get: { eventManager.enabledButtonRawValues.contains(MouseButton.middle.rawValue) },
+                                set: { isOn in
+                                    if isOn {
+                                        eventManager.enabledButtonRawValues.insert(MouseButton.middle.rawValue)
+                                    } else {
+                                        eventManager.enabledButtonRawValues.remove(MouseButton.middle.rawValue)
+                                    }
+                                }
+                            )) {
+                                Text("ホイール")
+                                    .lineLimit(1)
+                                    .fixedSize(horizontal: true, vertical: false)
+                            }
+                            .toggleStyle(.checkbox)
+                            .environment(\.layoutDirection, systemLayoutDirection)
+                            
+                            Toggle(isOn: Binding(
+                                get: { eventManager.enabledButtonRawValues.contains(MouseButton.right.rawValue) },
+                                set: { isOn in
+                                    if isOn {
+                                        eventManager.enabledButtonRawValues.insert(MouseButton.right.rawValue)
+                                    } else {
+                                        eventManager.enabledButtonRawValues.remove(MouseButton.right.rawValue)
+                                    }
+                                }
+                            )) {
+                                Text("右")
+                                    .lineLimit(1)
+                                    .fixedSize(horizontal: true, vertical: false)
+                            }
+                            .toggleStyle(.checkbox)
+                            .environment(\.layoutDirection, systemLayoutDirection)
+                        }
+                        .environment(\.layoutDirection, .leftToRight)
+                    }
+                    Text("ドラッグロックを有効化するボタンを選択します。")
                         .font(.subheadline)
                         .foregroundStyle(.secondary)
                 }
@@ -219,3 +285,4 @@ struct SettingsView: View {
         .environmentObject(EventManager())
         .frame(width: 400, height: 500)
 }
+

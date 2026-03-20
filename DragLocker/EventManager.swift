@@ -10,6 +10,44 @@ enum EventManagerState: Equatable, Sendable {
     case locked  // ロック状態
 }
 
+enum MouseButton: Int, CaseIterable, Sendable {
+    case left = 0
+    case right = 1
+    case middle = 2
+
+    var cgButton: CGMouseButton {
+        switch self {
+        case .left: return .left
+        case .right: return .right
+        case .middle: return .center
+        }
+    }
+
+    var mouseDownType: CGEventType {
+        switch self {
+        case .left: return .leftMouseDown
+        case .right: return .rightMouseDown
+        case .middle: return .otherMouseDown
+        }
+    }
+
+    var mouseUpType: CGEventType {
+        switch self {
+        case .left: return .leftMouseUp
+        case .right: return .rightMouseUp
+        case .middle: return .otherMouseUp
+        }
+    }
+
+    var mouseDraggedType: CGEventType {
+        switch self {
+        case .left: return .leftMouseDragged
+        case .right: return .rightMouseDragged
+        case .middle: return .otherMouseDragged
+        }
+    }
+}
+
 enum IconStyle: String, CaseIterable, Sendable {
     case padlock = "南京錠"
     case dot = "ドット"
@@ -17,34 +55,27 @@ enum IconStyle: String, CaseIterable, Sendable {
 
 class EventManager: ObservableObject {
     static let shared = EventManager()
-    
+
     private let ownPID = ProcessInfo.processInfo.processIdentifier
-    
+
     @Published var isTrusted: Bool = false
     @Published var isEnabled: Bool = true {
         didSet {
             UserDefaults.standard.set(isEnabled, forKey: "isEnabled")
         }
     }
-    
+
     private var eventTap: CFMachPort?
     private var runLoopSource: CFRunLoopSource?
-    
-    private var state: EventManagerState = .idle {
-        didSet {
-            DispatchQueue.main.async {
-                self.isLocked = (self.state == .locked)
-            }
-        }
-    }
-    
+
+    private var buttonStates: [MouseButton: EventManagerState] = [
+        .left: .idle,
+        .right: .idle,
+        .middle: .idle
+    ]
+
     @Published var isLocked: Bool = false {
         didSet {
-            if isSoundEnabled && oldValue != isLocked {
-                // ロック時、または解除時にサウンドを再生
-                SoundManager.shared.play(style: soundStyle, volume: soundVolume, isLocked: isLocked, isInverted: isSoundInverted)
-            }
-            
             // アイコン表示設定が有効な場合のみカーソルの表示切り替え
             DispatchQueue.main.async {
                 if self.isLocked && self.isIconEnabled {
@@ -55,32 +86,38 @@ class EventManager: ObservableObject {
             }
         }
     }
-    private var holdTimer: Timer?
-    
+    private var holdTimers: [MouseButton: Timer] = [:]
+
+    @Published var enabledButtonRawValues: Set<Int> = [0] {
+        didSet {
+            UserDefaults.standard.set(Array(enabledButtonRawValues), forKey: "enabledButtonRawValues")
+        }
+    }
+
     @Published var isSoundEnabled: Bool = false {
         didSet {
             UserDefaults.standard.set(isSoundEnabled, forKey: "isSoundEnabled")
         }
     }
-    
+
     @Published var soundStyle: SoundStyle = .system {
         didSet {
             UserDefaults.standard.set(soundStyle.rawValue, forKey: "soundStyle")
         }
     }
-    
+
     @Published var soundVolume: Double = 0.5 {
         didSet {
             UserDefaults.standard.set(soundVolume, forKey: "soundVolume")
         }
     }
-    
+
     @Published var isSoundInverted: Bool = false {
         didSet {
             UserDefaults.standard.set(isSoundInverted, forKey: "isSoundInverted")
         }
     }
-    
+
     @Published var isIconEnabled: Bool = false {
         didSet {
             UserDefaults.standard.set(isIconEnabled, forKey: "isIconEnabled")
@@ -92,13 +129,13 @@ class EventManager: ObservableObject {
             }
         }
     }
-    
+
     @Published var pointerIconStyle: IconStyle = .padlock {
         didSet {
             UserDefaults.standard.set(pointerIconStyle.rawValue, forKey: "pointerIconStyle")
         }
     }
-    
+
     @Published var isLaunchAtLoginEnabled: Bool = false {
         didSet {
             // 現在の状態と異なる場合のみ更新（無限ループ防止）
@@ -108,13 +145,13 @@ class EventManager: ObservableObject {
             }
         }
     }
-    
+
     @Published var lockDelay: TimeInterval = 1.0 {
         didSet {
             UserDefaults.standard.set(lockDelay, forKey: "lockDelay")
         }
     }
-    
+
     init() {
         // 保存された設定の読み込み
         let savedDelay = UserDefaults.standard.double(forKey: "lockDelay")
@@ -123,7 +160,13 @@ class EventManager: ObservableObject {
         } else {
             self.lockDelay = 1.0
         }
-        
+
+        if let savedButtons = UserDefaults.standard.array(forKey: "enabledButtonRawValues") as? [Int] {
+            self.enabledButtonRawValues = Set(savedButtons)
+        } else {
+            self.enabledButtonRawValues = [0]
+        }
+
         self.isSoundEnabled = UserDefaults.standard.bool(forKey: "isSoundEnabled")
         if let savedSoundStyle = UserDefaults.standard.string(forKey: "soundStyle"), let style = SoundStyle(rawValue: savedSoundStyle) {
             self.soundStyle = style
@@ -131,22 +174,22 @@ class EventManager: ObservableObject {
         let savedVolume = UserDefaults.standard.double(forKey: "soundVolume")
         self.soundVolume = (savedVolume == 0 && !UserDefaults.standard.dictionaryRepresentation().keys.contains("soundVolume")) ? 0.5 : savedVolume
         self.isSoundInverted = UserDefaults.standard.bool(forKey: "isSoundInverted")
-        
+
         self.isIconEnabled = UserDefaults.standard.bool(forKey: "isIconEnabled")
         if let savedStyle = UserDefaults.standard.string(forKey: "pointerIconStyle"), let style = IconStyle(rawValue: savedStyle) {
             self.pointerIconStyle = style
         }
         self.isLaunchAtLoginEnabled = SMAppService.mainApp.status == .enabled
-        
+
         // 現在のサウンドをメモリにプリロードして遅延をなくす
         SoundManager.shared.loadSound(style: self.soundStyle)
-        
+
         if UserDefaults.standard.object(forKey: "isEnabled") == nil {
             self.isEnabled = true
         } else {
             self.isEnabled = UserDefaults.standard.bool(forKey: "isEnabled")
         }
-        
+
         // アプリがアクティブになったときに権限を再チェックする（システム設定で変更された場合に対応）
         NotificationCenter.default.addObserver(
             self,
@@ -155,17 +198,17 @@ class EventManager: ObservableObject {
             object: nil
         )
     }
-    
+
     func start() {
         checkAccessibilityPermissions()
     }
-    
+
     @objc func checkAccessibilityPermissions() {
         let options: NSDictionary = [kAXTrustedCheckOptionPrompt.takeUnretainedValue() as String: false]
         let accessEnabled = AXIsProcessTrustedWithOptions(options)
-        
+
         print("Checking Accessibility Permissions: \(accessEnabled)")
-        
+
         DispatchQueue.main.async {
             self.isTrusted = accessEnabled
             if self.isTrusted {
@@ -173,37 +216,43 @@ class EventManager: ObservableObject {
             }
         }
     }
-    
+
     func requestAccessibilityPermissions() {
         print("Requesting Accessibility Permissions...")
-        
+
         // 1. システムにプロンプトを表示させる標準的な方法を試行
         let options: NSDictionary = [kAXTrustedCheckOptionPrompt.takeUnretainedValue() as String: true]
         _ = AXIsProcessTrustedWithOptions(options)
-        
+
         // 2. 実際にEvent Tapを作成しようと試みることで、システムに権限が必要であることを示し、プロンプトを誘発する
         // (isTrustedがfalseでも、プロンプトを出すためにあえて呼び出す)
         setupEventTap(force: true)
-        
+
         // 3. 状態を再チェック
         checkAccessibilityPermissions()
     }
-    
+
     private func setupEventTap(force: Bool = false) {
         // 通常は権限がある場合のみ実行するが、forceがtrueの場合はプロンプト誘発のために続行する
         if !isTrusted && !force { return }
         if eventTap != nil { return }
-        
+
         print("Attempting to create event tap to trigger system prompt if needed...")
         let eventMask = (1 << CGEventType.leftMouseDown.rawValue) |
                         (1 << CGEventType.leftMouseUp.rawValue) |
                         (1 << CGEventType.leftMouseDragged.rawValue) |
+                        (1 << CGEventType.rightMouseDown.rawValue) |
+                        (1 << CGEventType.rightMouseUp.rawValue) |
+                        (1 << CGEventType.rightMouseDragged.rawValue) |
+                        (1 << CGEventType.otherMouseDown.rawValue) |
+                        (1 << CGEventType.otherMouseUp.rawValue) |
+                        (1 << CGEventType.otherMouseDragged.rawValue) |
                         (1 << CGEventType.mouseMoved.rawValue) |
                         (1 << CGEventType.keyDown.rawValue)
-        
+
         // Cのコールバック関数に self を渡すため、Unmanaged を使用
         let userInfo = UnsafeMutableRawPointer(Unmanaged.passUnretained(self).toOpaque())
-        
+
         // cghidEventTap を使用することで、どのアプリにフォーカスがあっても全イベントをキャッチできる
         eventTap = CGEvent.tapCreate(
             tap: .cghidEventTap,
@@ -213,12 +262,12 @@ class EventManager: ObservableObject {
             callback: eventTapCallback,
             userInfo: userInfo
         )
-        
+
         guard let tap = eventTap else {
             print("Failed to create event tap")
             return
         }
-        
+
         runLoopSource = CFMachPortCreateRunLoopSource(kCFAllocatorDefault, tap, 0)
         if let source = runLoopSource {
             // メインRunLoopに追加することで確実にイベントが処理される
@@ -227,14 +276,14 @@ class EventManager: ObservableObject {
             print("Event tap successfully set up")
         }
     }
-    
+
     // マウス座標にあるアプリがDragLocker自身かどうかを判定する
     private func isEventTargetingOwnApp(event: CGEvent) -> Bool {
         let mouseLocation = event.location
-        
+
         // 自アプリのプロセスIDを持つ、画面上のウィンドウ一覧を取得
         let windowList = CGWindowListCopyWindowInfo([.optionOnScreenOnly, .excludeDesktopElements], kCGNullWindowID) as? [[String: Any]] ?? []
-        
+
         for windowInfo in windowList {
             guard let windowPID = windowInfo[kCGWindowOwnerPID as String] as? Int,
                   windowPID == Int(ownPID),
@@ -242,7 +291,7 @@ class EventManager: ObservableObject {
                   let bounds = CGRect(dictionaryRepresentation: boundsDict as CFDictionary) else {
                 continue
             }
-            
+
             // マウス位置が自アプリのウィンドウ範囲内（かつレイヤーが通常のウィンドウ）かチェック
             // レイヤー0は通常のウィンドウ、メニューバーなどはより高いレイヤー
             if bounds.contains(mouseLocation) {
@@ -252,14 +301,14 @@ class EventManager: ObservableObject {
                 }
             }
         }
-        
+
         // ウィンドウが見つからない場合は、自アプリへのイベントではないと判断
         return false
     }
-    
+
     // イベント処理のエントリーポイント
     func handleEvent(proxy: CGEventTapProxy, type: CGEventType, event: CGEvent) -> Unmanaged<CGEvent>? {
-        
+
         // macOSがタイムアウト等でイベントタップを無効化した場合、再有効化する
         if type == .tapDisabledByTimeout || type == .tapDisabledByUserInput {
             print("Event tap was disabled by system, re-enabling...")
@@ -268,135 +317,185 @@ class EventManager: ObservableObject {
             }
             return Unmanaged.passRetained(event)
         }
-        
+
         // アプリケーション機能が一時停止中の場合は何も処理せずイベントを流す
         guard isEnabled else { return Unmanaged.passRetained(event) }
-        
+
         if type == .keyDown {
             let keyCode = event.getIntegerValueField(.keyboardEventKeycode)
             if keyCode == 53 /* Escape key */ {
-                if state == .locked {
-                    print("Escape pressed: Releasing lock")
-                    releaseLock()
-                } else if state == .holding {
-                    print("Escape pressed: Canceling hold")
-                    cancelHold()
-                }
+                print("Escape pressed: Releasing all locks")
+                releaseAllLocks()
             }
             return Unmanaged.passRetained(event) // キーボードイベントはそのまま通す
         }
-        
-        if type == .leftMouseDown {
-            // DragLockerアプリ自身へのクリックではロック機能を発動しない
-            if isEventTargetingOwnApp(event: event) {
-                print("Mouse down: Targeting own app (PID: \(ownPID)), ignoring")
-                if state == .locked {
-                    releaseLock()
-                } else if state == .holding {
-                    cancelHold()
+
+        // 各ボタンのイベント判定
+        for button in MouseButton.allCases {
+            // このボタンが有効設定になっていない場合はスキップ
+            if !enabledButtonRawValues.contains(button.rawValue) {
+                continue
+            }
+
+            if type == button.mouseDownType {
+                // 中ボタン(OtherMouse)の場合は、ボタン番号が正しいかチェック
+                if type == .otherMouseDown {
+                    let buttonNumber = event.getIntegerValueField(.mouseEventButtonNumber)
+                    if buttonNumber != 2 { continue } // 2が中ボタン
+                }
+
+                // DragLockerアプリ自身へのクリックではロック機能を発動しない
+                if isEventTargetingOwnApp(event: event) {
+                    print("\(button) down: Targeting own app, ignoring")
+                    if buttonStates[button] == .locked {
+                        releaseLock(for: button)
+                    } else if buttonStates[button] == .holding {
+                        cancelHold(for: button)
+                    }
+                    return Unmanaged.passRetained(event)
+                }
+
+                if buttonStates[button] == .idle {
+                    print("\(button) down: Starting hold timer")
+                    updateButtonState(button, to: .holding)
+                    DispatchQueue.main.async {
+                        self.startTimer(for: button)
+                    }
+                } else if buttonStates[button] == .locked {
+                    print("\(button) down while locked: Releasing lock")
+                    releaseLock(for: button)
                 }
                 return Unmanaged.passRetained(event)
             }
-            
-            if state == .idle {
-                print("Mouse down: Starting hold timer")
-                state = .holding
-                DispatchQueue.main.async {
-                    self.startTimer()
+
+            if type == button.mouseUpType {
+                if type == .otherMouseUp {
+                    let buttonNumber = event.getIntegerValueField(.mouseEventButtonNumber)
+                    if buttonNumber != 2 { continue }
                 }
-            } else if state == .locked {
-                print("Mouse down while locked: Releasing lock")
-                releaseLock()
-                // ロック中にもう一度クリックされたらロック解除し、新しいmouseDownはそのまま通す
-            }
-            return Unmanaged.passRetained(event)
-        }
-        
-        if type == .leftMouseUp {
-            if state == .holding {
-                // タイマー発火前に離された -> 通常クリック
-                print("Mouse up: Normal click, canceling timer")
-                cancelHold()
-                return Unmanaged.passRetained(event)
-            } else if state == .locked {
-                // ロック中に物理ボタンが離された -> 握りつぶしてOSに渡さない（ロック状態を維持）
-                print("Mouse up while locked: Ignoring to keep the lock")
-                return nil
+
+                if buttonStates[button] == .holding {
+                    print("\(button) up: Normal click, canceling timer")
+                    cancelHold(for: button)
+                    return Unmanaged.passRetained(event)
+                } else if buttonStates[button] == .locked {
+                    print("\(button) up while locked: Ignoring to keep the lock")
+                    return nil
+                }
             }
         }
-        
-        if type == .leftMouseDragged || type == .mouseMoved {
-            if state == .locked {
-                // カスタムカーソルの位置を更新
+
+        // ドラッグイベントの処理
+        if type == .leftMouseDragged || type == .rightMouseDragged || type == .otherMouseDragged || type == .mouseMoved {
+            // いずれかのボタンがロック中なら、カスタムカーソルの位置を更新
+            if isLocked {
                 DispatchQueue.main.async {
                     CursorManager.shared.updatePosition()
                 }
-                
+
+                // mouseMoved（物理ボタンが押されていない状態での移動）をドラッグに変換
                 if type == .mouseMoved {
-                    // 通常のマウス移動イベントをドラッグイベントに変換してOSに渡す
-                    event.type = .leftMouseDragged
+                    // 現在ロック中のボタンのうち、最初に見つかったもののドラッグタイプを使用
+                    if let lockedButton = MouseButton.allCases.first(where: { buttonStates[$0] == .locked }) {
+                        event.type = lockedButton.mouseDraggedType
+                        if lockedButton == .middle {
+                            event.setIntegerValueField(.mouseEventButtonNumber, value: 2)
+                        }
+                    }
                 }
                 return Unmanaged.passRetained(event)
             }
         }
-        
+
         return Unmanaged.passRetained(event)
     }
-    
-    private func startTimer() {
-        holdTimer?.invalidate()
-        // RunLoop.commonモードで登録することで、メニューバーのメニュー表示中などでもタイマーが動作する
+
+    private func updateButtonState(_ button: MouseButton, to newState: EventManagerState) {
+        let oldState = buttonStates[button]
+        buttonStates[button] = newState
+
+        // グローバルのロック状態を更新
+        let anyLocked = buttonStates.values.contains(.locked)
+        DispatchQueue.main.async {
+            self.isLocked = anyLocked
+        }
+
+        // サウンド再生の判定
+        if isSoundEnabled {
+            if oldState != .locked && newState == .locked {
+                // ロックされた
+                SoundManager.shared.play(style: soundStyle, volume: soundVolume, isLocked: true, isInverted: isSoundInverted)
+            } else if oldState == .locked && newState != .locked {
+                // 解除された
+                SoundManager.shared.play(style: soundStyle, volume: soundVolume, isLocked: false, isInverted: isSoundInverted)
+            }
+        }
+    }
+
+    private func startTimer(for button: MouseButton) {
+        holdTimers[button]?.invalidate()
         let timer = Timer(timeInterval: lockDelay, repeats: false) { [weak self] _ in
-            // stateプロパティへのアクセスはメインスレッドで行う
             DispatchQueue.main.async { [weak self] in
                 guard let self = self else { return }
-                if self.state == .holding {
-                    print("Timer fired: Lock active!")
-                    self.state = .locked
+                if self.buttonStates[button] == .holding {
+                    print("Timer fired: \(button) Lock active!")
+                    self.updateButtonState(button, to: .locked)
                 }
             }
         }
         RunLoop.main.add(timer, forMode: .common)
-        holdTimer = timer
+        holdTimers[button] = timer
     }
-    
-    private func cancelHold() {
-        state = .idle
+
+    private func cancelHold(for button: MouseButton) {
+        updateButtonState(button, to: .idle)
         DispatchQueue.main.async {
-            self.holdTimer?.invalidate()
-            self.holdTimer = nil
+            self.holdTimers[button]?.invalidate()
+            self.holdTimers[button] = nil
         }
     }
-    
-    private func releaseLock() {
-        state = .idle
-        postSyntheticMouseUp()
+
+    private func releaseLock(for button: MouseButton) {
+        updateButtonState(button, to: .idle)
+        postSyntheticMouseUp(for: button)
     }
-    
+
+    private func releaseAllLocks() {
+        for button in MouseButton.allCases {
+            if buttonStates[button] == .locked {
+                releaseLock(for: button)
+            } else if buttonStates[button] == .holding {
+                cancelHold(for: button)
+            }
+        }
+    }
+
     func forceUnlock() {
-        if state == .locked {
-            releaseLock()
-        } else if state == .holding {
-            cancelHold()
-        }
+        releaseAllLocks()
     }
-    
+
     func toggleEnabled() {
         isEnabled.toggle()
         if !isEnabled {
-            forceUnlock() // 無効化された瞬間にロック状態を強制リセット
+            forceUnlock()
         }
     }
-    
-    private func postSyntheticMouseUp() {
+
+    private func postSyntheticMouseUp(for button: MouseButton) {
         guard let mouseLocation = CGEvent(source: nil)?.location else { return }
-        guard let mouseUpEvent = CGEvent(mouseEventSource: nil, mouseType: .leftMouseUp, mouseCursorPosition: mouseLocation, mouseButton: .left) else { return }
-        
-        // 合成されたイベントをタップにキャッチされないようにシステムのイベントキューにポストする
-        mouseUpEvent.post(tap: .cghidEventTap)
-        print("Synthetic mouse up posted")
+
+        let mouseUpEvent: CGEvent?
+        if button == .middle {
+            mouseUpEvent = CGEvent(mouseEventSource: nil, mouseType: .otherMouseUp, mouseCursorPosition: mouseLocation, mouseButton: .center)
+            mouseUpEvent?.setIntegerValueField(.mouseEventButtonNumber, value: 2)
+        } else {
+            mouseUpEvent = CGEvent(mouseEventSource: nil, mouseType: button.mouseUpType, mouseCursorPosition: mouseLocation, mouseButton: button.cgButton)
+        }
+
+        mouseUpEvent?.post(tap: .cghidEventTap)
+        print("Synthetic \(button) mouse up posted")
     }
-    
+
     private func updateLaunchAtLogin(enabled: Bool) {
         let service = SMAppService.mainApp
         
@@ -406,19 +505,16 @@ class EventManager: ObservableObject {
                 print("Successfully registered launch at login")
             } catch {
                 print("Failed to register launch at login: \(error)")
-                // 失敗した場合は状態を戻す（UIに反映させるためメインスレッドで実行）
                 DispatchQueue.main.async {
                     self.isLaunchAtLoginEnabled = false
                 }
             }
         } else {
-            // unregister(completionHandler:) は Swift では直接呼び出せないので unregister() を使用
             do {
                 try service.unregister()
                 print("Successfully unregistered launch at login")
             } catch {
                 print("Failed to unregister launch at login: \(error)")
-                // 失敗した場合は状態を戻す（UIに反映させるためメインスレッドで実行）
                 DispatchQueue.main.async {
                     self.isLaunchAtLoginEnabled = true
                 }
