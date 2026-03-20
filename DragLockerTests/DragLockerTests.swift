@@ -40,4 +40,56 @@ struct DragLockerTests {
         }
     }
 
+    @Test func testManagedApplicationListEvaluatorExcludeMode() {
+        let listedBundleIdentifiers: Set<String> = ["com.apple.finder", "com.apple.Safari"]
+
+        #expect(
+            ManagedApplicationListEvaluator.shouldLock(
+                bundleIdentifier: "com.apple.finder",
+                mode: .exclude,
+                listedBundleIdentifiers: listedBundleIdentifiers
+            ) == false
+        )
+        #expect(
+            ManagedApplicationListEvaluator.shouldLock(
+                bundleIdentifier: "com.apple.TextEdit",
+                mode: .exclude,
+                listedBundleIdentifiers: listedBundleIdentifiers
+            ) == true
+        )
+        #expect(
+            ManagedApplicationListEvaluator.shouldLock(
+                bundleIdentifier: nil,
+                mode: .exclude,
+                listedBundleIdentifiers: listedBundleIdentifiers
+            ) == true
+        )
+    }
+
+    @Test func testManagedApplicationListEvaluatorIncludeMode() {
+        let listedBundleIdentifiers: Set<String> = ["com.apple.finder", "com.apple.Safari"]
+
+        #expect(
+            ManagedApplicationListEvaluator.shouldLock(
+                bundleIdentifier: "com.apple.Safari",
+                mode: .include,
+                listedBundleIdentifiers: listedBundleIdentifiers
+            ) == true
+        )
+        #expect(
+            ManagedApplicationListEvaluator.shouldLock(
+                bundleIdentifier: "com.apple.TextEdit",
+                mode: .include,
+                listedBundleIdentifiers: listedBundleIdentifiers
+            ) == false
+        )
+        #expect(
+            ManagedApplicationListEvaluator.shouldLock(
+                bundleIdentifier: nil,
+                mode: .include,
+                listedBundleIdentifiers: listedBundleIdentifiers
+            ) == false
+        )
+    }
+
 }

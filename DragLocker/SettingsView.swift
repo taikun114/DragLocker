@@ -6,6 +6,12 @@ struct SettingsView: View {
     @Environment(\.layoutDirection) private var systemLayoutDirection
     @AppStorage("lockDelay") private var lockDelay: Double = 1.0
     @State private var hoverTask: Task<Void, Never>? = nil
+    @State private var isShowingManagedAppPopover = false
+    @State private var showAllRunningApps = false
+    @State private var selectedManagedAppIds: Set<String> = []
+    @State private var runningApplications: [NSRunningApplication] = []
+    @State private var showingInvalidAppAlert = false
+    @State private var showingClearAllManagedAppsConfirmation = false
     
     private var dotImage: Image {
         let view = ZStack(alignment: .center) {
@@ -21,7 +27,7 @@ struct SettingsView: View {
         
         return Image(nsImage: NSImage(cgImage: bitmap.cgImage!, size: CGSize(width: 8, height: 8)))
     }
-    
+
     var body: some View {
         Form {
             Section(header: Text("一般")) {
@@ -254,6 +260,16 @@ struct SettingsView: View {
                 }
                 .disabled(!eventManager.isSoundEnabled || eventManager.soundStyle == .system)
             }
+
+            ManagedAppSettingsSection(
+                eventManager: eventManager,
+                isShowingManagedAppPopover: $isShowingManagedAppPopover,
+                showAllRunningApps: $showAllRunningApps,
+                selectedManagedAppIds: $selectedManagedAppIds,
+                runningApplications: $runningApplications,
+                showingInvalidAppAlert: $showingInvalidAppAlert,
+                showingClearAllManagedAppsConfirmation: $showingClearAllManagedAppsConfirmation
+            )
             
             Section(header: Text("権限")) {
                 HStack(alignment: .top) {
@@ -296,6 +312,9 @@ struct SettingsView: View {
         }
         .formStyle(.grouped)
         .navigationTitle("DragLocker 設定")
+        .onAppear {
+            runningApplications = NSWorkspace.shared.runningApplications
+        }
         .onChange(of: lockDelay) { _, newValue in
             eventManager.lockDelay = newValue
         }
@@ -311,4 +330,3 @@ struct SettingsView: View {
         .environmentObject(EventManager())
         .frame(width: 400, height: 500)
 }
-

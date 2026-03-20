@@ -58,6 +58,28 @@ enum LockType: String, CaseIterable, Sendable {
     case distance = "距離"
 }
 
+enum AppListMode: String, CaseIterable, Sendable {
+    case exclude = "除外する"
+    case include = "含める"
+}
+
+enum ManagedApplicationListEvaluator {
+    static func shouldLock(
+        bundleIdentifier: String?,
+        mode: AppListMode,
+        listedBundleIdentifiers: Set<String>
+    ) -> Bool {
+        switch mode {
+        case .exclude:
+            guard let bundleIdentifier else { return true }
+            return !listedBundleIdentifiers.contains(bundleIdentifier)
+        case .include:
+            guard let bundleIdentifier else { return false }
+            return listedBundleIdentifiers.contains(bundleIdentifier)
+        }
+    }
+}
+
 class EventManager: ObservableObject {
     static let shared = EventManager()
 
@@ -169,6 +191,20 @@ class EventManager: ObservableObject {
         }
     }
 
+    @Published var appListMode: AppListMode = .exclude {
+        didSet {
+            UserDefaults.standard.set(appListMode.rawValue, forKey: "appListMode")
+        }
+    }
+
+    @Published var managedAppBundleIdentifiers: [String] = [] {
+        didSet {
+            if let encoded = try? JSONEncoder().encode(managedAppBundleIdentifiers) {
+                UserDefaults.standard.set(encoded, forKey: "managedAppBundleIdentifiersData")
+            }
+        }
+    }
+
     private var dragStartLocations: [MouseButton: CGPoint] = [:]
 
     init() {
@@ -188,6 +224,20 @@ class EventManager: ObservableObject {
 
         let savedDistance = UserDefaults.standard.double(forKey: "lockDistance")
         self.lockDistance = (savedDistance == 0 && !UserDefaults.standard.dictionaryRepresentation().keys.contains("lockDistance")) ? 100.0 : savedDistance
+
+        if let savedAppListModeRawValue = UserDefaults.standard.string(forKey: "appListMode"),
+           let savedAppListMode = AppListMode(rawValue: savedAppListModeRawValue) {
+            self.appListMode = savedAppListMode
+        } else {
+            self.appListMode = .exclude
+        }
+
+        if let appListData = UserDefaults.standard.data(forKey: "managedAppBundleIdentifiersData"),
+           let decodedAppBundleIdentifiers = try? JSONDecoder().decode([String].self, from: appListData) {
+            self.managedAppBundleIdentifiers = decodedAppBundleIdentifiers
+        } else {
+            self.managedAppBundleIdentifiers = []
+        }
 
         if let savedButtons = UserDefaults.standard.array(forKey: "enabledButtonRawValues") as? [Int] {
             self.enabledButtonRawValues = Set(savedButtons)
@@ -308,30 +358,76 @@ class EventManager: ObservableObject {
     // マウス座標にあるアプリがDragLocker自身かどうかを判定する
     private func isEventTargetingOwnApp(event: CGEvent) -> Bool {
         let mouseLocation = event.location
+        guard let targetPID = windowOwnerPID(at: mouseLocation) else {
+            return false
+        }
 
-        // 自アプリのプロセスIDを持つ、画面上のウィンドウ一覧を取得
+        return targetPID == ownPID
+    }
+
+    private func windowOwnerPID(at location: CGPoint) -> pid_t? {
         let windowList = CGWindowListCopyWindowInfo([.optionOnScreenOnly, .excludeDesktopElements], kCGNullWindowID) as? [[String: Any]] ?? []
 
         for windowInfo in windowList {
             guard let windowPID = windowInfo[kCGWindowOwnerPID as String] as? Int,
-                  windowPID == Int(ownPID),
                   let boundsDict = windowInfo[kCGWindowBounds as String] as? [String: Any],
                   let bounds = CGRect(dictionaryRepresentation: boundsDict as CFDictionary) else {
                 continue
             }
 
-            // マウス位置が自アプリのウィンドウ範囲内（かつレイヤーが通常のウィンドウ）かチェック
-            // レイヤー0は通常のウィンドウ、メニューバーなどはより高いレイヤー
-            if bounds.contains(mouseLocation) {
-                let layer = windowInfo[kCGWindowLayer as String] as? Int ?? 0
-                if layer == 0 {
-                    return true
-                }
+            if !bounds.contains(location) {
+                continue
+            }
+
+            let layer = windowInfo[kCGWindowLayer as String] as? Int ?? 0
+            let alpha = windowInfo[kCGWindowAlpha as String] as? Double ?? 1.0
+            if layer == 0 && alpha > 0 {
+                return pid_t(windowPID)
             }
         }
 
-        // ウィンドウが見つからない場合は、自アプリへのイベントではないと判断
-        return false
+        return nil
+    }
+
+    private func bundleIdentifierForApplication(at location: CGPoint) -> String? {
+        guard let targetPID = windowOwnerPID(at: location) else {
+            return nil
+        }
+
+        return NSRunningApplication(processIdentifier: targetPID)?.bundleIdentifier
+    }
+
+    private func shouldLock(at location: CGPoint) -> Bool {
+        let listedBundleIdentifiers = Set(managedAppBundleIdentifiers)
+        let targetBundleIdentifier = bundleIdentifierForApplication(at: location)
+        let shouldLock = ManagedApplicationListEvaluator.shouldLock(
+            bundleIdentifier: targetBundleIdentifier,
+            mode: appListMode,
+            listedBundleIdentifiers: listedBundleIdentifiers
+        )
+
+        print("App filter check at \(location): bundleIdentifier=\(targetBundleIdentifier ?? "none"), mode=\(appListMode.rawValue), shouldLock=\(shouldLock)")
+        return shouldLock
+    }
+
+    func addManagedApp(bundleIdentifier: String) {
+        guard !managedAppBundleIdentifiers.contains(bundleIdentifier) else {
+            print("Managed app already exists: \(bundleIdentifier)")
+            return
+        }
+
+        managedAppBundleIdentifiers.append(bundleIdentifier)
+        print("Managed app added: \(bundleIdentifier)")
+    }
+
+    func removeManagedApp(bundleIdentifier: String) {
+        managedAppBundleIdentifiers.removeAll { $0 == bundleIdentifier }
+        print("Managed app removed: \(bundleIdentifier)")
+    }
+
+    func clearManagedApps() {
+        managedAppBundleIdentifiers = []
+        print("Managed app list cleared")
     }
 
     // イベント処理のエントリーポイント
@@ -383,6 +479,14 @@ class EventManager: ObservableObject {
                     return Unmanaged.passRetained(event)
                 }
 
+                if !shouldLock(at: event.location) {
+                    print("\(button) down: Current app is filtered out")
+                    if buttonStates[button] == .holding {
+                        cancelHold(for: button)
+                    }
+                    return Unmanaged.passRetained(event)
+                }
+
                 if buttonStates[button] == .idle {
                     print("\(button) down: Starting tracking")
                     updateButtonState(button, to: .holding)
@@ -426,7 +530,7 @@ class EventManager: ObservableObject {
                         let currentLocation = event.location
                         let distance = sqrt(pow(currentLocation.x - startLocation.x, 2) + pow(currentLocation.y - startLocation.y, 2))
                         
-                        if distance >= lockDistance {
+                        if distance >= lockDistance && shouldLock(at: currentLocation) {
                             print("\(button) distance (\(distance)) exceeded threshold (\(lockDistance)): Locking")
                             updateButtonState(button, to: .locked)
                             break
@@ -486,6 +590,11 @@ class EventManager: ObservableObject {
             DispatchQueue.main.async { [weak self] in
                 guard let self = self else { return }
                 if self.buttonStates[button] == .holding {
+                    guard self.shouldLock(at: NSEvent.mouseLocation) else {
+                        print("Timer fired: \(button) Current app is filtered out")
+                        self.cancelHold(for: button)
+                        return
+                    }
                     print("Timer fired: \(button) Lock active!")
                     self.updateButtonState(button, to: .locked)
                 }
