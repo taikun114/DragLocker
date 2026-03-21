@@ -1,297 +1,1620 @@
 {
   "sourceLanguage" : "en",
   "strings" : {
-    "%.0f %%%%" : {
-
-    },
-    "%.0f px" : {
-
-    },
-    "%.1f 秒" : {
-
-    },
-    "8ビット" : {
-      "comment" : "サウンドの種類：レトロなゲーム風の音"
-    },
-    "8ビット（低）" : {
-      "comment" : "サウンドの種類：低いトーンの8ビット音"
-    },
-    "DragLocker 設定" : {
-
-    },
-    "DragLocker: 停止中" : {
-
-    },
-    "DragLocker: 動作中" : {
-
-    },
-    "Finderで選択..." : {
-
-    },
-    "Macのログイン時にDragLockerを自動で起動します。" : {
-
-    },
-    "OK" : {
-
-    },
-    "PID: %@、%@" : {
+    "%.0f %%" : {
+      "comment" : "サウンドの音量パーセンテージ表示",
       "localizations" : {
         "en" : {
           "stringUnit" : {
-            "state" : "new",
+            "state" : "translated",
+            "value" : "%.0f %%"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%.0f %%"
+          }
+        }
+      }
+    },
+    "%.0f px" : {
+      "comment" : "ドラッグ距離のピクセル表示",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%.0f px"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%.0f px"
+          }
+        }
+      }
+    },
+    "%.1f 秒" : {
+      "comment" : "待機時間の秒表示",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%.1f sec"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%.1f 秒"
+          }
+        }
+      }
+    },
+    "8ビット" : {
+      "comment" : "サウンドの種類：レトロなゲーム風の音",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "8-bit"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "8ビット"
+          }
+        }
+      }
+    },
+    "8ビット（低）" : {
+      "comment" : "サウンドの種類：低いトーンの8ビット音",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "8-bit (Low)"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "8ビット（低）"
+          }
+        }
+      }
+    },
+    "DragLocker 設定" : {
+      "comment" : "設定画面のタイトル",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "DragLocker Settings"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "DragLocker 設定"
+          }
+        }
+      }
+    },
+    "DragLocker: 停止中" : {
+      "comment" : "メニューバーのエクストラメニューにおける停止状態のラベル",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "DragLocker: Paused"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "DragLocker: 停止中"
+          }
+        }
+      }
+    },
+    "DragLocker: 動作中" : {
+      "comment" : "メニューバーのエクストラメニューにおける動作状態のラベル",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "DragLocker: Running"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "DragLocker: 動作中"
+          }
+        }
+      }
+    },
+    "Finderで選択..." : {
+      "comment" : "アプリ選択ダイアログを表示するボタンのラベル",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Select in Finder..."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Finderで選択..."
+          }
+        }
+      }
+    },
+    "Macのログイン時にDragLockerを自動で起動します。" : {
+      "comment" : "ログイン時起動設定の説明文",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Automatically launch DragLocker at login."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Macのログイン時にDragLockerを自動で起動します。"
+          }
+        }
+      }
+    },
+    "OK" : {
+      "comment" : "アラートダイアログのOKボタン",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "OK"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "OK"
+          }
+        }
+      }
+    },
+    "PID: %@、%@" : {
+      "comment" : "プロセス情報（PIDと名前）の表示形式",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "PID: %1$@, %2$@"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
             "value" : "PID: %1$@、%2$@"
           }
         }
       }
     },
     "アイコン" : {
-
+      "comment" : "設定画面のアイコンセクションヘッダー",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Icon"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "アイコン"
+          }
+        }
+      }
     },
     "アイコンスタイル" : {
-
+      "comment" : "ポインタ付近に表示するアイコンのスタイル選択ラベル",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Icon Style"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "アイコンスタイル"
+          }
+        }
+      }
     },
     "アイコンをポインタ付近に表示" : {
-
+      "comment" : "アイコン表示機能の有効/無効切り替えラベル",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Show icon near pointer"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "アイコンをポインタ付近に表示"
+          }
+        }
+      }
     },
     "アクセシビリティ" : {
-
+      "comment" : "権限設定セクション内のアクセシビリティ項目ラベル",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Accessibility"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "アクセシビリティ"
+          }
+        }
+      }
     },
     "アクセシビリティ許可が付与されています。" : {
-
+      "comment" : "アクセシビリティ権限が有効な場合の説明文",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Accessibility permission granted."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "アクセシビリティ許可が付与されています。"
+          }
+        }
+      }
     },
     "アプリではありません" : {
-
+      "comment" : "無効なファイルがドロップされた際のアラートタイトル",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Not an app"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "アプリではありません"
+          }
+        }
+      }
     },
     "アプリをリストへ追加します。" : {
-
+      "comment" : "追加ボタンのツールチップ",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Add an app to the list."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "アプリをリストへ追加します。"
+          }
+        }
+      }
     },
     "アプリを削除しますか？" : {
-
+      "comment" : "コンテキストメニューでアプリを削除する際のアラートタイトル",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Remove app?"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "アプリを削除しますか？"
+          }
+        }
+      }
     },
     "カスタムサウンドの再生音量を調整します。" : {
-
+      "comment" : "音量スライダーの説明文",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Adjust the playback volume for custom sounds."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "カスタムサウンドの再生音量を調整します。"
+          }
+        }
+      }
     },
     "キャンセル" : {
-
+      "comment" : "アラートダイアログのキャンセルボタン",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cancel"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "キャンセル"
+          }
+        }
+      }
     },
     "クリック" : {
-      "comment" : "サウンドの種類：標準的なクリック音"
+      "comment" : "サウンドの種類：標準的なクリック音",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Click"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "クリック"
+          }
+        }
+      }
     },
     "クリック 2" : {
-      "comment" : "サウンドの種類：別のクリック音バリエーション"
+      "comment" : "サウンドの種類：別のクリック音バリエーション",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Click 2"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "クリック 2"
+          }
+        }
+      }
     },
     "クリック（低）" : {
-      "comment" : "サウンドの種類：低いトーンのクリック音"
+      "comment" : "サウンドの種類：低いトーンのクリック音",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Click (Low)"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "クリック（低）"
+          }
+        }
+      }
     },
     "このモードでは、リスト内に追加したアプリでドラッグロックしないようにします。" : {
-
+      "comment" : "除外モード時の説明文",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "In this mode, drag-locking is disabled for apps in the list."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "このモードでは、リスト内に追加したアプリでドラッグロックしないようにします。"
+          }
+        }
+      }
     },
     "このモードでは、リスト内に追加したアプリでのみドラッグロックするようにします。" : {
-
+      "comment" : "含めるモード時の説明文",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "In this mode, drag-locking is enabled only for apps in the list."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "このモードでは、リスト内に追加したアプリでのみドラッグロックするようにします。"
+          }
+        }
+      }
     },
     "サウンド" : {
-
+      "comment" : "設定画面のサウンドセクションヘッダー",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sound"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "サウンド"
+          }
+        }
+      }
     },
     "サウンドスタイル" : {
-
+      "comment" : "サウンド音色選択のラベル",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sound Style"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "サウンドスタイル"
+          }
+        }
+      }
     },
     "サウンドの音量" : {
-
+      "comment" : "音量調整スライダーのラベル",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sound Volume"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "サウンドの音量"
+          }
+        }
+      }
     },
     "サウンドを再生" : {
-
+      "comment" : "サウンド機能の有効/無効切り替えラベル",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Play Sound"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "サウンドを再生"
+          }
+        }
+      }
     },
     "サウンドを反転" : {
-
+      "comment" : "サウンドのロック/解除音を入れ替える設定ラベル",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Invert Sounds"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "サウンドを反転"
+          }
+        }
+      }
     },
     "システム" : {
-      "comment" : "サウンドの種類：OS標準のビープ音"
+      "comment" : "サウンドの種類：OS標準のビープ音",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "System"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "システム"
+          }
+        }
+      }
     },
     "システム設定のアクセシビリティ許可設定を開きます。" : {
-
+      "comment" : "設定を開くボタンのツールチップ",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Open the Accessibility permission settings in System Settings."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "システム設定のアクセシビリティ許可設定を開きます。"
+          }
+        }
+      }
     },
     "シルキー" : {
-      "comment" : "サウンドの種類：滑らかな音"
+      "comment" : "サウンドの種類：滑らかな音",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Silky"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "シルキー"
+          }
+        }
+      }
     },
     "スナップ" : {
-      "comment" : "サウンドの種類：スナップ音"
+      "comment" : "サウンドの種類：スナップ音",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Snap"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "スナップ"
+          }
+        }
+      }
     },
     "すべてのアプリをリストから削除します。" : {
-
+      "comment" : "一括削除ボタンのツールチップ",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Remove all apps from the list."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "すべてのアプリをリストから削除します。"
+          }
+        }
+      }
     },
     "すべてのアプリを削除" : {
-
+      "comment" : "一括削除アラートのタイトル",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Remove All Apps"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "すべてのアプリを削除"
+          }
+        }
+      }
     },
     "すべてのプロセスを表示" : {
-
+      "comment" : "アプリ選択画面でシステムプロセスを含めるかどうかのトグルラベル",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Show All Processes"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "すべてのプロセスを表示"
+          }
+        }
+      }
     },
     "ソフト" : {
-      "comment" : "サウンドの種類：柔らかい音"
+      "comment" : "サウンドの種類：柔らかい音",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Soft"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ソフト"
+          }
+        }
+      }
     },
     "ドット" : {
-
+      "comment" : "ポインタ付近に表示するアイコンの種類：点",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dot"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ドット"
+          }
+        }
+      }
     },
     "ドラッグロックされた時と解除されたときにサウンドを再生します。" : {
-
+      "comment" : "サウンド機能の説明文",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Play a sound when drag-lock is activated or deactivated."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ドラッグロックされた時と解除されたときにサウンドを再生します。"
+          }
+        }
+      }
     },
     "ドラッグロックされた時と解除された時に再生されるサウンドを入れ替えます。" : {
-
+      "comment" : "サウンド反転設定の説明文",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Swap the sounds played when drag-lock is activated and deactivated."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ドラッグロックされた時と解除された時に再生されるサウンドを入れ替えます。"
+          }
+        }
+      }
     },
     "ドラッグロックされている間、マウスポインタ付近にアイコンを表示します。" : {
-
+      "comment" : "アイコン表示設定の説明文",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Show an icon near the mouse pointer while drag-locking is active."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ドラッグロックされている間、マウスポインタ付近にアイコンを表示します。"
+          }
+        }
+      }
     },
     "ドラッグロックの対象設定に追加するアプリを選択してください。" : {
-      "comment" : "Finderの一番上に表示されるユーザーへの指示メッセージ"
+      "comment" : "Finderの一番上に表示されるユーザーへの指示メッセージ",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Select an app to add to the drag-locking targets."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ドラッグロックの対象設定に追加するアプリを選択してください。"
+          }
+        }
+      }
     },
     "ドラッグロックを使用するマウスボタンを選択します。" : {
-
+      "comment" : "ボタン設定の説明文",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Select the mouse buttons to use for drag-locking."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ドラッグロックを使用するマウスボタンを選択します。"
+          }
+        }
+      }
     },
     "ドラッグロックを有効化" : {
-
+      "comment" : "メニューバーの有効化ボタンラベル",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Enable Drag-Lock"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ドラッグロックを有効化"
+          }
+        }
+      }
     },
     "ドラッグロックを無効化" : {
-
+      "comment" : "メニューバーの無効化ボタンラベル",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Disable Drag-Lock"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ドラッグロックを無効化"
+          }
+        }
+      }
     },
     "ドラッグロックを開始する方法を選択します。" : {
-
+      "comment" : "ロック方法設定の説明文",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Select how to start drag-locking."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ドラッグロックを開始する方法を選択します。"
+          }
+        }
+      }
     },
     "ドラッグロック中にマウスポインタ付近に表示されるアイコンのスタイルを選択します。" : {
-
+      "comment" : "アイコンスタイル設定の説明文",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Select the style of the icon displayed near the mouse pointer during drag-locking."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ドラッグロック中にマウスポインタ付近に表示されるアイコンのスタイルを選択します。"
+          }
+        }
+      }
     },
     "ドラッグロック機能を使用する場合は許可を与える必要があります。" : {
-
+      "comment" : "アクセシビリティ権限が必要な際の説明文",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "You need to grant permission to use the drag-locking feature."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ドラッグロック機能を使用する場合は許可を与える必要があります。"
+          }
+        }
+      }
     },
     "ドラッグロック開始までクリックし続ける時間を設定します。" : {
-
+      "comment" : "時間設定の説明文",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Set the duration to hold the click before drag-locking starts."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ドラッグロック開始までクリックし続ける時間を設定します。"
+          }
+        }
+      }
     },
     "ドラッグロック開始までドラッグし続ける距離を設定します。" : {
-
+      "comment" : "距離設定の説明文",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Set the distance to drag before drag-locking starts."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ドラッグロック開始までドラッグし続ける距離を設定します。"
+          }
+        }
+      }
     },
     "ドラム" : {
-      "comment" : "サウンドの種類：太鼓のような音"
+      "comment" : "サウンドの種類：太鼓のような音",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Drum"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ドラム"
+          }
+        }
+      }
     },
     "ピッ" : {
-      "comment" : "サウンドの種類：電子的なピッという音"
+      "comment" : "サウンドの種類：電子的なピッという音",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ping"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ピッ"
+          }
+        }
+      }
     },
     "ピッ 2" : {
-      "comment" : "サウンドの種類：電子音のバリエーション"
+      "comment" : "サウンドの種類：電子音のバリエーション",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ping 2"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ピッ 2"
+          }
+        }
+      }
     },
     "ピッ 2（低）" : {
-      "comment" : "サウンドの種類：低い電子音バリエーション"
+      "comment" : "サウンドの種類：低い電子音バリエーション",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ping 2 (Low)"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ピッ 2（低）"
+          }
+        }
+      }
     },
     "ピッ（低）" : {
-      "comment" : "サウンドの種類：低い電子ピッ音"
+      "comment" : "サウンドの種類：低い電子ピッ音",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ping (Low)"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ピッ（低）"
+          }
+        }
+      }
     },
     "ホイール" : {
-
+      "comment" : "マウスの中央（ホイール）ボタン",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Scroll Wheel"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ホイール"
+          }
+        }
+      }
     },
     "マリンバ" : {
-      "comment" : "サウンドの種類：マリンバの音"
+      "comment" : "サウンドの種類：マリンバの音",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Marimba"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "マリンバ"
+          }
+        }
+      }
     },
     "マリンバ（低）" : {
-      "comment" : "サウンドの種類：低いマリンバの音"
+      "comment" : "サウンドの種類：低いマリンバの音",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Marimba (Low)"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "マリンバ（低）"
+          }
+        }
+      }
     },
     "ミニマリンバ" : {
-      "comment" : "サウンドの種類：小さなマリンバの音"
+      "comment" : "サウンドの種類：小さなマリンバの音",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mini Marimba"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ミニマリンバ"
+          }
+        }
+      }
     },
     "リストにはアプリのみ追加することができます。" : {
-
+      "comment" : "無効なファイルがドロップされた際のアラートメッセージ",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Only apps can be added to the list."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "リストにはアプリのみ追加することができます。"
+          }
+        }
+      }
     },
     "リストモード" : {
-
+      "comment" : "除外/含めるの切り替え設定ラベル",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "List Mode"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "リストモード"
+          }
+        }
+      }
     },
     "リストを空にしてもよろしいですか？この操作は元に戻せません。" : {
-
+      "comment" : "一括削除アラートの確認メッセージ",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Are you sure you want to clear the list? This action cannot be undone."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "リストを空にしてもよろしいですか？この操作は元に戻せません。"
+          }
+        }
+      }
     },
     "ログイン時に開く" : {
-
+      "comment" : "ログイン時起動設定のラベル",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Launch at Login"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ログイン時に開く"
+          }
+        }
+      }
     },
     "ロックまでの時間" : {
-
+      "comment" : "時間によるロックの際のスライダーラベル",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Lock Delay"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ロックまでの時間"
+          }
+        }
+      }
     },
     "ロックまでの距離" : {
-
+      "comment" : "距離によるロックの際のスライダーラベル",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Lock Distance"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ロックまでの距離"
+          }
+        }
+      }
     },
     "ロック対象ボタン" : {
-
+      "comment" : "設定画面のボタンセクションのラベル",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Target Buttons"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ロック対象ボタン"
+          }
+        }
+      }
     },
     "ロック方法" : {
-
+      "comment" : "ロック開始条件（時間/距離/両方）の選択ラベル",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Lock Method"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ロック方法"
+          }
+        }
+      }
     },
     "一般" : {
-
+      "comment" : "設定画面の一般セクションヘッダー",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "General"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "一般"
+          }
+        }
+      }
     },
     "両方" : {
-      "comment" : "ドラッグロックの開始条件：時間と距離の両方を有効にする"
+      "comment" : "ドラッグロックの開始条件：時間と距離の両方を有効にする",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Both"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "両方"
+          }
+        }
+      }
     },
     "再生するサウンドを選択します。マウスホバーでサウンドをプレビューできます。" : {
-
+      "comment" : "サウンド選択設定の説明文",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Select the sound to play. You can preview sounds by hovering over them."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "再生するサウンドを選択します。マウスホバーでサウンドをプレビューできます。"
+          }
+        }
+      }
     },
     "削除" : {
-
+      "comment" : "コンテキストメニューの削除ボタンラベル",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Delete"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "削除"
+          }
+        }
+      }
     },
     "南京錠" : {
-
+      "comment" : "ポインタ付近に表示するアイコンの種類：鍵",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Padlock"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "南京錠"
+          }
+        }
+      }
     },
     "右" : {
-
+      "comment" : "マウスの右ボタン",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Right"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "右"
+          }
+        }
+      }
     },
     "含める" : {
-      "comment" : "アプリフィルタリングのモード：リスト内のアプリのみをロック対象にする"
+      "comment" : "アプリフィルタリングのモード：リスト内のアプリのみをロック対象にする",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Include"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "含める"
+          }
+        }
+      }
     },
     "実行中のアプリから追加" : {
-
+      "comment" : "アプリ追加画面のヘッダー",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Add from Running Apps"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "実行中のアプリから追加"
+          }
+        }
+      }
     },
     "左" : {
-
+      "comment" : "マウスの左ボタン",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Left"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "左"
+          }
+        }
+      }
     },
     "時間" : {
-      "comment" : "ドラッグロックの開始条件：クリックし続ける時間によるロック"
+      "comment" : "ドラッグロックの開始条件：クリックし続ける時間によるロック",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Time"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "時間"
+          }
+        }
+      }
     },
     "権限" : {
-
+      "comment" : "設定画面の権限セクションヘッダー",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Permissions"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "権限"
+          }
+        }
+      }
     },
     "特定のアプリでの動作" : {
-
+      "comment" : "アプリフィルタリングセクションのヘッダー",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "App-Specific Behavior"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "特定のアプリでの動作"
+          }
+        }
+      }
     },
     "特定のアプリでの動作リスト" : {
-
+      "comment" : "アプリリストのアクセシビリティラベル",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "App-Specific Behavior List"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "特定のアプリでの動作リスト"
+          }
+        }
+      }
     },
     "現在のサウンドをプレビュー再生します。" : {
-
+      "comment" : "プレビューボタンのツールチップ",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Preview the current sound."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "現在のサウンドをプレビュー再生します。"
+          }
+        }
+      }
     },
     "終了" : {
-
+      "comment" : "アプリを終了するメニュー項目",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Quit"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "終了"
+          }
+        }
+      }
     },
     "複数のアプリを削除しますか？" : {
-
+      "comment" : "複数選択して削除する際のアラートタイトル",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Remove multiple apps?"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "複数のアプリを削除しますか？"
+          }
+        }
+      }
     },
     "設定..." : {
-
+      "comment" : "メニューバーの設定項目ラベル",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Settings..."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "設定..."
+          }
+        }
+      }
     },
     "設定を開く" : {
-
+      "comment" : "システム設定を開くボタンのラベル",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Open Settings"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "設定を開く"
+          }
+        }
+      }
     },
     "許可済み" : {
-
+      "comment" : "権限が付与されている状態のボタンラベル",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Granted"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "許可済み"
+          }
+        }
+      }
     },
     "距離" : {
-      "comment" : "ドラッグロックの開始条件：ドラッグした距離によるロック"
+      "comment" : "ドラッグロックの開始条件：ドラッグした距離によるロック",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Distance"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "距離"
+          }
+        }
+      }
     },
     "追加" : {
-      "comment" : "Finderの実行ボタン（OKボタン）のラベル"
+      "comment" : "Finderの実行ボタン（OKボタン）のラベル",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Add"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "追加"
+          }
+        }
+      }
     },
     "追加できる実行中のアプリが見つかりません。" : {
-
+      "comment" : "アプリ追加リストが空の場合のメッセージ",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No running apps available to add."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "追加できる実行中のアプリが見つかりません。"
+          }
+        }
+      }
     },
     "選択された%lld個のアプリをリストから削除してもよろしいですか？" : {
-
+      "comment" : "複数削除アラートの確認メッセージ",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Are you sure you want to remove the selected %lld app(s) from the list?"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "選択された%lld個のアプリをリストから削除してもよろしいですか？"
+          }
+        }
+      }
     },
     "選択したアプリをリストから削除します。" : {
-
+      "comment" : "削除ボタンのツールチップ",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Remove the selected app(s) from the list."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "選択したアプリをリストから削除します。"
+          }
+        }
+      }
     },
     "除外する" : {
-      "comment" : "アプリフィルタリングのモード：リスト内のアプリをロック対象から外す"
+      "comment" : "アプリフィルタリングのモード：リスト内のアプリをロック対象から外す",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Exclude"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "除外する"
+          }
+        }
+      }
     }
   },
   "version" : "1.1"

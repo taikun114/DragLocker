@@ -245,7 +245,7 @@ struct SettingsView: View {
                                 .foregroundStyle(eventManager.isSoundEnabled && eventManager.soundStyle != .system ? .primary : .secondary)
                         }
                         .disabled(!eventManager.isSoundEnabled || eventManager.soundStyle == .system)
-                        Text("\(eventManager.soundVolume * 100, specifier: "%.0f") %%")
+                        Text("\(eventManager.soundVolume * 100, specifier: "%.0f") %")
                             .foregroundStyle((!eventManager.isSoundEnabled || eventManager.soundStyle == .system) ? .tertiary : .secondary)
                     }
                     Text("カスタムサウンドの再生音量を調整します。")
