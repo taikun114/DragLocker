@@ -53,7 +53,11 @@ struct DragLockerApp: App {
             }
             .keyboardShortcut("q")
         } label: {
-            Image(eventManager.isLocked ? "MenuBarIcon_Locked" : "MenuBarIcon")
+            if !eventManager.isEnabled {
+                Image("MenuBarIcon_Paused")
+            } else {
+                Image(eventManager.isLocked ? "MenuBarIcon_Locked" : "MenuBarIcon")
+            }
         }
         
         // 設定画面のWindow定義
