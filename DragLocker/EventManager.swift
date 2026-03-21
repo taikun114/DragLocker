@@ -3,6 +3,7 @@ import Combine
 import CoreGraphics
 import Foundation
 import ServiceManagement
+import SwiftUI
 
 enum EventManagerState: Equatable, Sendable {
     case idle
@@ -57,11 +58,26 @@ enum LockType: String, CaseIterable, Sendable {
     case time = "時間"
     case distance = "距離"
     case both = "両方"
+
+    var localizedName: LocalizedStringResource {
+        switch self {
+        case .time: return LocalizedStringResource("時間", comment: "ドラッグロックの開始条件：クリックし続ける時間によるロック")
+        case .distance: return LocalizedStringResource("距離", comment: "ドラッグロックの開始条件：ドラッグした距離によるロック")
+        case .both: return LocalizedStringResource("両方", comment: "ドラッグロックの開始条件：時間と距離の両方を有効にする")
+        }
+    }
 }
 
 enum AppListMode: String, CaseIterable, Sendable {
     case exclude = "除外する"
     case include = "含める"
+
+    var localizedName: LocalizedStringResource {
+        switch self {
+        case .exclude: return LocalizedStringResource("除外する", comment: "アプリフィルタリングのモード：リスト内のアプリをロック対象から外す")
+        case .include: return LocalizedStringResource("含める", comment: "アプリフィルタリングのモード：リスト内のアプリのみをロック対象にする")
+        }
+    }
 }
 
 enum ManagedApplicationListEvaluator {

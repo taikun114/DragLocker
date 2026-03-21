@@ -108,7 +108,7 @@ struct SettingsView: View {
                 
                 Picker(selection: $eventManager.lockType) {
                     ForEach(LockType.allCases, id: \.self) { type in
-                        Text(type.rawValue).tag(type)
+                        Text(type.localizedName).tag(type)
                     }
                 } label: {
                     Text("ロック方法")
@@ -124,7 +124,7 @@ struct SettingsView: View {
                             Slider(value: $lockDelay, in: 0.2...3.0, step: 0.1) {
                                 Text("ロックまでの時間")
                             }
-                            Text(String(format: "%.1f 秒", lockDelay))
+                            Text("\(lockDelay, specifier: "%.1f") 秒")
                                 .foregroundStyle(.secondary)
                         }
                         Text("ドラッグロック開始までクリックし続ける時間を設定します。")
@@ -139,7 +139,7 @@ struct SettingsView: View {
                             Slider(value: $eventManager.lockDistance, in: 10...500, step: 10) {
                                 Text("ロックまでの距離")
                             }
-                            Text(String(format: "%.0f px", eventManager.lockDistance))
+                            Text("\(eventManager.lockDistance, specifier: "%.0f") px")
                                 .foregroundStyle(.secondary)
                         }
                         Text("ドラッグロック開始までドラッグし続ける距離を設定します。")
@@ -194,7 +194,7 @@ struct SettingsView: View {
                 HStack(alignment: .top) {
                     Picker(selection: $eventManager.soundStyle) {
                         ForEach(SoundStyle.allCases, id: \.self) { style in
-                            Text(style.rawValue)
+                            Text(style.localizedName)
                                 .tag(style)
                                 .onHover { isHovering in
                                     if isHovering {
@@ -245,7 +245,7 @@ struct SettingsView: View {
                                 .foregroundStyle(eventManager.isSoundEnabled && eventManager.soundStyle != .system ? .primary : .secondary)
                         }
                         .disabled(!eventManager.isSoundEnabled || eventManager.soundStyle == .system)
-                        Text(String(format: "%.0f %%", eventManager.soundVolume * 100))
+                        Text("\(eventManager.soundVolume * 100, specifier: "%.0f") %%")
                             .foregroundStyle((!eventManager.isSoundEnabled || eventManager.soundStyle == .system) ? .tertiary : .secondary)
                     }
                     Text("カスタムサウンドの再生音量を調整します。")

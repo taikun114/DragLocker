@@ -1,6 +1,7 @@
 import AppKit
 import AVFoundation
 import Foundation
+import SwiftUI
 
 enum SoundStyle: String, CaseIterable, Sendable {
     case system = "システム"
@@ -20,6 +21,28 @@ enum SoundStyle: String, CaseIterable, Sendable {
     case eightBit = "8ビット"
     case eightBitLow = "8ビット（低）"
     case drum = "ドラム"
+
+    var localizedName: LocalizedStringResource {
+        switch self {
+        case .system: return LocalizedStringResource("システム", comment: "サウンドの種類：OS標準のビープ音")
+        case .snap: return LocalizedStringResource("スナップ", comment: "サウンドの種類：スナップ音")
+        case .click: return LocalizedStringResource("クリック", comment: "サウンドの種類：標準的なクリック音")
+        case .clickLow: return LocalizedStringResource("クリック（低）", comment: "サウンドの種類：低いトーンのクリック音")
+        case .click2: return LocalizedStringResource("クリック 2", comment: "サウンドの種類：別のクリック音バリエーション")
+        case .ping: return LocalizedStringResource("ピッ", comment: "サウンドの種類：電子的なピッという音")
+        case .pingLow: return LocalizedStringResource("ピッ（低）", comment: "サウンドの種類：低い電子ピッ音")
+        case .ping2: return LocalizedStringResource("ピッ 2", comment: "サウンドの種類：電子音のバリエーション")
+        case .ping2Low: return LocalizedStringResource("ピッ 2（低）", comment: "サウンドの種類：低い電子音バリエーション")
+        case .soft: return LocalizedStringResource("ソフト", comment: "サウンドの種類：柔らかい音")
+        case .silkey: return LocalizedStringResource("シルキー", comment: "サウンドの種類：滑らかな音")
+        case .marimba: return LocalizedStringResource("マリンバ", comment: "サウンドの種類：マリンバの音")
+        case .marimbaLow: return LocalizedStringResource("マリンバ（低）", comment: "サウンドの種類：低いマリンバの音")
+        case .miniMarimba: return LocalizedStringResource("ミニマリンバ", comment: "サウンドの種類：小さなマリンバの音")
+        case .eightBit: return LocalizedStringResource("8ビット", comment: "サウンドの種類：レトロなゲーム風の音")
+        case .eightBitLow: return LocalizedStringResource("8ビット（低）", comment: "サウンドの種類：低いトーンの8ビット音")
+        case .drum: return LocalizedStringResource("ドラム", comment: "サウンドの種類：太鼓のような音")
+        }
+    }
 }
 
 class SoundManager {

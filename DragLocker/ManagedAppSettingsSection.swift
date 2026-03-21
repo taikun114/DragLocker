@@ -107,7 +107,7 @@ struct ManagedAppSettingsSection: View {
     @State private var showingRemoveMultipleManagedAppsConfirmation = false
     @State private var pendingContextMenuRemovalIds: Set<String> = []
 
-    private var appListDescription: String {
+    private var appListDescription: LocalizedStringKey {
         switch eventManager.appListMode {
         case .include:
             return "このモードでは、リスト内に追加したアプリでのみドラッグロックするようにします。"
@@ -210,8 +210,8 @@ struct ManagedAppSettingsSection: View {
         openPanel.allowsMultipleSelection = false
         openPanel.canChooseDirectories = false
         openPanel.canChooseFiles = true
-        openPanel.prompt = "追加"
-        openPanel.message = "ドラッグロックの対象設定に追加するアプリを選択してください。"
+        openPanel.prompt = NSLocalizedString("追加", comment: "Finderの実行ボタン（OKボタン）のラベル")
+        openPanel.message = NSLocalizedString("ドラッグロックの対象設定に追加するアプリを選択してください。", comment: "Finderの一番上に表示されるユーザーへの指示メッセージ")
         
         guard let window = NSApp.keyWindow ?? NSApp.mainWindow else {
             print("Failed to present open panel as sheet because no window was found")
@@ -270,7 +270,7 @@ struct ManagedAppSettingsSection: View {
     private var listModePicker: some View {
         Picker(selection: $eventManager.appListMode) {
             ForEach(AppListMode.allCases, id: \.self) { mode in
-                Text(mode.rawValue).tag(mode)
+                Text(mode.localizedName).tag(mode)
             }
         } label: {
             Text("リストモード")
