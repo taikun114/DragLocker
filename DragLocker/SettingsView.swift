@@ -27,6 +27,25 @@ struct SettingsView: View {
         
         return Image(nsImage: NSImage(cgImage: bitmap.cgImage!, size: CGSize(width: 8, height: 8)))
     }
+    
+    private var largeRingImage: Image {
+        let view = Circle()
+            .stroke(Color.white, lineWidth: 2)
+            .frame(width: 6, height: 6)
+            .overlay(
+                Circle()
+                    .stroke(Color.black, lineWidth: 0.5)
+                    .frame(width: 6, height: 6)
+            )
+        
+        let hostingView = NSHostingView(rootView: view)
+        hostingView.setFrameSize(CGSize(width: 8, height: 8))
+        
+        let bitmap = hostingView.bitmapImageRepForCachingDisplay(in: NSRect(x: 0, y: 0, width: 8, height: 8))!
+        hostingView.cacheDisplay(in: NSRect(x: 0, y: 0, width: 8, height: 8), to: bitmap)
+        
+        return Image(nsImage: NSImage(cgImage: bitmap.cgImage!, size: CGSize(width: 8, height: 8)))
+    }
 
     var body: some View {
         Form {
@@ -168,6 +187,10 @@ struct SettingsView: View {
                     Label { Text("ドット") } icon: {
                         dotImage
                     }.tag(IconStyle.dot)
+                    
+                    Label { Text("大きなリング") } icon: {
+                        largeRingImage
+                    }.tag(IconStyle.largeRing)
                 } label: {
                     Text("アイコンスタイル")
                         .foregroundStyle(eventManager.isIconEnabled ? .primary : .secondary)

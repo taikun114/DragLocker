@@ -52,6 +52,7 @@ enum MouseButton: Int, CaseIterable, Sendable {
 enum IconStyle: String, CaseIterable, Sendable {
     case padlock = "南京錠"
     case dot = "ドット"
+    case largeRing = "大きなリング"
 }
 
 enum LockType: String, CaseIterable, Sendable {

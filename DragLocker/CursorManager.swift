@@ -40,14 +40,24 @@ class CursorManager {
         
         let contentView = NSHostingView(rootView:
             ZStack(alignment: .center) {
-                if style == .padlock {
-                    Image("Pointer_Locked")
-                } else {
-                    ZStack(alignment: .center) {
-                        Circle().fill(Color.white).frame(width: 8, height: 8)
-                        Circle().fill(Color.black).frame(width: 6, height: 6)
+                    if style == .padlock {
+                        Image("Pointer_Locked")
+                    } else if style == .dot {
+                        ZStack(alignment: .center) {
+                            Circle().fill(Color.white).frame(width: 8, height: 8)
+                            Circle().fill(Color.black).frame(width: 6, height: 6)
+                        }
+                    } else if style == .largeRing {
+                        Circle()
+                            .stroke(Color.white, lineWidth: 4)
+                            .frame(width: 40, height: 40)
+                            .overlay(
+                                Circle()
+                                    .stroke(Color.black, lineWidth: 2)
+                                    .frame(width: 40, height: 40)
+                            )
+                            .padding(4)
                     }
-                }
             }
         )
         // コンテンツのサイズに合わせてウィンドウサイズを自動調整
@@ -78,6 +88,9 @@ class CursorManager {
         case .dot:
             xOffset = 12.0
             yOffset = -4.0
+        case .largeRing:
+            xOffset = -24.0
+            yOffset = -24.0
         }
         
         let newOrigin = NSPoint(

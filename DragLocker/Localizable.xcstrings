@@ -1310,6 +1310,23 @@
         }
       }
     },
+    "大きなリング" : {
+      "comment" : "ポインタ付近に表示するアイコンの種類：大きな円",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Large Ring"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "大きなリング"
+          }
+        }
+      }
+    },
     "実行中のアプリから追加" : {
       "comment" : "アプリ追加画面のヘッダー",
       "localizations" : {
