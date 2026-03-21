@@ -118,7 +118,7 @@ struct SettingsView: View {
                 }
                 .pickerStyle(.radioGroup)
                 
-                if eventManager.lockType == .time {
+                if eventManager.lockType == .time || eventManager.lockType == .both {
                     VStack(alignment: .leading) {
                         HStack(alignment: .center, spacing: 8) {
                             Slider(value: $lockDelay, in: 0.2...3.0, step: 0.1) {
@@ -131,7 +131,9 @@ struct SettingsView: View {
                             .font(.subheadline)
                             .foregroundStyle(.secondary)
                     }
-                } else {
+                }
+                
+                if eventManager.lockType == .distance || eventManager.lockType == .both {
                     VStack(alignment: .leading) {
                         HStack(alignment: .center, spacing: 8) {
                             Slider(value: $eventManager.lockDistance, in: 10...500, step: 10) {

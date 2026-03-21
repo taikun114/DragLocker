@@ -56,6 +56,7 @@ enum IconStyle: String, CaseIterable, Sendable {
 enum LockType: String, CaseIterable, Sendable {
     case time = "時間"
     case distance = "距離"
+    case both = "両方"
 }
 
 enum AppListMode: String, CaseIterable, Sendable {
@@ -492,7 +493,7 @@ class EventManager: ObservableObject {
                     updateButtonState(button, to: .holding)
                     dragStartLocations[button] = event.location
                     
-                    if lockType == .time {
+                    if lockType == .time || lockType == .both {
                         DispatchQueue.main.async {
                             self.startTimer(for: button)
                         }
@@ -524,7 +525,7 @@ class EventManager: ObservableObject {
         // ドラッグイベントの処理
         if type == .leftMouseDragged || type == .rightMouseDragged || type == .otherMouseDragged || type == .mouseMoved {
             // 自動ロック判定（ドラッグ中かつ未ロックの場合）
-            if lockType == .distance && !isLocked {
+            if (lockType == .distance || lockType == .both) && !isLocked {
                 for button in MouseButton.allCases {
                     if buttonStates[button] == .holding, let startLocation = dragStartLocations[button] {
                         let currentLocation = event.location
