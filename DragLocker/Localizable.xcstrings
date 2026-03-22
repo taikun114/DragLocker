@@ -341,6 +341,23 @@
         }
       }
     },
+    "カスタマイズ" : {
+      "comment" : "設定画面のカスタマイズタブのラベル",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Customization"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "カスタマイズ"
+          }
+        }
+      }
+    },
     "カスタムサウンドの再生音量を調整します。" : {
       "comment" : "音量スライダーの説明文",
       "localizations" : {
@@ -1259,6 +1276,23 @@
         }
       }
     },
+    "動作" : {
+      "comment" : "設定画面の動作タブのラベル",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Behavior"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "動作"
+          }
+        }
+      }
+    },
     "南京錠" : {
       "comment" : "ポインタ付近に表示するアイコンの種類：鍵",
       "localizations" : {
@@ -1360,6 +1394,26 @@
           }
         }
       }
+    },
+    "情報" : {
+      "comment" : "設定画面の情報タブのラベル",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Information"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "情報"
+          }
+        }
+      }
+    },
+    "情報画面は準備中です。" : {
+
     },
     "時間" : {
       "comment" : "ドラッグロックの開始条件：クリックし続ける時間によるロック",

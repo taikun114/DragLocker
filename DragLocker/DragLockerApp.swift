@@ -64,7 +64,7 @@ struct DragLockerApp: App {
         Settings {
             SettingsView()
                 .environmentObject(eventManager)
-                .frame(width: 400, height: 500)
+                .frame(width: 450, height: 350)
         }
     }
 }
