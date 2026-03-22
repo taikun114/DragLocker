@@ -394,5 +394,5 @@ struct SettingsView: View {
 #Preview {
     SettingsView()
         .environmentObject(EventManager())
-        .frame(width: 400, height: 500)
+        .frame(width: 450, height: 350)
 }

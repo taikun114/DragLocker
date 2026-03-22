@@ -391,7 +391,7 @@ struct ManagedAppSettingsSection: View {
     private var managedAppListView: some View {
         managedAppList
             .onDrop(of: [.fileURL], isTargeted: nil, perform: handleDroppedAppProviders)
-            .frame(minHeight: 100)
+            .frame(minHeight: 190)
             .scrollContentBackground(.hidden)
             .padding(.bottom, 24)
             .accessibilityLabel("特定のアプリでの動作リスト")
