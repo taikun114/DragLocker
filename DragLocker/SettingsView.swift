@@ -262,6 +262,13 @@ struct SettingsView: View {
                     } label: {
                         Text("切り替えショートカット")
                     }
+                    
+                    Toggle(isOn: $eventManager.isNotificationEnabled) {
+                        Text("切り替え時に通知を送信")
+                        Text("ドラッグロックの切り替え時にシステム通知を表示します。")
+                            .font(.subheadline)
+                            .foregroundStyle(.secondary)
+                    }
                 }
                 
                 Section(header: Text("権限")) {
@@ -300,6 +307,46 @@ struct SettingsView: View {
                         .buttonStyle(.bordered)
                         .disabled(eventManager.isTrusted)
                         .help(eventManager.isTrusted ? "アクセシビリティ許可が付与されています。" : "システム設定のアクセシビリティ許可設定を開きます。")
+                    }
+                    
+                    HStack(alignment: .top) {
+                        Group {
+                            if differentiateWithoutColor {
+                                Image(systemName: eventManager.isNotificationTrusted ? "checkmark" : "xmark")
+                                    .resizable()
+                                    .scaledToFit()
+                                    .frame(width: 10, height: 10)
+                                    .foregroundStyle(eventManager.isNotificationTrusted ? .green : .red)
+                                    .fontWeight(.bold)
+                            } else {
+                                Circle()
+                                    .fill(eventManager.isNotificationTrusted ? Color.green : Color.red)
+                                    .frame(width: 10, height: 10)
+                            }
+                        }
+                        .offset(y: 3)
+                        
+                        VStack(alignment: .leading, spacing: 2) {
+                            Text("通知")
+                            Text("通知機能を使用して現在の状況をすばやく把握できます。")
+                                .font(.subheadline)
+                                .foregroundStyle(.secondary)
+                        }
+                        Spacer()
+                        Button(action: {
+                            if eventManager.isNotificationTrusted {
+                                eventManager.sendTestNotification()
+                            } else {
+                                eventManager.openNotificationSettings()
+                            }
+                        }) {
+                            HStack {
+                                Image(systemName: eventManager.isNotificationTrusted ? "bell.badge.fill" : "gearshape.fill")
+                                Text(eventManager.isNotificationTrusted ? "通知をテスト" : "設定を開く")
+                            }
+                        }
+                        .buttonStyle(.bordered)
+                        .help(eventManager.isNotificationTrusted ? "現在の通知設定を確認するためのテスト通知を送信します。" : "システム設定の通知設定画面を開きます。")
                     }
                 }
             }

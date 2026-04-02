@@ -5,6 +5,7 @@ import Foundation
 import ServiceManagement
 import SwiftUI
 import KeyboardShortcuts
+import UserNotifications
 
 extension KeyboardShortcuts.Name {
     static let toggleMonitoring = Self("toggleMonitoring")
@@ -103,7 +104,7 @@ enum ManagedApplicationListEvaluator {
     }
 }
 
-class EventManager: ObservableObject {
+class EventManager: NSObject, ObservableObject {
     static let shared = EventManager()
 
     private let ownPID = ProcessInfo.processInfo.processIdentifier
@@ -112,8 +113,25 @@ class EventManager: ObservableObject {
     @Published var isEnabled: Bool = true {
         didSet {
             UserDefaults.standard.set(isEnabled, forKey: "isEnabled")
+            if isNotificationEnabled {
+                sendToggleNotification(isEnabled: isEnabled)
+            }
         }
     }
+
+    @Published var isNotificationEnabled: Bool = false {
+        didSet {
+            UserDefaults.standard.set(isNotificationEnabled, forKey: "isNotificationEnabled")
+            if isNotificationEnabled && !isNotificationTrusted {
+                requestNotificationPermissions()
+            }
+        }
+    }
+
+    @Published var isNotificationTrusted: Bool = false
+
+    private let resumeActionIdentifier = "RESUME_ACTION"
+    private let monitoringCategoryIdentifier = "MONITORING_CATEGORY"
 
     private var eventTap: CFMachPort?
     private var runLoopSource: CFRunLoopSource?
@@ -230,7 +248,7 @@ class EventManager: ObservableObject {
 
     private var dragStartLocations: [MouseButton: CGPoint] = [:]
 
-    init() {
+    override init() {
         // 保存された設定の読み込み
         let savedDelay = UserDefaults.standard.double(forKey: "lockDelay")
         if savedDelay > 0 {
@@ -282,6 +300,15 @@ class EventManager: ObservableObject {
         }
         self.isLaunchAtLoginEnabled = SMAppService.mainApp.status == .enabled
 
+        self.isNotificationEnabled = UserDefaults.standard.bool(forKey: "isNotificationEnabled")
+
+        super.init()
+
+        // 通知センターの設定
+        UNUserNotificationCenter.current().delegate = self
+        setupNotificationCategories()
+        checkNotificationPermissions()
+
         // 現在のサウンドをメモリにプリロードして遅延をなくす
         SoundManager.shared.loadSound(style: self.soundStyle)
 
@@ -303,17 +330,21 @@ class EventManager: ObservableObject {
             }
         }
 
-        // アプリがアクティブになったときに権限を再チェックする（システム設定で変更された場合に対応）
         NotificationCenter.default.addObserver(
             self,
-            selector: #selector(checkAccessibilityPermissions),
+            selector: #selector(refreshPermissions),
             name: NSApplication.didBecomeActiveNotification,
             object: nil
         )
     }
 
     func start() {
+        refreshPermissions()
+    }
+
+    @objc private func refreshPermissions() {
         checkAccessibilityPermissions()
+        checkNotificationPermissions()
     }
 
     @objc func checkAccessibilityPermissions() {
@@ -343,6 +374,94 @@ class EventManager: ObservableObject {
 
         // 3. 状態を再チェック
         checkAccessibilityPermissions()
+    }
+
+    @objc func checkNotificationPermissions() {
+        UNUserNotificationCenter.current().getNotificationSettings { settings in
+            let isAuthorized = settings.authorizationStatus == .authorized
+            print("Checking Notification Permissions: \(isAuthorized)")
+            DispatchQueue.main.async {
+                self.isNotificationTrusted = isAuthorized
+            }
+        }
+    }
+
+    private func setupNotificationCategories() {
+        let resumeAction = UNNotificationAction(
+            identifier: resumeActionIdentifier,
+            title: String(localized: "再開"),
+            options: .foreground
+        )
+
+        let category = UNNotificationCategory(
+            identifier: monitoringCategoryIdentifier,
+            actions: [resumeAction],
+            intentIdentifiers: [],
+            options: .customDismissAction
+        )
+
+        UNUserNotificationCenter.current().setNotificationCategories([category])
+    }
+
+    func requestNotificationPermissions() {
+        print("Requesting Notification Permissions...")
+        UNUserNotificationCenter.current().requestAuthorization(options: [.alert, .sound]) { granted, error in
+            print("Notification Permission granted: \(granted)")
+            if let error = error {
+                print("Notification Permission error: \(error)")
+            }
+            DispatchQueue.main.async {
+                self.isNotificationTrusted = granted
+            }
+        }
+    }
+
+    private func sendToggleNotification(isEnabled: Bool) {
+        guard isNotificationTrusted else { return }
+
+        let content = UNMutableNotificationContent()
+        if isEnabled {
+            content.title = String(localized: "ドラッグロック オン")
+            content.body = String(localized: "ドラッグロックが再開しました。")
+        } else {
+            content.title = String(localized: "ドラッグロック オフ")
+            content.body = String(localized: "ドラッグロックが一時停止状態になりました。再びドラッグロックしたい場合は再開する必要があります。")
+            content.categoryIdentifier = monitoringCategoryIdentifier
+        }
+        
+        let request = UNNotificationRequest(
+            identifier: "DragLockerToggleNotification",
+            content: content,
+            trigger: nil // 即時送信
+        )
+        
+        UNUserNotificationCenter.current().add(request) { error in
+            if let error = error {
+                print("Failed to send notification: \(error)")
+            }
+        }
+    }
+
+    func sendTestNotification() {
+        guard isNotificationTrusted else { return }
+
+        let content = UNMutableNotificationContent()
+        content.title = String(localized: "通知のテスト")
+        content.body = String(localized: "これは通知のテストです。")
+        
+        let request = UNNotificationRequest(
+            identifier: "DragLockerTestNotification",
+            content: content,
+            trigger: nil
+        )
+        
+        UNUserNotificationCenter.current().add(request)
+    }
+
+    func openNotificationSettings() {
+        if let url = URL(string: "x-apple.systempreferences:com.apple.preference.notifications") {
+            NSWorkspace.shared.open(url)
+        }
     }
 
     private func setupEventTap(force: Bool = false) {
@@ -712,6 +831,24 @@ class EventManager: ObservableObject {
                 }
             }
         }
+    }
+}
+
+extension EventManager: UNUserNotificationCenterDelegate {
+    func userNotificationCenter(_ center: UNUserNotificationCenter, didReceive response: UNNotificationResponse, withCompletionHandler completionHandler: @escaping () -> Void) {
+        if response.actionIdentifier == resumeActionIdentifier {
+            DispatchQueue.main.async {
+                if !self.isEnabled {
+                    self.isEnabled = true
+                }
+            }
+        }
+        completionHandler()
+    }
+    
+    func userNotificationCenter(_ center: UNUserNotificationCenter, willPresent notification: UNNotification, withCompletionHandler completionHandler: @escaping (UNNotificationPresentationOptions) -> Void) {
+        // フォアグラウンドでも通知を表示する
+        completionHandler([.banner, .list, .sound])
     }
 }
 

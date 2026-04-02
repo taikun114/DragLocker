@@ -880,6 +880,22 @@
         }
       }
     },
+    "これは通知のテストです。" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "This is a notification test."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "これは通知のテストです。"
+          }
+        }
+      }
+    },
     "サウンド" : {
       "comment" : "設定画面のサウンドセクションヘッダー",
       "localizations" : {
@@ -1011,6 +1027,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "システム設定のアクセシビリティ許可設定を開きます。"
+          }
+        }
+      }
+    },
+    "システム設定の通知設定画面を開きます。" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Open the notification settings in System Settings."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "システム設定の通知設定画面を開きます。"
           }
         }
       }
@@ -1166,6 +1198,70 @@
         }
       }
     },
+    "ドラッグロック オフ" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Drag Lock OFF"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ドラッグロック オフ"
+          }
+        }
+      }
+    },
+    "ドラッグロック オン" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Drag Lock ON"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ドラッグロック オン"
+          }
+        }
+      }
+    },
+    "ドラッグロックが一時停止状態になりました。再びドラッグロックしたい場合は再開する必要があります。" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Drag Lock is now paused. You need to resume it if you want to use Drag Lock again."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ドラッグロックが一時停止状態になりました。再びドラッグロックしたい場合は再開する必要があります。"
+          }
+        }
+      }
+    },
+    "ドラッグロックが再開しました。" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Drag Lock has been resumed."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ドラッグロックが再開しました。"
+          }
+        }
+      }
+    },
     "ドラッグロックされた時と解除されたときにサウンドを再生します。" : {
       "comment" : "サウンド機能の説明文",
       "localizations" : {
@@ -1213,6 +1309,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "ドラッグロックされている間、マウスポインタ付近にアイコンを表示します。"
+          }
+        }
+      }
+    },
+    "ドラッグロックの切り替え時にシステム通知を表示します。" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Show a system notification when toggling drag lock."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ドラッグロックの切り替え時にシステム通知を表示します。"
           }
         }
       }
@@ -1998,6 +2110,22 @@
         }
       }
     },
+    "切り替え時に通知を送信" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Send notification on toggle"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "切り替え時に通知を送信"
+          }
+        }
+      }
+    },
     "削除" : {
       "comment" : "コンテキストメニューの削除ボタンラベル",
       "localizations" : {
@@ -2284,6 +2412,22 @@
         }
       }
     },
+    "現在の通知設定を確認するためのテスト通知を送信します。" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Send a test notification to check the current settings."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "現在の通知設定を確認するためのテスト通知を送信します。"
+          }
+        }
+      }
+    },
     "生成AIと開発" : {
       "localizations" : {
         "en" : {
@@ -2496,6 +2640,70 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "追加できる実行中のアプリが見つかりません。"
+          }
+        }
+      }
+    },
+    "通知" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Notification"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "通知"
+          }
+        }
+      }
+    },
+    "通知のテスト" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Notification Test"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "通知のテスト"
+          }
+        }
+      }
+    },
+    "通知をテスト" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Test Notification"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "通知をテスト"
+          }
+        }
+      }
+    },
+    "通知機能を使用して現在の状況をすばやく把握できます。" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Use notifications to quickly check the current status."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "通知機能を使用して現在の状況をすばやく把握できます。"
           }
         }
       }
