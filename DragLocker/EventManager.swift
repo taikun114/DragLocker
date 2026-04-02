@@ -4,6 +4,11 @@ import CoreGraphics
 import Foundation
 import ServiceManagement
 import SwiftUI
+import KeyboardShortcuts
+
+extension KeyboardShortcuts.Name {
+    static let toggleMonitoring = Self("toggleMonitoring")
+}
 
 enum EventManagerState: Equatable, Sendable {
     case idle
@@ -284,6 +289,18 @@ class EventManager: ObservableObject {
             self.isEnabled = true
         } else {
             self.isEnabled = UserDefaults.standard.bool(forKey: "isEnabled")
+        }
+
+        // ショートカットが未設定の場合は、デフォルト（⌘ + ⌃ + ⇧ + L）をセット
+        if KeyboardShortcuts.getShortcut(for: .toggleMonitoring) == nil {
+            KeyboardShortcuts.setShortcut(.init(.l, modifiers: [.command, .control, .shift]), for: .toggleMonitoring)
+        }
+
+        // ショートカットのイベントリスナーを登録
+        KeyboardShortcuts.onKeyUp(for: .toggleMonitoring) { [weak self] in
+            DispatchQueue.main.async {
+                self?.toggleEnabled()
+            }
         }
 
         // アプリがアクティブになったときに権限を再チェックする（システム設定で変更された場合に対応）

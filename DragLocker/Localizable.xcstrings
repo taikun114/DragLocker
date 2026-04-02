@@ -264,20 +264,7 @@
       }
     },
     "Gemini CLI by Google" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Gemini CLI by Google"
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Gemini CLI by Google"
-          }
-        }
-      }
+      "shouldTranslate" : false
     },
     "Gemini CLIのGitHubページへのリンクを開きます。" : {
       "localizations" : {
@@ -387,6 +374,41 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "GitHubリポジトリページへのリンクを開きます。"
+          }
+        }
+      }
+    },
+    "KeyboardShortcuts by Sindre Sorhus" : {
+      "shouldTranslate" : false
+    },
+    "KeyboardShortcutsのGitHubページへのリンクを開きます。" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Opens a link to the KeyboardShortcuts GitHub page."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "KeyboardShortcutsのGitHubページへのリンクを開きます。"
+          }
+        }
+      }
+    },
+    "KeyboardShortcutsのGitHubページを開いてもよろしいですか？" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Are you sure you want to open the KeyboardShortcuts GitHub page?"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "KeyboardShortcutsのGitHubページを開いてもよろしいですか？"
           }
         }
       }
@@ -586,6 +608,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "アクセシビリティ"
+          }
+        }
+      }
+    },
+    "アクセシビリティ権限が必要" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Accessibility Permission Required"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "アクセシビリティ権限が必要"
           }
         }
       }
@@ -977,6 +1015,22 @@
         }
       }
     },
+    "ショートカットをデフォルト（⌃ Control + ⇧ Shift + ⌘ Command + L）にリセットします。" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Reset the shortcut to the default (⌃ Control + ⇧ Shift + ⌘ Command + L)."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ショートカットをデフォルト（⌃ Control + ⇧ Shift + ⌘ Command + L）にリセットします。"
+          }
+        }
+      }
+    },
     "シルキー" : {
       "comment" : "サウンドの種類：滑らかな音",
       "localizations" : {
@@ -1180,6 +1234,38 @@
         }
       }
     },
+    "ドラッグロックの監視を一時停止します。" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pause the drag lock monitoring."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ドラッグロックの監視を一時停止します。"
+          }
+        }
+      }
+    },
+    "ドラッグロックの監視を再開します。" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Resume the drag lock monitoring."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ドラッグロックの監視を再開します。"
+          }
+        }
+      }
+    },
     "ドラッグロックを使用するマウスボタンを選択します。" : {
       "comment" : "ボタン設定の説明文",
       "localizations" : {
@@ -1278,6 +1364,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "ドラッグロック機能を使用する場合は許可を与える必要があります。"
+          }
+        }
+      }
+    },
+    "ドラッグロック監視" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Drag Lock Monitoring"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ドラッグロック監視"
           }
         }
       }
@@ -1781,6 +1883,38 @@
         }
       }
     },
+    "一時停止" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pause"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "一時停止"
+          }
+        }
+      }
+    },
+    "一時停止中" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Paused"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "一時停止中"
+          }
+        }
+      }
+    },
     "一般" : {
       "comment" : "設定画面の一般セクションヘッダー",
       "localizations" : {
@@ -1832,6 +1966,38 @@
         }
       }
     },
+    "再開" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Resume"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "再開"
+          }
+        }
+      }
+    },
+    "切り替えショートカット" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Toggle Shortcut"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "切り替えショートカット"
+          }
+        }
+      }
+    },
     "削除" : {
       "comment" : "コンテキストメニューの削除ボタンラベル",
       "localizations" : {
@@ -1862,6 +2028,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "動作"
+          }
+        }
+      }
+    },
+    "動作中" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Running"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "動作中"
           }
         }
       }
@@ -2065,6 +2247,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "特定のアプリでの動作リスト"
+          }
+        }
+      }
+    },
+    "状態" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Status"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "状態"
           }
         }
       }

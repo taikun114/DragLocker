@@ -1,4 +1,5 @@
 import SwiftUI
+import KeyboardShortcuts
 
 struct SettingsView: View {
     @EnvironmentObject var eventManager: EventManager
@@ -167,6 +168,99 @@ struct SettingsView: View {
                                 .font(.subheadline)
                                 .foregroundStyle(.secondary)
                         }
+                    }
+                }
+                
+                Section(header: Text("状態")) {
+                    HStack(alignment: .top) {
+                        Group {
+                            if !eventManager.isTrusted {
+                                if differentiateWithoutColor {
+                                    Image(systemName: "exclamationmark.triangle.fill")
+                                        .resizable()
+                                        .scaledToFit()
+                                        .frame(width: 10, height: 10)
+                                        .foregroundStyle(.red)
+                                        .fontWeight(.bold)
+                                } else {
+                                    Circle()
+                                        .fill(Color.red)
+                                        .frame(width: 10, height: 10)
+                                }
+                            } else if eventManager.isEnabled {
+                                if differentiateWithoutColor {
+                                    Image(systemName: "play.fill")
+                                        .resizable()
+                                        .scaledToFit()
+                                        .frame(width: 10, height: 10)
+                                        .foregroundStyle(.green)
+                                        .fontWeight(.bold)
+                                } else {
+                                    Circle()
+                                        .fill(Color.green)
+                                        .frame(width: 10, height: 10)
+                                }
+                            } else {
+                                if differentiateWithoutColor {
+                                    Image(systemName: "pause.fill")
+                                        .resizable()
+                                        .scaledToFit()
+                                        .frame(width: 10, height: 10)
+                                        .foregroundStyle(.orange)
+                                        .fontWeight(.bold)
+                                } else {
+                                    Circle()
+                                        .fill(Color.orange)
+                                        .frame(width: 10, height: 10)
+                                }
+                            }
+                        }
+                        .offset(y: 3)
+                        
+                        VStack(alignment: .leading, spacing: 2) {
+                            Text("ドラッグロック監視")
+                            Group {
+                                if !eventManager.isTrusted {
+                                    Text("アクセシビリティ権限が必要")
+                                } else if eventManager.isEnabled {
+                                    Text("動作中")
+                                } else {
+                                    Text("一時停止中")
+                                }
+                            }
+                            .font(.subheadline)
+                            .foregroundStyle(.secondary)
+                        }
+                        
+                        Spacer()
+                        
+                        Button(action: {
+                            eventManager.toggleEnabled()
+                        }) {
+                            HStack {
+                                Image(systemName: eventManager.isEnabled ? "pause.fill" : "play.fill")
+                                Text(eventManager.isEnabled ? "一時停止" : "再開")
+                            }
+                        }
+                        .buttonStyle(.bordered)
+                        .disabled(!eventManager.isTrusted)
+                        .help(eventManager.isEnabled ? "ドラッグロックの監視を一時停止します。" : "ドラッグロックの監視を再開します。")
+                    }
+                    
+                    LabeledContent {
+                        HStack(spacing: 8) {
+                            KeyboardShortcuts.Recorder(for: .toggleMonitoring)
+                            Button(action: {
+                                KeyboardShortcuts.setShortcut(.init(.l, modifiers: [.command, .control, .shift]), for: .toggleMonitoring)
+                            }) {
+                                Image(systemName: "arrow.counterclockwise")
+                                    .foregroundStyle(.secondary)
+                            }
+                            .buttonStyle(.plain)
+                            .help("ショートカットをデフォルト（⌃ Control + ⇧ Shift + ⌘ Command + L）にリセットします。")
+                        }
+                    } label: {
+                        Text("切り替えショートカット")
                     }
                 }
                 

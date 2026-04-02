@@ -6,6 +6,10 @@
 	objectVersion = 77;
 	objects = {
 
+/* Begin PBXBuildFile section */
+		6D71B0B52F7E862200D93DBE /* KeyboardShortcuts in Frameworks */ = {isa = PBXBuildFile; productRef = 6D71B0B42F7E862200D93DBE /* KeyboardShortcuts */; };
+/* End PBXBuildFile section */
+
 /* Begin PBXContainerItemProxy section */
 		6DA89BF22F6704530051DE1D /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
@@ -65,6 +69,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				6D71B0B52F7E862200D93DBE /* KeyboardShortcuts in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -125,6 +130,7 @@
 			);
 			name = DragLocker;
 			packageProductDependencies = (
+				6D71B0B42F7E862200D93DBE /* KeyboardShortcuts */,
 			);
 			productName = DragLocker;
 			productReference = 6DA89BE42F67044D0051DE1D /* DragLocker.app */;
@@ -209,6 +215,9 @@
 			);
 			mainGroup = 6DA89BDB2F67044D0051DE1D;
 			minimizedProjectReferenceProxies = 1;
+			packageReferences = (
+				6D71B0B32F7E862200D93DBE /* XCRemoteSwiftPackageReference "KeyboardShortcuts" */,
+			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = 6DA89BE52F67044D0051DE1D /* Products */;
 			projectDirPath = "";
@@ -418,7 +427,7 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
-				CURRENT_PROJECT_VERSION = 145;
+				CURRENT_PROJECT_VERSION = 153;
 				DEAD_CODE_STRIPPING = YES;
 				DEVELOPMENT_TEAM = 5U7H2X2X96;
 				ENABLE_APP_SANDBOX = YES;
@@ -457,7 +466,7 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
-				CURRENT_PROJECT_VERSION = 145;
+				CURRENT_PROJECT_VERSION = 153;
 				DEAD_CODE_STRIPPING = YES;
 				DEVELOPMENT_TEAM = 5U7H2X2X96;
 				ENABLE_APP_SANDBOX = YES;
@@ -494,7 +503,7 @@
 			buildSettings = {
 				BUNDLE_LOADER = "$(TEST_HOST)";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 145;
+				CURRENT_PROJECT_VERSION = 153;
 				DEAD_CODE_STRIPPING = YES;
 				DEVELOPMENT_TEAM = 5U7H2X2X96;
 				GENERATE_INFOPLIST_FILE = YES;
@@ -516,7 +525,7 @@
 			buildSettings = {
 				BUNDLE_LOADER = "$(TEST_HOST)";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 145;
+				CURRENT_PROJECT_VERSION = 153;
 				DEAD_CODE_STRIPPING = YES;
 				DEVELOPMENT_TEAM = 5U7H2X2X96;
 				GENERATE_INFOPLIST_FILE = YES;
@@ -537,7 +546,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 145;
+				CURRENT_PROJECT_VERSION = 153;
 				DEAD_CODE_STRIPPING = YES;
 				DEVELOPMENT_TEAM = 5U7H2X2X96;
 				GENERATE_INFOPLIST_FILE = YES;
@@ -557,7 +566,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 145;
+				CURRENT_PROJECT_VERSION = 153;
 				DEAD_CODE_STRIPPING = YES;
 				DEVELOPMENT_TEAM = 5U7H2X2X96;
 				GENERATE_INFOPLIST_FILE = YES;
@@ -613,6 +622,25 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		6D71B0B32F7E862200D93DBE /* XCRemoteSwiftPackageReference "KeyboardShortcuts" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/sindresorhus/KeyboardShortcuts";
+			requirement = {
+				kind = exactVersion;
+				version = 2.4.0;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		6D71B0B42F7E862200D93DBE /* KeyboardShortcuts */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 6D71B0B32F7E862200D93DBE /* XCRemoteSwiftPackageReference "KeyboardShortcuts" */;
+			productName = KeyboardShortcuts;
+		};
+/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = 6DA89BDC2F67044D0051DE1D /* Project object */;
 }
