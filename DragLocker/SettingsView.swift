@@ -145,7 +145,7 @@ struct SettingsView: View {
                                 Slider(value: $lockDelay, in: 0.2...3.0, step: 0.1) {
                                     Text("ロックまでの時間")
                                 }
-                                Text("\(lockDelay, specifier: "%.1f") 秒")
+                                Text("\(lockDelay, format: .number.precision(.fractionLength(1))) 秒")
                                     .foregroundStyle(.secondary)
                             }
                             Text("ドラッグロック開始までクリックし続ける時間を設定します。")
@@ -160,7 +160,7 @@ struct SettingsView: View {
                                 Slider(value: $eventManager.lockDistance, in: 10...500, step: 10) {
                                     Text("ロックまでの距離")
                                 }
-                                Text("\(eventManager.lockDistance, specifier: "%.0f") px")
+                                Text("\(eventManager.lockDistance, format: .number.precision(.fractionLength(0))) px")
                                     .foregroundStyle(.secondary)
                             }
                             Text("ドラッグロック開始までドラッグし続ける距離を設定します。")
@@ -316,7 +316,7 @@ struct SettingsView: View {
                                     .foregroundStyle(eventManager.isSoundEnabled && eventManager.soundStyle != .system ? .primary : .secondary)
                             }
                             .disabled(!eventManager.isSoundEnabled || eventManager.soundStyle == .system)
-                            Text("\(eventManager.soundVolume * 100, specifier: "%.0f") %")
+                            Text(eventManager.soundVolume, format: .percent.precision(.fractionLength(0)))
                                 .foregroundStyle((!eventManager.isSoundEnabled || eventManager.soundStyle == .system) ? .tertiary : .secondary)
                         }
                         Text("カスタムサウンドの再生音量を調整します。")
@@ -365,17 +365,10 @@ struct SettingsView: View {
             }
             
             // 情報タブ
-            VStack {
-                Spacer()
-                Text("情報")
-                    .font(.title)
-                Text("情報画面は準備中です。")
-                    .foregroundStyle(.secondary)
-                Spacer()
-            }
-            .tabItem {
-                Label("情報", systemImage: "info.circle")
-            }
+            InfoView()
+                .tabItem {
+                    Label("情報", systemImage: "info.circle")
+                }
         }
         .navigationTitle("DragLocker 設定")
         .onAppear {

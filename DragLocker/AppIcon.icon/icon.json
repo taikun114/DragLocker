@@ -87,6 +87,7 @@
               }
             }
           ],
+          "hidden" : false,
           "image-name" : "background_2.svg",
           "name" : "background_2",
           "opacity-specializations" : [
@@ -116,6 +117,7 @@
               }
             }
           ],
+          "hidden" : false,
           "image-name" : "background_1.svg",
           "name" : "background_1",
           "opacity-specializations" : [

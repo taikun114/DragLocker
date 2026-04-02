@@ -1,53 +1,34 @@
 {
   "sourceLanguage" : "en",
   "strings" : {
-    "%.0f %%" : {
-      "comment" : "サウンドの音量パーセンテージ表示",
+    "%@ px" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "%.0f %%"
+            "value" : "%@ px"
           }
         },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "%.0f %%"
+            "value" : "%@ px"
           }
         }
       }
     },
-    "%.0f px" : {
-      "comment" : "ドラッグ距離のピクセル表示",
+    "%@ 秒" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "%.0f px"
+            "value" : "%@ sec"
           }
         },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "%.0f px"
-          }
-        }
-      }
-    },
-    "%.1f 秒" : {
-      "comment" : "待機時間の秒表示",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%.1f sec"
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%.1f 秒"
+            "value" : "%@ 秒"
           }
         }
       }
@@ -82,6 +63,102 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "8ビット（低）"
+          }
+        }
+      }
+    },
+    "Buy Me a Coffeeで、緑茶一杯分の金額からサポートしていただけます。" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "You can support me on Buy Me a Coffee starting from the price of a cup of green tea."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Buy Me a Coffeeで、緑茶一杯分の金額からサポートしていただけます。"
+          }
+        }
+      }
+    },
+    "Buy Me a Coffeeのページを開いてもよろしいですか？" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Are you sure you want to open the Buy Me a Coffee page?"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Buy Me a Coffeeのページを開いてもよろしいですか？"
+          }
+        }
+      }
+    },
+    "Buy Me a Coffeeページへのリンクを開きます。" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Opens a link to the Buy Me a Coffee page."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Buy Me a Coffeeページへのリンクを開きます。"
+          }
+        }
+      }
+    },
+    "Copyright ©︎ 2026 今浦大雅" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Copyright ©︎ 2026 Taiga Imaura"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Copyright ©︎ 2026 今浦大雅"
+          }
+        }
+      }
+    },
+    "Discussionページへのリンクを開きます。" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Opens a link to the Discussion page."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Discussionページへのリンクを開きます。"
+          }
+        }
+      }
+    },
+    "DragLocker" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "DragLocker"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "DragLocker"
           }
         }
       }
@@ -137,6 +214,38 @@
         }
       }
     },
+    "DragLockerについて" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "About DragLocker"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "DragLockerについて"
+          }
+        }
+      }
+    },
+    "DragLockerはオープンソースアプリケーションです。" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "DragLocker is an open source application."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "DragLockerはオープンソースアプリケーションです。"
+          }
+        }
+      }
+    },
     "Finderで選択..." : {
       "comment" : "アプリ選択ダイアログを表示するボタンのラベル",
       "localizations" : {
@@ -150,6 +259,134 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Finderで選択..."
+          }
+        }
+      }
+    },
+    "Gemini CLI by Google" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Gemini CLI by Google"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Gemini CLI by Google"
+          }
+        }
+      }
+    },
+    "Gemini CLIのGitHubページへのリンクを開きます。" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Opens a link to the Gemini CLI GitHub page."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Gemini CLIのGitHubページへのリンクを開きます。"
+          }
+        }
+      }
+    },
+    "Gemini CLIのGitHubページを開いてもよろしいですか？" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Are you sure you want to open the Gemini CLI GitHub page?"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Gemini CLIのGitHubページを開いてもよろしいですか？"
+          }
+        }
+      }
+    },
+    "GitHubのDiscussionページを開いてもよろしいですか？" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Are you sure you want to open the GitHub Discussion page?"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "GitHubのDiscussionページを開いてもよろしいですか？"
+          }
+        }
+      }
+    },
+    "GitHubのIssueページを開いてもよろしいですか？" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Are you sure you want to open the GitHub Issue page?"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "GitHubのIssueページを開いてもよろしいですか？"
+          }
+        }
+      }
+    },
+    "GitHubのリポジトリページを開いてもよろしいですか？" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Are you sure you want to open the GitHub repository page?"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "GitHubのリポジトリページを開いてもよろしいですか？"
+          }
+        }
+      }
+    },
+    "GitHubリポジトリにスターをつける" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Star the GitHub repository"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "GitHubリポジトリにスターをつける"
+          }
+        }
+      }
+    },
+    "GitHubリポジトリページへのリンクを開きます。" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Opens a link to the GitHub repository page."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "GitHubリポジトリページへのリンクを開きます。"
           }
         }
       }
@@ -184,6 +421,70 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "OK"
+          }
+        }
+      }
+    },
+    "PayPal.Meのページを開いてもよろしいですか？" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Are you sure you want to open the PayPal.Me page?"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "PayPal.Meのページを開いてもよろしいですか？"
+          }
+        }
+      }
+    },
+    "PayPal.Meのリンクを開きます。" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Opens the PayPal.Me link."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "PayPal.Meのリンクを開きます。"
+          }
+        }
+      }
+    },
+    "PayPalで寄付" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Donate via PayPal"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "PayPalで寄付"
+          }
+        }
+      }
+    },
+    "PayPalで直接寄付していただくこともできます。" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "You can also donate directly via PayPal."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "PayPalで直接寄付していただくこともできます。"
           }
         }
       }
@@ -252,6 +553,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "アイコンをポインタ付近に表示"
+          }
+        }
+      }
+    },
+    "アイデアがありますか？" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Have an idea?"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "アイデアがありますか？"
           }
         }
       }
@@ -337,6 +654,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "アプリを削除しますか？"
+          }
+        }
+      }
+    },
+    "オープンソースライセンス" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Open Source License"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "オープンソースライセンス"
           }
         }
       }
@@ -443,6 +776,22 @@
         }
       }
     },
+    "このアプリケーションのライセンス情報を表示します。" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Displays the license information for this application."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "このアプリケーションのライセンス情報を表示します。"
+          }
+        }
+      }
+    },
     "このモードでは、リスト内に追加したアプリでドラッグロックしないようにします。" : {
       "comment" : "除外モード時の説明文",
       "localizations" : {
@@ -473,6 +822,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "このモードでは、リスト内に追加したアプリでのみドラッグロックするようにします。"
+          }
+        }
+      }
+    },
+    "コミュニティ" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Community"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "コミュニティ"
           }
         }
       }
@@ -562,6 +927,22 @@
         }
       }
     },
+    "サポートとフィードバック" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Support & Feedback"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "サポートとフィードバック"
+          }
+        }
+      }
+    },
     "システム" : {
       "comment" : "サウンドの種類：OS標準のビープ音",
       "localizations" : {
@@ -609,6 +990,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "シルキー"
+          }
+        }
+      }
+    },
+    "スターをつける" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Star"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "スターをつける"
           }
         }
       }
@@ -936,6 +1333,70 @@
         }
       }
     },
+    "バージョン: %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Version: %@"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "バージョン: %@"
+          }
+        }
+      }
+    },
+    "バージョン: %@ (%@)" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Version: %1$@ (%2$@)"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "バージョン: %1$@ (%2$@)"
+          }
+        }
+      }
+    },
+    "バグを報告" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Report a Bug"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "バグを報告"
+          }
+        }
+      }
+    },
+    "バグを見つけましたか？" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Found a bug?"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "バグを見つけましたか？"
+          }
+        }
+      }
+    },
     "ピッ" : {
       "comment" : "サウンドの種類：電子的なピッという音",
       "localizations" : {
@@ -1000,6 +1461,54 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "ピッ（低）"
+          }
+        }
+      }
+    },
+    "フィードバックのメール送信画面を開いてもよろしいですか？" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Are you sure you want to open the feedback email screen?"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "フィードバックのメール送信画面を開いてもよろしいですか？"
+          }
+        }
+      }
+    },
+    "フィードバックのメール送信画面を開きます。" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Opens the feedback email screen."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "フィードバックのメール送信画面を開きます。"
+          }
+        }
+      }
+    },
+    "フィードバックを送信" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Send Feedback"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "フィードバックを送信"
           }
         }
       }
@@ -1072,6 +1581,38 @@
         }
       }
     },
+    "メール送信画面を開きますか？" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Open mail screen?"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "メール送信画面を開きますか？"
+          }
+        }
+      }
+    },
+    "ライセンス情報" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "License Information"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ライセンス情報"
+          }
+        }
+      }
+    },
     "リストにはアプリのみ追加することができます。" : {
       "comment" : "無効なファイルがドロップされた際のアラートメッセージ",
       "localizations" : {
@@ -1119,6 +1660,38 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "リストを空にしてもよろしいですか？この操作は元に戻せません。"
+          }
+        }
+      }
+    },
+    "リポジトリにスターをつけてくれるととてもうれしいです！" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "I would be very happy if you could star the repository!"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "リポジトリにスターをつけてくれるととてもうれしいです！"
+          }
+        }
+      }
+    },
+    "リンクを開きますか？" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Open Link?"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "リンクを開きますか？"
           }
         }
       }
@@ -1412,8 +1985,21 @@
         }
       }
     },
-    "情報画面は準備中です。" : {
-
+    "既知のバグ一覧と報告ページへのリンクを開きます。" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Opens a link to the list of known bugs and the report page."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "既知のバグ一覧と報告ページへのリンクを開きます。"
+          }
+        }
+      }
     },
     "時間" : {
       "comment" : "ドラッグロックの開始条件：クリックし続ける時間によるロック",
@@ -1500,6 +2086,22 @@
         }
       }
     },
+    "生成AIと開発" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Developed with Generative AI"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "生成AIと開発"
+          }
+        }
+      }
+    },
     "終了" : {
       "comment" : "アプリを終了するメニュー項目",
       "localizations" : {
@@ -1513,6 +2115,38 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "終了"
+          }
+        }
+      }
+    },
+    "緑茶を奢る" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Buy me a green tea"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "緑茶を奢る"
+          }
+        }
+      }
+    },
+    "緑茶を買ってあげる" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Buy me a green tea"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "緑茶を買ってあげる"
           }
         }
       }
@@ -1581,6 +2215,38 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "許可済み"
+          }
+        }
+      }
+    },
+    "謝辞" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Acknowledgements"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "謝辞"
+          }
+        }
+      }
+    },
+    "質問や意見交換などを行いましょう" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ask questions and share your opinions"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "質問や意見交換などを行いましょう"
           }
         }
       }
@@ -1666,6 +2332,54 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "選択したアプリをリストから削除します。"
+          }
+        }
+      }
+    },
+    "閉じる" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Close"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "閉じる"
+          }
+        }
+      }
+    },
+    "開く" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Open"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "開く"
+          }
+        }
+      }
+    },
+    "開発者をサポート" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Support Developer"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "開発者をサポート"
           }
         }
       }
