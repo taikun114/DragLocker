@@ -559,9 +559,7 @@ class EventManager: ObservableObject {
 
             // いずれかのボタンがロック中なら、カスタムカーソルの位置を更新
             if isLocked {
-                DispatchQueue.main.async {
-                    CursorManager.shared.updatePosition()
-                }
+                CursorManager.shared.updatePosition()
 
                 // mouseMoved（物理ボタンが押されていない状態での移動）をドラッグに変換
                 if type == .mouseMoved {

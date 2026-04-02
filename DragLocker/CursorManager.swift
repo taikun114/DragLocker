@@ -69,12 +69,12 @@ class CursorManager {
         window.orderFront(nil)
     }
     
-    /// ウィンドウの位置を現在のマウス位置の右側に更新
-    func updatePosition() {
+    /// 指定された位置にウィンドウの位置を更新
+    func updatePosition(to location: CGPoint? = nil) {
         guard let window = cursorWindow else { return }
         
-        // AppKitの座標系（左下が0,0）でマウス位置を取得
-        let mouseLocation = NSEvent.mouseLocation
+        // 指定がない場合は現在のマウス位置を取得
+        let mouseLocation = location ?? NSEvent.mouseLocation
         
         // スタイルごとの位置調整
         let style = EventManager.shared.pointerIconStyle
