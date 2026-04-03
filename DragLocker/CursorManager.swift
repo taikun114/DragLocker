@@ -38,30 +38,8 @@ class CursorManager {
     func updateCursorStyle() {
         guard let window = cursorWindow else { return }
         
-        let style = EventManager.shared.pointerIconStyle
+        let contentView = NSHostingView(rootView: CursorView())
         
-        let contentView = NSHostingView(rootView:
-            ZStack(alignment: .center) {
-                    if style == .padlock {
-                        Image("Pointer_Locked")
-                    } else if style == .dot {
-                        ZStack(alignment: .center) {
-                            Circle().fill(Color.white).frame(width: 8, height: 8)
-                            Circle().fill(Color.black).frame(width: 6, height: 6)
-                        }
-                    } else if style == .largeRing {
-                        Circle()
-                            .stroke(Color.white, lineWidth: 4)
-                            .frame(width: 40, height: 40)
-                            .overlay(
-                                Circle()
-                                    .stroke(Color.black, lineWidth: 2)
-                                    .frame(width: 40, height: 40)
-                            )
-                            .padding(4)
-                    }
-            }
-        )
         // コンテンツのサイズに合わせてウィンドウサイズを自動調整
         contentView.setFrameSize(contentView.fittingSize)
         window.contentView = contentView
@@ -98,6 +76,9 @@ class CursorManager {
         case .largeRing:
             xOffset = -24.0
             yOffset = -24.0
+        case .trafficLight:
+            xOffset = 12.0
+            yOffset = -6.5 // 高さ(13)の半分
         }
         
         let newOrigin = NSPoint(
@@ -106,5 +87,61 @@ class CursorManager {
         )
         
         window.setFrameOrigin(newOrigin)
+    }
+}
+
+struct CursorView: View {
+    @ObservedObject var eventManager = EventManager.shared
+    
+    var body: some View {
+        let style = eventManager.pointerIconStyle
+        
+        ZStack(alignment: .center) {
+            if style == .padlock {
+                Image("Pointer_Locked")
+            } else if style == .dot {
+                ZStack(alignment: .center) {
+                    Circle().fill(Color.white).frame(width: 8, height: 8)
+                    Circle().fill(Color.black).frame(width: 6, height: 6)
+                }
+            } else if style == .largeRing {
+                Circle()
+                    .stroke(Color.white, lineWidth: 4)
+                    .frame(width: 40, height: 40)
+                    .overlay(
+                        Circle()
+                            .stroke(Color.black, lineWidth: 2)
+                            .frame(width: 40, height: 40)
+                    )
+                    .padding(4)
+            } else if style == .trafficLight {
+                HStack(spacing: 3) {
+                    // 左クリック (緑)
+                    Circle()
+                        .fill(eventManager.lockedButtons.contains(.left) ? Color.green : Color.gray)
+                        .frame(width: 7, height: 7)
+                    
+                    // 中クリック (黄)
+                    Circle()
+                        .fill(eventManager.lockedButtons.contains(.middle) ? Color.yellow : Color.gray)
+                        .frame(width: 7, height: 7)
+                    
+                    // 右クリック (赤)
+                    Circle()
+                        .fill(eventManager.lockedButtons.contains(.right) ? Color.red : Color.gray)
+                        .frame(width: 7, height: 7)
+                }
+                .padding(.horizontal, 4)
+                .padding(.vertical, 3)
+                .background(
+                    Capsule()
+                        .fill(Color.black)
+                        .overlay(
+                            Capsule()
+                                .stroke(Color.white, lineWidth: 1.0)
+                        )
+                )
+            }
+        }
     }
 }

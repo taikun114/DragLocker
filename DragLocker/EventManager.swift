@@ -59,6 +59,7 @@ enum IconStyle: String, CaseIterable, Sendable {
     case padlock = "南京錠"
     case dot = "ドット"
     case largeRing = "大きなリング"
+    case trafficLight = "信号機（横）"
 }
 
 enum LockType: String, CaseIterable, Sendable {
@@ -156,6 +157,7 @@ class EventManager: NSObject, ObservableObject {
             }
         }
     }
+    @Published var lockedButtons: Set<MouseButton> = []
     private var holdTimers: [MouseButton: Timer] = [:]
 
     @Published var enabledButtonRawValues: Set<Int> = [0] {
@@ -755,8 +757,15 @@ class EventManager: NSObject, ObservableObject {
         let oldState = buttonStates[button]
         buttonStates[button] = newState
 
+        // ロック中のボタンセットを更新
+        if newState == .locked {
+            lockedButtons.insert(button)
+        } else {
+            lockedButtons.remove(button)
+        }
+
         // グローバルのロック状態を更新
-        let anyLocked = buttonStates.values.contains(.locked)
+        let anyLocked = !lockedButtons.isEmpty
         DispatchQueue.main.async {
             self.isLocked = anyLocked
         }

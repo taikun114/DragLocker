@@ -1080,6 +1080,22 @@
         }
       }
     },
+    "シングルインジケーター" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Single Indicator"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "シングルインジケーター"
+          }
+        }
+      }
+    },
     "スターをつける" : {
       "localizations" : {
         "en" : {
@@ -1810,6 +1826,22 @@
         }
       }
     },
+    "マルチインジケーター" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Multi-Indicator"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "マルチインジケーター"
+          }
+        }
+      }
+    },
     "ミニマリンバ" : {
       "comment" : "サウンドの種類：小さなマリンバの音",
       "localizations" : {
@@ -2090,6 +2122,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "両方"
+          }
+        }
+      }
+    },
+    "信号機（横）" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Traffic Light (Horizontal)"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "信号機（横）"
           }
         }
       }

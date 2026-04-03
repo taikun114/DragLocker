@@ -14,38 +14,104 @@ struct SettingsView: View {
     @State private var showingInvalidAppAlert = false
     @State private var showingClearAllManagedAppsConfirmation = false
     
+    private var padlockPreviewImage: Image {
+        let view = Image("Pointer_Locked")
+            .frame(width: 16, height: 16, alignment: .center)
+        
+        let hostingView = NSHostingView(rootView: view)
+        hostingView.setFrameSize(CGSize(width: 16, height: 16))
+        
+        let bitmap = hostingView.bitmapImageRepForCachingDisplay(in: NSRect(x: 0, y: 0, width: 16, height: 16))!
+        hostingView.cacheDisplay(in: NSRect(x: 0, y: 0, width: 16, height: 16), to: bitmap)
+        
+        return Image(nsImage: NSImage(cgImage: bitmap.cgImage!, size: CGSize(width: 16, height: 16)))
+    }
+
     private var dotImage: Image {
         let view = ZStack(alignment: .center) {
             Circle().fill(Color.white).frame(width: 8, height: 8)
             Circle().fill(Color.black).frame(width: 6, height: 6)
-        }.frame(width: 8, height: 8)
+        }
+        .frame(width: 16, height: 16, alignment: .center)
         
         let hostingView = NSHostingView(rootView: view)
-        hostingView.setFrameSize(CGSize(width: 8, height: 8))
+        hostingView.setFrameSize(CGSize(width: 16, height: 16))
         
-        let bitmap = hostingView.bitmapImageRepForCachingDisplay(in: NSRect(x: 0, y: 0, width: 8, height: 8))!
-        hostingView.cacheDisplay(in: NSRect(x: 0, y: 0, width: 8, height: 8), to: bitmap)
+        let bitmap = hostingView.bitmapImageRepForCachingDisplay(in: NSRect(x: 0, y: 0, width: 16, height: 16))!
+        hostingView.cacheDisplay(in: NSRect(x: 0, y: 0, width: 16, height: 16), to: bitmap)
         
-        return Image(nsImage: NSImage(cgImage: bitmap.cgImage!, size: CGSize(width: 8, height: 8)))
+        return Image(nsImage: NSImage(cgImage: bitmap.cgImage!, size: CGSize(width: 16, height: 16)))
     }
     
     private var largeRingImage: Image {
         let view = Circle()
-            .stroke(Color.white, lineWidth: 2)
-            .frame(width: 6, height: 6)
+            .stroke(Color.white, lineWidth: 4 * (16.0/48.0))
+            .frame(width: 40 * (16.0/48.0), height: 40 * (16.0/48.0))
             .overlay(
                 Circle()
-                    .stroke(Color.black, lineWidth: 0.5)
-                    .frame(width: 6, height: 6)
+                    .stroke(Color.black, lineWidth: 2 * (16.0/48.0))
+                    .frame(width: 40 * (16.0/48.0), height: 40 * (16.0/48.0))
             )
+            .padding(4 * (16.0/48.0))
+            .frame(width: 16, height: 16, alignment: .center)
         
         let hostingView = NSHostingView(rootView: view)
-        hostingView.setFrameSize(CGSize(width: 8, height: 8))
+        hostingView.setFrameSize(CGSize(width: 16, height: 16))
         
-        let bitmap = hostingView.bitmapImageRepForCachingDisplay(in: NSRect(x: 0, y: 0, width: 8, height: 8))!
-        hostingView.cacheDisplay(in: NSRect(x: 0, y: 0, width: 8, height: 8), to: bitmap)
+        let bitmap = hostingView.bitmapImageRepForCachingDisplay(in: NSRect(x: 0, y: 0, width: 16, height: 16))!
+        hostingView.cacheDisplay(in: NSRect(x: 0, y: 0, width: 16, height: 16), to: bitmap)
         
-        return Image(nsImage: NSImage(cgImage: bitmap.cgImage!, size: CGSize(width: 8, height: 8)))
+        return Image(nsImage: NSImage(cgImage: bitmap.cgImage!, size: CGSize(width: 16, height: 16)))
+    }
+
+    private var trafficLightImage: Image {
+        let scale = 16.0 / 35.0
+        let view = HStack(spacing: 3 * scale) {
+            Circle().fill(Color.green).frame(width: 7 * scale, height: 7 * scale)
+            Circle().fill(Color.yellow).frame(width: 7 * scale, height: 7 * scale)
+            Circle().fill(Color.red).frame(width: 7 * scale, height: 7 * scale)
+        }
+        .padding(.horizontal, 4 * scale)
+        .padding(.vertical, 3 * scale)
+        .background(
+            Capsule()
+                .fill(Color.black)
+                .overlay(
+                    Capsule()
+                        .stroke(Color.white, lineWidth: 1.0 * scale)
+                )
+        )
+        .frame(width: 16, height: 16, alignment: .center)
+        
+        let hostingView = NSHostingView(rootView: view)
+        hostingView.setFrameSize(CGSize(width: 16, height: 16))
+        
+        let bitmap = hostingView.bitmapImageRepForCachingDisplay(in: NSRect(x: 0, y: 0, width: 16, height: 16))!
+        hostingView.cacheDisplay(in: NSRect(x: 0, y: 0, width: 16, height: 16), to: bitmap)
+        
+        return Image(nsImage: NSImage(cgImage: bitmap.cgImage!, size: CGSize(width: 16, height: 16)))
+    }
+    
+    @ViewBuilder
+    private func previewIcon(for style: IconStyle) -> some View {
+        switch style {
+        case .padlock:
+            padlockPreviewImage
+                .resizable()
+                .frame(width: 16, height: 16)
+        case .dot:
+            dotImage
+                .resizable()
+                .frame(width: 16, height: 16)
+        case .largeRing:
+            largeRingImage
+                .resizable()
+                .frame(width: 16, height: 16)
+        case .trafficLight:
+            trafficLightImage
+                .resizable()
+                .frame(width: 16, height: 16)
+        }
     }
 
     var body: some View {
@@ -369,17 +435,15 @@ struct SettingsView: View {
                     }
                     
                     Picker(selection: $eventManager.pointerIconStyle) {
-                        Label { Text("南京錠") } icon: {
-                            Image("Pointer_Locked")
-                        }.tag(IconStyle.padlock)
+                        Section("シングルインジケーター") {
+                            Label { Text("南京錠") } icon: { previewIcon(for: .padlock) }.tag(IconStyle.padlock)
+                            Label { Text("ドット") } icon: { previewIcon(for: .dot) }.tag(IconStyle.dot)
+                            Label { Text("大きなリング") } icon: { previewIcon(for: .largeRing) }.tag(IconStyle.largeRing)
+                        }
                         
-                        Label { Text("ドット") } icon: {
-                            dotImage
-                        }.tag(IconStyle.dot)
-                        
-                        Label { Text("大きなリング") } icon: {
-                            largeRingImage
-                        }.tag(IconStyle.largeRing)
+                        Section("マルチインジケーター") {
+                            Label { Text("信号機（横）") } icon: { previewIcon(for: .trafficLight) }.tag(IconStyle.trafficLight)
+                        }
                     } label: {
                         Text("アイコンスタイル")
                             .foregroundStyle(eventManager.isIconEnabled ? .primary : .secondary)
