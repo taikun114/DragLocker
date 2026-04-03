@@ -23,8 +23,9 @@ struct DragLockerApp: App {
             HStack {
                 Label(
                     eventManager.isEnabled ? "DragLocker: 動作中" : "DragLocker: 一時停止中",
-                    systemImage: eventManager.isEnabled ? "checkmark.circle" : "pause.circle"
+                    systemImage: eventManager.isEnabled ? "play.fill" : "pause.fill"
                 )
+                .labelStyle(.titleAndIcon)
             }
             
             // 一時的にロック検知を無効化・有効化する切り替えボタン
@@ -35,6 +36,7 @@ struct DragLockerApp: App {
                     eventManager.isEnabled ? "ドラッグロックを一時停止" : "ドラッグロックを再開",
                     systemImage: eventManager.isEnabled ? "pause" : "play"
                 )
+                .labelStyle(.titleAndIcon)
             }
             
             Divider()
