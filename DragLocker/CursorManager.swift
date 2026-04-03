@@ -8,6 +8,7 @@ class CursorManager {
     
     init() {
         setupCursorWindow()
+        updateCursorStyle()
     }
     
     private func setupCursorWindow() {
@@ -32,8 +33,8 @@ class CursorManager {
         cursorWindow?.orderOut(nil)
     }
     
-    /// インジケーターを表示
-    func showCustomCursor() {
+    /// カーソルのスタイルを更新
+    func updateCursorStyle() {
         guard let window = cursorWindow else { return }
         
         let style = EventManager.shared.pointerIconStyle
@@ -64,6 +65,11 @@ class CursorManager {
         contentView.setFrameSize(contentView.fittingSize)
         window.contentView = contentView
         window.setContentSize(contentView.fittingSize)
+    }
+    
+    /// インジケーターを表示
+    func showCustomCursor() {
+        guard let window = cursorWindow else { return }
         
         updatePosition()
         window.orderFront(nil)

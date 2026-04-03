@@ -203,6 +203,9 @@ class EventManager: NSObject, ObservableObject {
     @Published var pointerIconStyle: IconStyle = .padlock {
         didSet {
             UserDefaults.standard.set(pointerIconStyle.rawValue, forKey: "pointerIconStyle")
+            DispatchQueue.main.async {
+                CursorManager.shared.updateCursorStyle()
+            }
         }
     }
 

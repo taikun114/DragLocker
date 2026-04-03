@@ -94,7 +94,9 @@ class SoundManager {
     
     func play(style: SoundStyle, volume: Double, isLocked: Bool, isInverted: Bool = false) {
         if style == .system {
-            NSSound.beep()
+            queue.async {
+                NSSound.beep()
+            }
             return
         }
         
@@ -105,7 +107,9 @@ class SoundManager {
     
     func preview(style: SoundStyle, volume: Double, isInverted: Bool = false) {
         if style == .system {
-            NSSound.beep()
+            queue.async {
+                NSSound.beep()
+            }
             return
         }
         
@@ -123,9 +127,11 @@ class SoundManager {
     private func playSpecific(style: SoundStyle, volume: Double, suffix: String) {
         let key = "\(style.rawValue)\(suffix)"
         if let player = players[key] {
-            player.volume = Float(volume)
-            player.currentTime = 0
-            player.play()
+            queue.async {
+                player.volume = Float(volume)
+                player.currentTime = 0
+                player.play()
+            }
         } else {
             loadAndPlay(style: style, volume: volume, suffix: suffix)
         }
