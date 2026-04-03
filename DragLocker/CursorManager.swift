@@ -16,7 +16,7 @@ class CursorManager {
     
     private func setupCursorWindow() {
         let window = NSWindow(
-            contentRect: NSRect(x: 0, y: 0, width: 32, height: 32),
+            contentRect: NSRect(x: 0, y: 0, width: 80, height: 80),
             styleMask: [.borderless],
             backing: .buffered,
             defer: false
@@ -49,10 +49,14 @@ class CursorManager {
         
         let contentView = NSHostingView(rootView: CursorView())
         
-        // コンテンツのサイズに合わせてウィンドウサイズを自動調整
-        contentView.setFrameSize(contentView.fittingSize)
+        // NSHostingViewがcontentViewに設定されると自動的にウィンドウのmin/maxサイズを
+        // 更新しようとし、制約更新の無限ループを引き起こすため、すべての自動サイズ管理を無効化する
+        contentView.sizingOptions = []
+        
+        let fixedSize = NSSize(width: 80, height: 80)
+        contentView.setFrameSize(fixedSize)
         window.contentView = contentView
-        window.setContentSize(contentView.fittingSize)
+        window.setContentSize(fixedSize)
     }
     
     /// インジケーターを表示
@@ -317,6 +321,8 @@ struct CursorView: View {
         .opacity(isLocked ? 1.0 : 0.0)
         .scaleEffect(isLocked ? 1.0 : startScale)
         .animation(.easeOut(duration: CursorManager.animationDuration), value: isLocked)
+        .fixedSize()
+        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottomLeading)
     }
 }
 
