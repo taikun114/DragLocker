@@ -64,6 +64,7 @@ enum IconStyle: String, CaseIterable, Sendable {
     case smallTrafficLight = "小さな信号機（横）"
     case trafficLightVertical = "信号機（縦）"
     case smallTrafficLightVertical = "小さな信号機（縦）"
+    case text = "テキスト（横）"
 }
 
 enum LockType: String, CaseIterable, Sendable {

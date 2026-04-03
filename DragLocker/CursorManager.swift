@@ -100,6 +100,9 @@ class CursorManager {
         case .smallTrafficLightVertical:
             xOffset = 14.0
             yOffset = -12.0 // 高さ(24)の半分
+        case .text:
+            xOffset = 12.0
+            yOffset = -8.0 // -5.0 と -10.0 の間をとって調整
         }
         
         let newOrigin = NSPoint(
@@ -253,6 +256,28 @@ struct CursorView: View {
                 }
                 .padding(.horizontal, 2)
                 .padding(.vertical, 2.5)
+                .background(
+                    Capsule()
+                        .fill(Color.black)
+                        .overlay(
+                            Capsule()
+                                .stroke(Color.white, lineWidth: 1.0)
+                        )
+                )
+            } else if style == .text {
+                HStack(spacing: 1) {
+                    Text(verbatim: "L")
+                        .opacity(eventManager.lockedButtons.contains(.left) ? 1.0 : 0.5)
+                    Text(verbatim: "M")
+                        .opacity(eventManager.lockedButtons.contains(.middle) ? 1.0 : 0.5)
+                        .padding(.leading, -1.5) // Lの右上の余白を埋めるために少し詰める
+                    Text(verbatim: "R")
+                        .opacity(eventManager.lockedButtons.contains(.right) ? 1.0 : 0.5)
+                }
+                .font(.system(size: 11, weight: .bold, design: .monospaced))
+                .foregroundColor(.white)
+                .padding(.horizontal, 4)
+                .padding(.vertical, 2)
                 .background(
                     Capsule()
                         .fill(Color.black)

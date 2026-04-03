@@ -1197,6 +1197,23 @@
         }
       }
     },
+    "テキスト（横）" : {
+      "comment" : "ポインタ付近に表示するアイコンの種類：テキスト（横）",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Text (Horizontal)"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "テキスト（横）"
+          }
+        }
+      }
+    },
     "ドット" : {
       "comment" : "ポインタ付近に表示するアイコンの種類：点",
       "localizations" : {
@@ -1775,6 +1792,23 @@
         }
       }
     },
+    "フォーカス" : {
+      "comment" : "ポインタ付近に表示するアイコンの種類：カメラのファインダーのような角括弧",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Focus"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "フォーカス"
+          }
+        }
+      }
+    },
     "ホイール" : {
       "comment" : "マウスの中央（ホイール）ボタン",
       "localizations" : {
@@ -2160,23 +2194,6 @@
         }
       }
     },
-    "小さな信号機（縦）" : {
-      "comment" : "アイコンスタイル：垂直信号機スタイルの縮小版",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Small Traffic Light (Vertical)"
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "小さな信号機（縦）"
-          }
-        }
-      }
-    },
     "再生するサウンドを選択します。マウスホバーでサウンドをプレビューできます。" : {
       "comment" : "サウンド選択設定の説明文",
       "localizations" : {
@@ -2361,23 +2378,6 @@
         }
       }
     },
-    "フォーカス" : {
-      "comment" : "ポインタ付近に表示するアイコンの種類：カメラのファインダーのような角括弧",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Focus"
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "フォーカス"
-          }
-        }
-      }
-    },
     "実行中のアプリから追加" : {
       "comment" : "アプリ追加画面のヘッダー",
       "localizations" : {
@@ -2408,6 +2408,23 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "小さな信号機（横）"
+          }
+        }
+      }
+    },
+    "小さな信号機（縦）" : {
+      "comment" : "アイコンスタイル：垂直信号機スタイルの縮小版",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Small Traffic Light (Vertical)"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "小さな信号機（縦）"
           }
         }
       }

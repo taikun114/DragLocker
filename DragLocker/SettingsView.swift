@@ -178,6 +178,36 @@ struct SettingsView: View {
         return Image(nsImage: NSImage(cgImage: bitmap.cgImage!, size: CGSize(width: 16, height: 16)))
     }
     
+    private var textImage: Image {
+        let view = HStack(spacing: 1) {
+            Text(verbatim: "L")
+            Text(verbatim: "M")
+                .padding(.leading, -1.5)
+            Text(verbatim: "R")
+        }
+        .font(.system(size: 6.5, weight: .bold, design: .monospaced))
+        .foregroundColor(.white)
+        .padding(.horizontal, 2)
+        .frame(height: 9) // 楕円ではなく「横長カプセル」に見えるよう高さを絞る
+        .background(
+            Capsule()
+                .fill(Color.black)
+                .overlay(
+                    Capsule()
+                        .stroke(Color.white, lineWidth: 1.0)
+                )
+        )
+        .frame(width: 16, height: 16, alignment: .center)
+        
+        let hostingView = NSHostingView(rootView: view)
+        hostingView.setFrameSize(CGSize(width: 16, height: 16))
+        
+        let bitmap = hostingView.bitmapImageRepForCachingDisplay(in: NSRect(x: 0, y: 0, width: 16, height: 16))!
+        hostingView.cacheDisplay(in: NSRect(x: 0, y: 0, width: 16, height: 16), to: bitmap)
+        
+        return Image(nsImage: NSImage(cgImage: bitmap.cgImage!, size: CGSize(width: 16, height: 16)))
+    }
+    
     private var focusImage: Image {
         // 16x16ピクセルのピッカー用に最適化した「コンパクト版」フォーカスアイコン
         // 1x環境でボケないよう、3px厚 (1白-1黒-1白) の整数値のみで構成
@@ -242,9 +272,13 @@ struct SettingsView: View {
             smallTrafficLightVerticalImage
                 .resizable()
                 .frame(width: 16, height: 16)
+        case .text:
+            textImage
+                .resizable()
+                .frame(width: 16, height: 16)
         }
     }
-
+    
     var body: some View {
         TabView {
             // 一般タブ
@@ -578,6 +612,7 @@ struct SettingsView: View {
                             Label { Text("信号機（縦）") } icon: { previewIcon(for: .trafficLightVertical) }.tag(IconStyle.trafficLightVertical)
                             Label { Text("小さな信号機（横）") } icon: { previewIcon(for: .smallTrafficLight) }.tag(IconStyle.smallTrafficLight)
                             Label { Text("小さな信号機（縦）") } icon: { previewIcon(for: .smallTrafficLightVertical) }.tag(IconStyle.smallTrafficLightVertical)
+                            Label { Text("テキスト（横）") } icon: { previewIcon(for: .text) }.tag(IconStyle.text)
                         }
                     } label: {
                         Text("アイコンスタイル")
