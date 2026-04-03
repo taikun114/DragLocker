@@ -24,6 +24,7 @@ class CursorManager {
         window.level = NSWindow.Level(Int(CGWindowLevelForKey(.cursorWindow)))
         window.ignoresMouseEvents = true
         window.collectionBehavior = [.canJoinAllSpaces, .stationary]
+        window.animationBehavior = .none
         
         self.cursorWindow = window
     }
