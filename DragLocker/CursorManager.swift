@@ -79,6 +79,9 @@ class CursorManager {
         case .trafficLight:
             xOffset = 12.0
             yOffset = -6.5 // 高さ(13)の半分
+        case .smallTrafficLight:
+            xOffset = 12.0
+            yOffset = -4.5 // 高さ(9)の半分
         }
         
         let newOrigin = NSPoint(
@@ -133,6 +136,33 @@ struct CursorView: View {
                 }
                 .padding(.horizontal, 4)
                 .padding(.vertical, 3)
+                .background(
+                    Capsule()
+                        .fill(Color.black)
+                        .overlay(
+                            Capsule()
+                                .stroke(Color.white, lineWidth: 1.0)
+                        )
+                )
+            } else if style == .smallTrafficLight {
+                HStack(spacing: 2) {
+                    // 左クリック (緑)
+                    Circle()
+                        .fill(eventManager.lockedButtons.contains(.left) ? Color.green : Color.gray)
+                        .frame(width: 5, height: 5)
+                    
+                    // 中クリック (黄)
+                    Circle()
+                        .fill(eventManager.lockedButtons.contains(.middle) ? Color.yellow : Color.gray)
+                        .frame(width: 5, height: 5)
+                    
+                    // 右クリック (赤)
+                    Circle()
+                        .fill(eventManager.lockedButtons.contains(.right) ? Color.red : Color.gray)
+                        .frame(width: 5, height: 5)
+                }
+                .padding(.horizontal, 2.5)
+                .padding(.vertical, 2)
                 .background(
                     Capsule()
                         .fill(Color.black)

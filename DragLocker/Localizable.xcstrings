@@ -2127,6 +2127,7 @@
       }
     },
     "信号機（横）" : {
+      "comment" : "アイコンスタイル：ボタンごとのロックを表示する信号機スタイル",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -2339,6 +2340,23 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "実行中のアプリから追加"
+          }
+        }
+      }
+    },
+    "小さな信号機（横）" : {
+      "comment" : "アイコンスタイル：信号機スタイルの縮小版",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Small Traffic Light (Horizontal)"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "小さな信号機（横）"
           }
         }
       }

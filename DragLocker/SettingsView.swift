@@ -92,6 +92,34 @@ struct SettingsView: View {
         return Image(nsImage: NSImage(cgImage: bitmap.cgImage!, size: CGSize(width: 16, height: 16)))
     }
     
+    private var smallTrafficLightImage: Image {
+        let scale = 16.0 / 24.0
+        let view = HStack(spacing: 2 * scale) {
+            Circle().fill(Color.green).frame(width: 5 * scale, height: 5 * scale)
+            Circle().fill(Color.yellow).frame(width: 5 * scale, height: 5 * scale)
+            Circle().fill(Color.red).frame(width: 5 * scale, height: 5 * scale)
+        }
+        .padding(.horizontal, 2.5 * scale)
+        .padding(.vertical, 2 * scale)
+        .background(
+            Capsule()
+                .fill(Color.black)
+                .overlay(
+                    Capsule()
+                        .stroke(Color.white, lineWidth: 1.0 * scale)
+                )
+        )
+        .frame(width: 16, height: 16, alignment: .center)
+        
+        let hostingView = NSHostingView(rootView: view)
+        hostingView.setFrameSize(CGSize(width: 16, height: 16))
+        
+        let bitmap = hostingView.bitmapImageRepForCachingDisplay(in: NSRect(x: 0, y: 0, width: 16, height: 16))!
+        hostingView.cacheDisplay(in: NSRect(x: 0, y: 0, width: 16, height: 16), to: bitmap)
+        
+        return Image(nsImage: NSImage(cgImage: bitmap.cgImage!, size: CGSize(width: 16, height: 16)))
+    }
+    
     @ViewBuilder
     private func previewIcon(for style: IconStyle) -> some View {
         switch style {
@@ -109,6 +137,10 @@ struct SettingsView: View {
                 .frame(width: 16, height: 16)
         case .trafficLight:
             trafficLightImage
+                .resizable()
+                .frame(width: 16, height: 16)
+        case .smallTrafficLight:
+            smallTrafficLightImage
                 .resizable()
                 .frame(width: 16, height: 16)
         }
@@ -443,6 +475,7 @@ struct SettingsView: View {
                         
                         Section("マルチインジケーター") {
                             Label { Text("信号機（横）") } icon: { previewIcon(for: .trafficLight) }.tag(IconStyle.trafficLight)
+                            Label { Text("小さな信号機（横）") } icon: { previewIcon(for: .smallTrafficLight) }.tag(IconStyle.smallTrafficLight)
                         }
                     } label: {
                         Text("アイコンスタイル")
