@@ -180,7 +180,7 @@
         }
       }
     },
-    "DragLocker: 停止中" : {
+    "DragLocker: 一時停止中" : {
       "comment" : "メニューバーのエクストラメニューにおける停止状態のラベル",
       "localizations" : {
         "en" : {
@@ -192,7 +192,7 @@
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "DragLocker: 停止中"
+            "value" : "DragLocker: 一時停止中"
           }
         }
       }
@@ -1378,6 +1378,39 @@
         }
       }
     },
+    "ドラッグロックは一時停止状態です" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Drag Lock is currently paused"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ドラッグロックは一時停止状態です"
+          }
+        }
+      }
+    },
+    "ドラッグロックを一時停止" : {
+      "comment" : "メニューバーの一時停止ボタンラベル",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pause Drag-Lock"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ドラッグロックを一時停止"
+          }
+        }
+      }
+    },
     "ドラッグロックを使用するマウスボタンを選択します。" : {
       "comment" : "ボタン設定の説明文",
       "localizations" : {
@@ -1395,36 +1428,35 @@
         }
       }
     },
-    "ドラッグロックを有効化" : {
-      "comment" : "メニューバーの有効化ボタンラベル",
+    "ドラッグロックを再開" : {
+      "comment" : "メニューバーの再開ボタンラベル",
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Enable Drag-Lock"
+            "value" : "Resume Drag-Lock"
           }
         },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "ドラッグロックを有効化"
+            "value" : "ドラッグロックを再開"
           }
         }
       }
     },
-    "ドラッグロックを無効化" : {
-      "comment" : "メニューバーの無効化ボタンラベル",
+    "ドラッグロックを有効化するには再開する必要があります。" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Disable Drag-Lock"
+            "value" : "You need to resume it to enable Drag Lock."
           }
         },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "ドラッグロックを無効化"
+            "value" : "ドラッグロックを有効化するには再開する必要があります。"
           }
         }
       }
@@ -1996,6 +2028,7 @@
       }
     },
     "一時停止" : {
+      "comment" : "一時停止アクションボタン",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -2079,6 +2112,7 @@
       }
     },
     "再開" : {
+      "comment" : "再開アクションボタン",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -2165,7 +2199,7 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Running"
+            "value" : "Active"
           }
         },
         "ja" : {
@@ -2692,18 +2726,18 @@
         }
       }
     },
-    "通知機能を使用して現在の状況をすばやく把握できます。" : {
+    "通知機能を使用するには許可を与える必要があります。" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Use notifications to quickly check the current status."
+            "value" : "You need to grant permission to use the notification features."
           }
         },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "通知機能を使用して現在の状況をすばやく把握できます。"
+            "value" : "通知機能を使用するには許可を与える必要があります。"
           }
         }
       }

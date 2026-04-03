@@ -22,7 +22,7 @@ struct DragLockerApp: App {
             // 状態表示用のラベル（クリック不可）
             HStack {
                 Label(
-                    eventManager.isEnabled ? "DragLocker: 動作中" : "DragLocker: 停止中",
+                    eventManager.isEnabled ? "DragLocker: 動作中" : "DragLocker: 一時停止中",
                     systemImage: eventManager.isEnabled ? "checkmark.circle" : "pause.circle"
                 )
             }
@@ -32,7 +32,7 @@ struct DragLockerApp: App {
                 eventManager.toggleEnabled()
             }) {
                 Label(
-                    eventManager.isEnabled ? "ドラッグロックを無効化" : "ドラッグロックを有効化",
+                    eventManager.isEnabled ? "ドラッグロックを一時停止" : "ドラッグロックを再開",
                     systemImage: eventManager.isEnabled ? "pause" : "play"
                 )
             }

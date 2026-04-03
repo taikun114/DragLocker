@@ -328,7 +328,7 @@ struct SettingsView: View {
                         
                         VStack(alignment: .leading, spacing: 2) {
                             Text("通知")
-                            Text("通知機能を使用して現在の状況をすばやく把握できます。")
+                            Text("通知機能を使用するには許可を与える必要があります。")
                                 .font(.subheadline)
                                 .foregroundStyle(.secondary)
                         }

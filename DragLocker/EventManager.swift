@@ -113,7 +113,7 @@ class EventManager: NSObject, ObservableObject {
     @Published var isEnabled: Bool = true {
         didSet {
             UserDefaults.standard.set(isEnabled, forKey: "isEnabled")
-            if isNotificationEnabled {
+            if isNotificationEnabled && !isProcessingNotificationAction {
                 sendToggleNotification(isEnabled: isEnabled)
             }
         }
@@ -132,6 +132,8 @@ class EventManager: NSObject, ObservableObject {
 
     private let resumeActionIdentifier = "RESUME_ACTION"
     private let monitoringCategoryIdentifier = "MONITORING_CATEGORY"
+
+    private var isProcessingNotificationAction: Bool = false
 
     private var eventTap: CFMachPort?
     private var runLoopSource: CFRunLoopSource?
@@ -336,6 +338,11 @@ class EventManager: NSObject, ObservableObject {
             name: NSApplication.didBecomeActiveNotification,
             object: nil
         )
+
+        // 起動時に停止状態なら通知を送る
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) { [weak self] in
+            self?.sendInitialPausedNotification()
+        }
     }
 
     func start() {
@@ -437,7 +444,34 @@ class EventManager: NSObject, ObservableObject {
         
         UNUserNotificationCenter.current().add(request) { error in
             if let error = error {
-                print("Failed to send notification: \(error)")
+                print("Failed to send test notification: \(error)")
+            } else {
+                // 送信から5秒後に通知を削除（通知センターに残さない）
+                DispatchQueue.main.asyncAfter(deadline: .now() + 5.0) {
+                    UNUserNotificationCenter.current().removeDeliveredNotifications(withIdentifiers: ["DragLockerTestNotification"])
+                }
+            }
+        }
+    }
+
+    private func sendInitialPausedNotification() {
+        guard !isEnabled && isNotificationTrusted else { return }
+
+        let content = UNMutableNotificationContent()
+        content.title = String(localized: "ドラッグロックは一時停止状態です")
+        content.body = String(localized: "ドラッグロックを有効化するには再開する必要があります。")
+        content.categoryIdentifier = monitoringCategoryIdentifier
+        content.sound = .default
+        
+        let request = UNNotificationRequest(
+            identifier: "DragLockerInitialPausedNotification",
+            content: content,
+            trigger: nil
+        )
+        
+        UNUserNotificationCenter.current().add(request) { error in
+            if let error = error {
+                print("Failed to send initial paused notification: \(error)")
             }
         }
     }
@@ -785,10 +819,16 @@ class EventManager: NSObject, ObservableObject {
         releaseAllLocks()
     }
 
-    func toggleEnabled() {
+    func toggleEnabled(isSilent: Bool = false) {
+        if isSilent {
+            self.isProcessingNotificationAction = true
+        }
         isEnabled.toggle()
         if !isEnabled {
             forceUnlock()
+        }
+        if isSilent {
+            self.isProcessingNotificationAction = false
         }
     }
 
@@ -837,10 +877,13 @@ class EventManager: NSObject, ObservableObject {
 extension EventManager: UNUserNotificationCenterDelegate {
     func userNotificationCenter(_ center: UNUserNotificationCenter, didReceive response: UNNotificationResponse, withCompletionHandler completionHandler: @escaping () -> Void) {
         if response.actionIdentifier == resumeActionIdentifier {
-            DispatchQueue.main.async {
+            DispatchQueue.main.async { [weak self] in
+                guard let self = self else { return }
+                self.isProcessingNotificationAction = true
                 if !self.isEnabled {
                     self.isEnabled = true
                 }
+                self.isProcessingNotificationAction = false
             }
         }
         completionHandler()
