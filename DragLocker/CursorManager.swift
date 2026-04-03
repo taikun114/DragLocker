@@ -100,9 +100,12 @@ class CursorManager {
         case .smallTrafficLightVertical:
             xOffset = 14.0
             yOffset = -12.0 // 高さ(24)の半分
-        case .text:
+        case .textHorizontal:
             xOffset = 12.0
             yOffset = -8.0 // -5.0 と -10.0 の間をとって調整
+        case .textVertical:
+            xOffset = 13.0
+            yOffset = -14.0 // 以前よりポインタに近づける
         }
         
         let newOrigin = NSPoint(
@@ -264,7 +267,7 @@ struct CursorView: View {
                                 .stroke(Color.white, lineWidth: 1.0)
                         )
                 )
-            } else if style == .text {
+            } else if style == .textHorizontal {
                 HStack(spacing: 1) {
                     Text(verbatim: "L")
                         .opacity(eventManager.lockedButtons.contains(.left) ? 1.0 : 0.5)
@@ -278,6 +281,27 @@ struct CursorView: View {
                 .foregroundColor(.white)
                 .padding(.horizontal, 4)
                 .padding(.vertical, 2)
+                .background(
+                    Capsule()
+                        .fill(Color.black)
+                        .overlay(
+                            Capsule()
+                                .stroke(Color.white, lineWidth: 1.0)
+                        )
+                )
+            } else if style == .textVertical {
+                VStack(spacing: -2.8) { // 極限まで詰める
+                    Text(verbatim: "L")
+                        .opacity(eventManager.lockedButtons.contains(.left) ? 1.0 : 0.5)
+                    Text(verbatim: "M")
+                        .opacity(eventManager.lockedButtons.contains(.middle) ? 1.0 : 0.5)
+                    Text(verbatim: "R")
+                        .opacity(eventManager.lockedButtons.contains(.right) ? 1.0 : 0.5)
+                }
+                .font(.system(size: 8, weight: .bold, design: .monospaced))
+                .foregroundColor(.white)
+                .padding(.horizontal, 3)
+                .padding(.vertical, 3)
                 .background(
                     Capsule()
                         .fill(Color.black)

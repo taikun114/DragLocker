@@ -1214,6 +1214,23 @@
         }
       }
     },
+    "テキスト（縦）" : {
+      "comment" : "ポインタ付近に表示するアイコンの種類：テキスト（縦）",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Text (Vertical)"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "テキスト（縦）"
+          }
+        }
+      }
+    },
     "ドット" : {
       "comment" : "ポインタ付近に表示するアイコンの種類：点",
       "localizations" : {
