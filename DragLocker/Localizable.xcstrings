@@ -2361,6 +2361,23 @@
         }
       }
     },
+    "フォーカス" : {
+      "comment" : "ポインタ付近に表示するアイコンの種類：カメラのファインダーのような角括弧",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Focus"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "フォーカス"
+          }
+        }
+      }
+    },
     "実行中のアプリから追加" : {
       "comment" : "アプリ追加画面のヘッダー",
       "localizations" : {

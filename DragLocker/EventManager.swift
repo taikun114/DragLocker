@@ -59,6 +59,7 @@ enum IconStyle: String, CaseIterable, Sendable {
     case padlock = "南京錠"
     case dot = "ドット"
     case largeRing = "大きなリング"
+    case focus = "フォーカス"
     case trafficLight = "信号機（横）"
     case smallTrafficLight = "小さな信号機（横）"
     case trafficLightVertical = "信号機（縦）"

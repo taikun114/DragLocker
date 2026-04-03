@@ -44,15 +44,17 @@ struct SettingsView: View {
     }
     
     private var largeRingImage: Image {
+        // 16x16ピクセルのピッカー用に最適化した「大きなリング」
+        // ホワイト(1px) - ブラック(1px) - ホワイト(1px) の計3px構造
+        
         let view = Circle()
-            .stroke(Color.white, lineWidth: 4 * (16.0/48.0))
-            .frame(width: 40 * (16.0/48.0), height: 40 * (16.0/48.0))
+            .stroke(Color.white, lineWidth: 3)
+            .frame(width: 13, height: 13)
             .overlay(
                 Circle()
-                    .stroke(Color.black, lineWidth: 2 * (16.0/48.0))
-                    .frame(width: 40 * (16.0/48.0), height: 40 * (16.0/48.0))
+                    .stroke(Color.black, lineWidth: 1)
+                    .frame(width: 13, height: 13)
             )
-            .padding(4 * (16.0/48.0))
             .frame(width: 16, height: 16, alignment: .center)
         
         let hostingView = NSHostingView(rootView: view)
@@ -176,6 +178,35 @@ struct SettingsView: View {
         return Image(nsImage: NSImage(cgImage: bitmap.cgImage!, size: CGSize(width: 16, height: 16)))
     }
     
+    private var focusImage: Image {
+        // 16x16ピクセルのピッカー用に最適化した「コンパクト版」フォーカスアイコン
+        // 1x環境でボケないよう、3px厚 (1白-1黒-1白) の整数値のみで構成
+        
+        let view = ZStack {
+            // 左上 (サイズ5x5, 厚み2)
+            FocusCorner(length: 5, thickness: 2, innerThickness: 1, alignment: .topLeading, containerSize: 16)
+            
+            // 右上
+            FocusCorner(length: 5, thickness: 2, innerThickness: 1, alignment: .topTrailing, containerSize: 16)
+            
+            // 左下
+            FocusCorner(length: 5, thickness: 2, innerThickness: 1, alignment: .bottomLeading, containerSize: 16)
+            
+            // 右下
+            FocusCorner(length: 5, thickness: 2, innerThickness: 1, alignment: .bottomTrailing, containerSize: 16)
+        }
+        .frame(width: 16, height: 16, alignment: .center)
+        
+        let hostingView = NSHostingView(rootView: view)
+        hostingView.setFrameSize(CGSize(width: 16, height: 16))
+        
+        // 透過情報を維持したままビットマップ化
+        let bitmap = hostingView.bitmapImageRepForCachingDisplay(in: NSRect(x: 0, y: 0, width: 16, height: 16))!
+        hostingView.cacheDisplay(in: NSRect(x: 0, y: 0, width: 16, height: 16), to: bitmap)
+        
+        return Image(nsImage: NSImage(cgImage: bitmap.cgImage!, size: CGSize(width: 16, height: 16)))
+    }
+    
     @ViewBuilder
     private func previewIcon(for style: IconStyle) -> some View {
         switch style {
@@ -189,6 +220,10 @@ struct SettingsView: View {
                 .frame(width: 16, height: 16)
         case .largeRing:
             largeRingImage
+                .resizable()
+                .frame(width: 16, height: 16)
+        case .focus:
+            focusImage
                 .resizable()
                 .frame(width: 16, height: 16)
         case .trafficLight:
@@ -535,6 +570,7 @@ struct SettingsView: View {
                             Label { Text("南京錠") } icon: { previewIcon(for: .padlock) }.tag(IconStyle.padlock)
                             Label { Text("ドット") } icon: { previewIcon(for: .dot) }.tag(IconStyle.dot)
                             Label { Text("大きなリング") } icon: { previewIcon(for: .largeRing) }.tag(IconStyle.largeRing)
+                            Label { Text("フォーカス") } icon: { previewIcon(for: .focus) }.tag(IconStyle.focus)
                         }
                         
                         Section("マルチインジケーター") {

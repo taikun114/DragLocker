@@ -4,6 +4,9 @@ import SwiftUI
 class CursorManager {
     static let shared = CursorManager()
     
+    /// アニメーションの時間（秒）
+    static let animationDuration: Double = 0.1
+    
     private var cursorWindow: NSWindow?
     
     init() {
@@ -31,7 +34,13 @@ class CursorManager {
     
     /// インジケーターを非表示
     func hideCustomCursor() {
-        cursorWindow?.orderOut(nil)
+        // アニメーション（0.1s）が完了するのを確実に待ってからウィンドウを隠す (0.05sのマージン)
+        DispatchQueue.main.asyncAfter(deadline: .now() + Self.animationDuration + 0.05) {
+            // その間に再度ロックされた場合は隠さない
+            if EventManager.shared.lockedButtons.isEmpty {
+                self.cursorWindow?.orderOut(nil)
+            }
+        }
     }
     
     /// カーソルのスタイルを更新
@@ -76,6 +85,9 @@ class CursorManager {
         case .largeRing:
             xOffset = -24.0
             yOffset = -24.0
+        case .focus:
+            xOffset = -24.0
+            yOffset = -24.0
         case .trafficLight:
             xOffset = 12.0
             yOffset = -6.5 // 高さ(13)の半分
@@ -91,8 +103,8 @@ class CursorManager {
         }
         
         let newOrigin = NSPoint(
-            x: mouseLocation.x + xOffset,
-            y: mouseLocation.y + yOffset
+            x: (mouseLocation.x + xOffset).rounded(),
+            y: (mouseLocation.y + yOffset).rounded()
         )
         
         window.setFrameOrigin(newOrigin)
@@ -104,6 +116,10 @@ struct CursorView: View {
     
     var body: some View {
         let style = eventManager.pointerIconStyle
+        let isLocked = !eventManager.lockedButtons.isEmpty
+        
+        // スタイルごとのアニメーション用スケール
+        let startScale: CGFloat = (style == .focus) ? 1.2 : 1.0
         
         ZStack(alignment: .center) {
             if style == .padlock {
@@ -123,6 +139,20 @@ struct CursorView: View {
                             .frame(width: 40, height: 40)
                     )
                     .padding(4)
+            } else if style == .focus {
+                // ピクセルパーフェクトなフォーカスアイコン (48x48)
+                ZStack {
+                    // 左上
+                    FocusCorner(length: 12, thickness: 4, innerThickness: 2, alignment: .topLeading)
+                    // 右上
+                    FocusCorner(length: 12, thickness: 4, innerThickness: 2, alignment: .topTrailing)
+                    // 左下
+                    FocusCorner(length: 12, thickness: 4, innerThickness: 2, alignment: .bottomLeading)
+                    // 右下
+                    FocusCorner(length: 12, thickness: 4, innerThickness: 2, alignment: .bottomTrailing)
+                }
+                .frame(width: 40, height: 40)
+                .padding(4)
             } else if style == .trafficLight {
                 HStack(spacing: 3) {
                     // 左クリック (緑)
@@ -233,5 +263,80 @@ struct CursorView: View {
                 )
             }
         }
+        // コンテンツ全体にアニメーションを適用
+        // isLocked (ドラッグ中か) の変化に連動して自動的にアニメーションする
+        .opacity(isLocked ? 1.0 : 0.0)
+        .scaleEffect(isLocked ? 1.0 : startScale)
+        .animation(.easeOut(duration: CursorManager.animationDuration), value: isLocked)
+    }
+}
+
+// 1x環境（ドットバイドット）でクッキリ表示させるためのコーナーパーツ
+struct FocusCorner: View {
+    let length: CGFloat
+    let thickness: CGFloat
+    let innerThickness: CGFloat
+    let alignment: Alignment
+    var containerSize: CGFloat = 40.0 // コンテナサイズを可変にする
+    
+    var body: some View {
+        ZStack {
+            // 外側の白い枠 (厚さ 4px)
+            whiteShape
+                .fill(Color.white)
+            
+            // 内側の黒い塗り (厚さ 2px)
+            blackShape
+                .fill(Color.black)
+        }
+        .frame(width: length, height: length)
+        .frame(width: containerSize, height: containerSize, alignment: alignment)
+    }
+    
+    private var whiteShape: some Shape {
+        SpecificCornerShape(length: length, thickness: thickness, alignment: alignment)
+    }
+    
+    private var blackShape: some Shape {
+        // 内側の黒い芯 (厚さ 2px)
+        // 1pxずつ上下左右にインセット。さらに先端（切り口）に白いボーダーを出すため、長さも2px短縮する。
+        SpecificCornerShape(length: length - 2, thickness: innerThickness, alignment: alignment, inset: 1)
+    }
+}
+
+// 隅ごとにパスを独立させて描くことで、反転によるボケを防ぐシェイプ
+struct SpecificCornerShape: Shape {
+    let length: CGFloat
+    let thickness: CGFloat
+    let alignment: Alignment
+    var inset: CGFloat = 0
+    
+    func path(in rect: CGRect) -> Path {
+        var path = Path()
+        let w = rect.width
+        let h = rect.height
+        
+        switch alignment {
+        case .topLeading:
+            // 左上
+            path.addRect(CGRect(x: inset, y: inset, width: length, height: thickness))
+            path.addRect(CGRect(x: inset, y: inset, width: thickness, height: length))
+        case .topTrailing:
+            // 右上
+            path.addRect(CGRect(x: w - length - inset, y: inset, width: length, height: thickness))
+            path.addRect(CGRect(x: w - thickness - inset, y: inset, width: thickness, height: length))
+        case .bottomLeading:
+            // 左下
+            path.addRect(CGRect(x: inset, y: h - thickness - inset, width: length, height: thickness))
+            path.addRect(CGRect(x: inset, y: h - length - inset, width: thickness, height: length))
+        case .bottomTrailing:
+            // 右下
+            path.addRect(CGRect(x: w - length - inset, y: h - thickness - inset, width: length, height: thickness))
+            path.addRect(CGRect(x: w - thickness - inset, y: h - length - inset, width: thickness, height: length))
+        default:
+            break
+        }
+        
+        return path
     }
 }
