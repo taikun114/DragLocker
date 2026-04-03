@@ -82,6 +82,12 @@ class CursorManager {
         case .smallTrafficLight:
             xOffset = 12.0
             yOffset = -4.5 // 高さ(9)の半分
+        case .trafficLightVertical:
+            xOffset = 14.0
+            yOffset = -17.5 // 高さ(35)の半分
+        case .smallTrafficLightVertical:
+            xOffset = 14.0
+            yOffset = -12.0 // 高さ(24)の半分
         }
         
         let newOrigin = NSPoint(
@@ -163,6 +169,60 @@ struct CursorView: View {
                 }
                 .padding(.horizontal, 2.5)
                 .padding(.vertical, 2)
+                .background(
+                    Capsule()
+                        .fill(Color.black)
+                        .overlay(
+                            Capsule()
+                                .stroke(Color.white, lineWidth: 1.0)
+                        )
+                )
+            } else if style == .trafficLightVertical {
+                VStack(spacing: 3) {
+                    // 左クリック (緑)
+                    Circle()
+                        .fill(eventManager.lockedButtons.contains(.left) ? Color.green : Color.gray)
+                        .frame(width: 7, height: 7)
+                    
+                    // 中クリック (黄)
+                    Circle()
+                        .fill(eventManager.lockedButtons.contains(.middle) ? Color.yellow : Color.gray)
+                        .frame(width: 7, height: 7)
+                    
+                    // 右クリック (赤)
+                    Circle()
+                        .fill(eventManager.lockedButtons.contains(.right) ? Color.red : Color.gray)
+                        .frame(width: 7, height: 7)
+                }
+                .padding(.horizontal, 3)
+                .padding(.vertical, 4)
+                .background(
+                    Capsule()
+                        .fill(Color.black)
+                        .overlay(
+                            Capsule()
+                                .stroke(Color.white, lineWidth: 1.0)
+                        )
+                )
+            } else if style == .smallTrafficLightVertical {
+                VStack(spacing: 2) {
+                    // 左クリック (緑)
+                    Circle()
+                        .fill(eventManager.lockedButtons.contains(.left) ? Color.green : Color.gray)
+                        .frame(width: 5, height: 5)
+                    
+                    // 中クリック (黄)
+                    Circle()
+                        .fill(eventManager.lockedButtons.contains(.middle) ? Color.yellow : Color.gray)
+                        .frame(width: 5, height: 5)
+                    
+                    // 右クリック (赤)
+                    Circle()
+                        .fill(eventManager.lockedButtons.contains(.right) ? Color.red : Color.gray)
+                        .frame(width: 5, height: 5)
+                }
+                .padding(.horizontal, 2)
+                .padding(.vertical, 2.5)
                 .background(
                     Capsule()
                         .fill(Color.black)

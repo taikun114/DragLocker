@@ -2143,6 +2143,40 @@
         }
       }
     },
+    "信号機（縦）" : {
+      "comment" : "アイコンスタイル：ボタンごとのロックを垂直に表示する信号機スタイル",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Traffic Light (Vertical)"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "信号機（縦）"
+          }
+        }
+      }
+    },
+    "小さな信号機（縦）" : {
+      "comment" : "アイコンスタイル：垂直信号機スタイルの縮小版",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Small Traffic Light (Vertical)"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "小さな信号機（縦）"
+          }
+        }
+      }
+    },
     "再生するサウンドを選択します。マウスホバーでサウンドをプレビューできます。" : {
       "comment" : "サウンド選択設定の説明文",
       "localizations" : {
