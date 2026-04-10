@@ -14,6 +14,12 @@ struct SettingsView: View {
     @State private var showingInvalidAppAlert = false
     @State private var showingClearAllManagedAppsConfirmation = false
     
+    // タブの選択状態を管理するための列挙型と状態変数
+    private enum Tab: Hashable {
+        case general, customization, behavior, info
+    }
+    @State private var selectedTab: Tab = .general
+    
     private var padlockPreviewImage: Image {
         let view = Image("Pointer_Locked")
             .frame(width: 16, height: 16, alignment: .center)
@@ -313,7 +319,7 @@ struct SettingsView: View {
     }
     
     var body: some View {
-        TabView {
+        TabView(selection: $selectedTab) {
             // 一般タブ
             Form {
                 Section(header: Text("一般")) {
@@ -618,6 +624,7 @@ struct SettingsView: View {
             .tabItem {
                 Label("一般", systemImage: "gear")
             }
+            .tag(Tab.general)
             
             // カスタマイズタブ
             Form {
@@ -751,6 +758,7 @@ struct SettingsView: View {
                     Label("カスタマイズ", systemImage: "cursorarrow.rays")
                 }
             }
+            .tag(Tab.customization)
             
             // 動作タブ
             Form {
@@ -772,16 +780,24 @@ struct SettingsView: View {
                     Label("動作", systemImage: "cursorarrow.and.square.on.square.dashed")
                 }
             }
+            .tag(Tab.behavior)
             
             // 情報タブ
             InfoView()
                 .tabItem {
                     Label("情報", systemImage: "info.circle")
                 }
+                .tag(Tab.info)
         }
         .navigationTitle("DragLocker 設定")
         .onAppear {
             runningApplications = NSWorkspace.shared.runningApplications
+            // 設定画面表示時はDockアイコンを表示する
+            NSApp.setActivationPolicy(.regular)
+            // アプリを前面に持ってくる
+            NSApp.activate(ignoringOtherApps: true)
+            // 設定画面を開くたびに「一般」タブにリセットする
+            selectedTab = .general
         }
         .onChange(of: lockDelay) { _, newValue in
             eventManager.lockDelay = newValue
@@ -789,6 +805,8 @@ struct SettingsView: View {
         .onDisappear {
             // 設定画面を閉じるときにメモリを整理
             SoundManager.shared.cleanupExcept(activeStyle: eventManager.soundStyle)
+            // 設定画面を閉じたらDockアイコンを非表示にする
+            NSApp.setActivationPolicy(.accessory)
         }
     }
 }
