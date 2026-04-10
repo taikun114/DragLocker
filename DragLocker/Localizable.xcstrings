@@ -1,6 +1,22 @@
 {
   "sourceLanguage" : "en",
   "strings" : {
+    "「%@」方式でドラッグロックを開始します。" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Starts drag lock using the \"%@\" method."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "「%@」方式でドラッグロックを開始します。"
+          }
+        }
+      }
+    },
     "%@ px" : {
       "localizations" : {
         "en" : {
@@ -29,6 +45,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "%@ 秒"
+          }
+        }
+      }
+    },
+    "%@ボタンをドラッグロックの対象にします。" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Enables drag lock for the %@ button."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ボタンをドラッグロックの対象にします。"
           }
         }
       }
@@ -242,6 +274,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "DragLockerはオープンソースアプリケーションです。"
+          }
+        }
+      }
+    },
+    "DragLockerへようこそ" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Welcome to DragLocker"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "DragLockerへようこそ"
           }
         }
       }
@@ -696,6 +744,22 @@
         }
       }
     },
+    "あらゆるマウスでドラッグロック可能にします。" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Enables drag lock for any mouse."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "あらゆるマウスでドラッグロック可能にします。"
+          }
+        }
+      }
+    },
     "オープンソースライセンス" : {
       "localizations" : {
         "en" : {
@@ -836,7 +900,7 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "In this mode, drag-locking is disabled for apps in the list."
+            "value" : "In this mode, drag lock is disabled for apps in the list."
           }
         },
         "ja" : {
@@ -853,13 +917,45 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "In this mode, drag-locking is enabled only for apps in the list."
+            "value" : "In this mode, drag lock is enabled only for apps in the list."
           }
         },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "このモードでは、リスト内に追加したアプリでのみドラッグロックするようにします。"
+          }
+        }
+      }
+    },
+    "この権限の許可を要求します。" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Request permission for this feature."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "この権限の許可を要求します。"
+          }
+        }
+      }
+    },
+    "この権限は正しく許可されています。" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "This permission has been correctly granted."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "この権限は正しく許可されています。"
           }
         }
       }
@@ -892,6 +988,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "これは通知のテストです。"
+          }
+        }
+      }
+    },
+    "これらは後で設定からカスタマイズできます。" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "These can be customized later in settings."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "これらは後で設定からカスタマイズできます。"
           }
         }
       }
@@ -1043,6 +1155,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "システム設定の通知設定画面を開きます。"
+          }
+        }
+      }
+    },
+    "システム設定を開いて権限を付与します。" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Open System Settings to grant permission."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "システム設定を開いて権限を付与します。"
           }
         }
       }
@@ -1318,7 +1446,7 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Play a sound when drag-lock is activated or deactivated."
+            "value" : "Play a sound when drag lock is activated or deactivated."
           }
         },
         "ja" : {
@@ -1335,7 +1463,7 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Swap the sounds played when drag-lock is activated and deactivated."
+            "value" : "Swap the sounds played when drag lock is activated and deactivated."
           }
         },
         "ja" : {
@@ -1352,7 +1480,7 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Show an icon near the mouse pointer while drag-locking is active."
+            "value" : "Show an icon near the mouse pointer while drag lock is active."
           }
         },
         "ja" : {
@@ -1385,7 +1513,7 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Select an app to add to the drag-locking targets."
+            "value" : "Select an app to add to the drag lock targets."
           }
         },
         "ja" : {
@@ -1428,6 +1556,22 @@
         }
       }
     },
+    "ドラッグロックはマウスイベントを書き換える必要があるため、ドラッグロックを使用するためには許可が必要です（必須）。" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "DragLocker needs to modify mouse events to function, so this permission is required (Required)."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ドラッグロックはマウスイベントを書き換える必要があるため、ドラッグロックを使用するためには許可が必要です（必須）。"
+          }
+        }
+      }
+    },
     "ドラッグロックは一時停止状態です" : {
       "localizations" : {
         "en" : {
@@ -1450,7 +1594,7 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Pause Drag-Lock"
+            "value" : "Pause Drag Lock"
           }
         },
         "ja" : {
@@ -1467,7 +1611,7 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Select the mouse buttons to use for drag-locking."
+            "value" : "Select the mouse buttons to use for drag lock."
           }
         },
         "ja" : {
@@ -1484,7 +1628,7 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Resume Drag-Lock"
+            "value" : "Resume Drag Lock"
           }
         },
         "ja" : {
@@ -1517,7 +1661,7 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Select how to start drag-locking."
+            "value" : "Select how to start drag lock."
           }
         },
         "ja" : {
@@ -1534,7 +1678,7 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Select the style of the icon displayed near the mouse pointer during drag-locking."
+            "value" : "Select the style of the icon displayed near the mouse pointer during drag lock."
           }
         },
         "ja" : {
@@ -1551,7 +1695,7 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "You need to grant permission to use the drag-locking feature."
+            "value" : "You need to grant permission to use the drag lock feature."
           }
         },
         "ja" : {
@@ -1578,13 +1722,29 @@
         }
       }
     },
+    "ドラッグロック監視が切り替わった時などに通知を受け取りたい場合は許可が必要です（オプション）。" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Required if you wish to receive notifications when drag lock monitoring status changes (Optional)."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ドラッグロック監視が切り替わった時などに通知を受け取りたい場合は許可が必要です（オプション）。"
+          }
+        }
+      }
+    },
     "ドラッグロック開始までクリックし続ける時間を設定します。" : {
       "comment" : "時間設定の説明文",
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Set the duration to hold the click before drag-locking starts."
+            "value" : "Set the duration to hold the click before drag lock starts."
           }
         },
         "ja" : {
@@ -1601,7 +1761,7 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Set the distance to drag before drag-locking starts."
+            "value" : "Set the distance to drag before drag lock starts."
           }
         },
         "ja" : {
@@ -1839,6 +1999,38 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "ホイール"
+          }
+        }
+      }
+    },
+    "マウスボタンを押してからロックされるまでの移動距離。" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The travel distance required to lock after pressing a mouse button."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "マウスボタンを押してからロックされるまでの移動距離。"
+          }
+        }
+      }
+    },
+    "マウスボタンを押し続けてからロックされるまでの時間。" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The time to wait after holding a mouse button before locking."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "マウスボタンを押し続けてからロックされるまでの時間。"
           }
         }
       }
@@ -2160,6 +2352,22 @@
         }
       }
     },
+    "一部の機能には許可を与える必要があります。" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Granting permission is required for some features."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "一部の機能には許可を与える必要があります。"
+          }
+        }
+      }
+    },
     "両方" : {
       "comment" : "ドラッグロックの開始条件：時間と距離の両方を有効にする",
       "localizations" : {
@@ -2245,6 +2453,22 @@
         }
       }
     },
+    "最低限の初期設定が完了しました。\nドラッグロックの動作をカスタマイズするにはメニューバーアイコンから設定を開きます。\nDragLockerをお楽しみください！" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Minimum setup is complete.\nTo customize drag lock behavior, open settings from the menu bar icon.\nEnjoy DragLocker!"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "最低限の初期設定が完了しました。\nドラッグロックの動作をカスタマイズするにはメニューバーアイコンから設定を開きます。\nDragLockerをお楽しみください！"
+          }
+        }
+      }
+    },
     "切り替えショートカット" : {
       "localizations" : {
         "en" : {
@@ -2277,6 +2501,38 @@
         }
       }
     },
+    "初期設定を完了します。" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Completes the initial setup."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "初期設定を完了します。"
+          }
+        }
+      }
+    },
+    "初期設定完了" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Initial Setup Complete"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "初期設定完了"
+          }
+        }
+      }
+    },
     "削除" : {
       "comment" : "コンテキストメニューの削除ボタンラベル",
       "localizations" : {
@@ -2290,6 +2546,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "削除"
+          }
+        }
+      }
+    },
+    "前のページに戻ります。" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Go back to the previous page."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "前のページに戻ります。"
           }
         }
       }
@@ -2395,6 +2667,22 @@
         }
       }
     },
+    "完了" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Complete"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "完了"
+          }
+        }
+      }
+    },
     "実行中のアプリから追加" : {
       "comment" : "アプリ追加画面のヘッダー",
       "localizations" : {
@@ -2446,6 +2734,22 @@
         }
       }
     },
+    "少なくとも1つのボタンを選択する必要があります" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "You must select at least one button."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "少なくとも1つのボタンを選択する必要があります"
+          }
+        }
+      }
+    },
     "左" : {
       "comment" : "マウスの左ボタン",
       "localizations" : {
@@ -2476,6 +2780,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "情報"
+          }
+        }
+      }
+    },
+    "戻る" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Back"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "戻る"
           }
         }
       }
@@ -2526,6 +2846,38 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "権限"
+          }
+        }
+      }
+    },
+    "次のページに進みます。" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Go to the next page."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "次のページに進みます。"
+          }
+        }
+      }
+    },
+    "次へ" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Next"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "次へ"
           }
         }
       }
@@ -2646,6 +2998,22 @@
         }
       }
     },
+    "続行するにはアクセシビリティ権限を許可する必要があります。" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "You must grant Accessibility permission to continue."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "続行するにはアクセシビリティ権限を許可する必要があります。"
+          }
+        }
+      }
+    },
     "緑茶を奢る" : {
       "localizations" : {
         "en" : {
@@ -2725,6 +3093,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "設定を開く"
+          }
+        }
+      }
+    },
+    "許可" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Allow"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "許可"
           }
         }
       }

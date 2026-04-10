@@ -466,7 +466,7 @@ class EventManager: NSObject, ObservableObject {
     }
 
     private func sendInitialPausedNotification() {
-        guard !isEnabled && isNotificationTrusted else { return }
+        guard !isEnabled && isNotificationTrusted && UserDefaults.standard.bool(forKey: "hasCompletedOnboarding") else { return }
 
         let content = UNMutableNotificationContent()
         content.title = String(localized: "ドラッグロックは一時停止状態です")
@@ -504,7 +504,14 @@ class EventManager: NSObject, ObservableObject {
     }
 
     func openNotificationSettings() {
-        if let url = URL(string: "x-apple.systempreferences:com.apple.preference.notifications") {
+        let bundleID = Bundle.main.bundleIdentifier ?? "com.taikun.DragLocker"
+        if let url = URL(string: "x-apple.systempreferences:com.apple.preference.notifications?id=\(bundleID)") {
+            NSWorkspace.shared.open(url)
+        }
+    }
+
+    func openAccessibilitySettings() {
+        if let url = URL(string: "x-apple.systempreferences:com.apple.preference.security?Privacy_Accessibility") {
             NSWorkspace.shared.open(url)
         }
     }
@@ -837,7 +844,22 @@ class EventManager: NSObject, ObservableObject {
         releaseAllLocks()
     }
 
+    func pauseForOnboarding() {
+        isProcessingNotificationAction = true
+        isEnabled = false
+        isProcessingNotificationAction = false
+    }
+
+    func resumeFromOnboarding() {
+        isProcessingNotificationAction = true
+        isEnabled = true
+        isProcessingNotificationAction = false
+    }
+
     func toggleEnabled(isSilent: Bool = false) {
+        // オンボーディングが完了していない場合は状態の切り替え（再開）を許可しない
+        guard UserDefaults.standard.bool(forKey: "hasCompletedOnboarding") else { return }
+        
         if isSilent {
             self.isProcessingNotificationAction = true
         }

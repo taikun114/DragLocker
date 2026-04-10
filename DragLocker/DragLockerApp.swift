@@ -1,14 +1,107 @@
 import SwiftUI
 
-class AppDelegate: NSObject, NSApplicationDelegate {
+class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate {
+    var onboardingWindow: NSWindow?
+
     func applicationDidFinishLaunching(_ notification: Notification) {
-        // 初期化とアクセシビリティ権限のチェック開始
+        print("DEBUG: App launched, hasCompletedOnboarding = \(UserDefaults.standard.bool(forKey: "hasCompletedOnboarding"))")
         EventManager.shared.start()
+
+        if !UserDefaults.standard.bool(forKey: "hasCompletedOnboarding") {
+            setupOnboarding()
+        }
     }
-    
+
     func applicationWillTerminate(_ notification: Notification) {
-        // アプリ終了時に確実にカスタムカーソルを解除する
         CursorManager.shared.hideCustomCursor()
+    }
+
+    private func setupOnboarding() {
+        NSApplication.shared.setActivationPolicy(.regular)
+        EventManager.shared.pauseForOnboarding()
+
+        let onboardingView = OnboardingView { [weak self] in
+            self?.completeOnboarding()
+        }
+        .environmentObject(EventManager.shared)
+
+        let hostingView = NSHostingView(rootView: onboardingView)
+
+        let window = NSWindow(
+            contentRect: NSRect(x: 0, y: 0, width: 300, height: 400),
+            styleMask: [.titled, .closable, .miniaturizable, .fullSizeContentView],
+            backing: .buffered,
+            defer: false
+        )
+        // ウィンドウサイズを固定し、コンテンツによる変動を防ぐ
+        window.setContentSize(NSSize(width: 300, height: 400))
+        window.minSize = NSSize(width: 300, height: 400)
+        window.maxSize = NSSize(width: 300, height: 400)
+        window.titlebarAppearsTransparent = true
+        window.titleVisibility = .hidden
+        
+        // ツールバーを追加してタイトルバーを大きく（高く）する
+        let toolbar = NSToolbar()
+        toolbar.showsBaselineSeparator = false
+        window.toolbar = toolbar
+        
+        window.titlebarSeparatorStyle = .none
+        window.isOpaque = false
+        window.backgroundColor = .clear
+        window.hasShadow = true
+        window.isMovableByWindowBackground = true
+        window.contentView = hostingView
+        window.center()
+        window.delegate = self
+        window.makeKeyAndOrderFront(nil)
+        NSApp.activate(ignoringOtherApps: true)
+
+        onboardingWindow = window
+    }
+
+    func completeOnboarding() {
+        print("DEBUG: completeOnboarding() called")
+        print("DEBUG: UserDefaults before set = \(UserDefaults.standard.bool(forKey: "hasCompletedOnboarding"))")
+
+        // UserDefaultsに保存してディスクに即時同期
+        UserDefaults.standard.set(true, forKey: "hasCompletedOnboarding")
+        UserDefaults.standard.synchronize()
+        print("DEBUG: UserDefaults after set = \(UserDefaults.standard.bool(forKey: "hasCompletedOnboarding"))")
+
+        // デリゲートを外してwindowWillCloseによるterminate()を防ぐ
+        onboardingWindow?.delegate = nil
+
+        // ウィンドウを画面から非表示にする
+        onboardingWindow?.orderOut(nil)
+        print("DEBUG: Window ordered out")
+
+        // レンダリングパイプラインが解放されるのを待ってから破棄
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) { [weak self] in
+            print("DEBUG: Async block executing")
+            self?.onboardingWindow?.contentView = nil
+            self?.onboardingWindow = nil
+            print("DEBUG: Window cleaned up")
+
+            EventManager.shared.resumeFromOnboarding()
+            print("DEBUG: resumeFromOnboarding called, isEnabled = \(EventManager.shared.isEnabled)")
+
+            // @AppStorageがMenuBarExtraを挿入する時間を確保してからDockアイコンを非表示にする
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+                print("DEBUG: Setting activation policy to .accessory")
+                NSApplication.shared.setActivationPolicy(.accessory)
+            }
+        }
+    }
+
+    // MARK: - NSWindowDelegate
+
+    func windowWillClose(_ notification: Notification) {
+        guard let window = notification.object as? NSWindow,
+              window == onboardingWindow else { return }
+
+        if !UserDefaults.standard.bool(forKey: "hasCompletedOnboarding") {
+            NSApplication.shared.terminate(nil)
+        }
     }
 }
 
@@ -16,6 +109,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
 struct DragLockerApp: App {
     @NSApplicationDelegateAdaptor(AppDelegate.self) var appDelegate
     @StateObject private var eventManager = EventManager.shared
+    @AppStorage("hasCompletedOnboarding") private var hasCompletedOnboarding = false
     
     var body: some Scene {
         MenuBarExtra {
@@ -38,6 +132,7 @@ struct DragLockerApp: App {
                 )
                 .labelStyle(.titleAndIcon)
             }
+            .disabled(!hasCompletedOnboarding)
             
             Divider()
             
@@ -45,6 +140,7 @@ struct DragLockerApp: App {
             SettingsLink {
                 Label("設定...", systemImage: "gear")
             }
+            .disabled(!hasCompletedOnboarding)
             
             Divider()
             
