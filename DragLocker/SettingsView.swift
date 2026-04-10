@@ -318,6 +318,100 @@ struct SettingsView: View {
         }
     }
     
+    private func methodButton(imageName: String, title: LocalizedStringResource, type: LockType) -> some View {
+        let isSelected = eventManager.lockType == type
+        
+        return Button {
+            withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) {
+                eventManager.lockType = type
+            }
+        } label: {
+            VStack(spacing: 4) {
+                ZStack(alignment: .bottomTrailing) {
+                    Image(imageName)
+                        .resizable()
+                        .aspectRatio(contentMode: .fit)
+                        .frame(height: 80) // ユーザー指定の高さ 80
+                        .clipShape(RoundedRectangle(cornerRadius: 8))
+                        .overlay(
+                            RoundedRectangle(cornerRadius: 8)
+                                .stroke(isSelected ? Color.accentColor : Color.primary.opacity(0.1), lineWidth: isSelected ? 2.5 : 1)
+                        )
+                    
+                    if isSelected {
+                        Image(systemName: "checkmark.circle.fill")
+                            .foregroundStyle(.white, Color.accentColor)
+                            .font(.system(size: 14))
+                            .background(Circle().fill(.white).padding(2))
+                            .offset(x: 5, y: 5)
+                    }
+                }
+                .padding(.horizontal, -2.5)
+                .padding(.bottom, -2.5)
+                
+                Text(title)
+                    .font(.caption2)
+                    .multilineTextAlignment(.center)
+                    .lineLimit(2)
+                    .fixedSize(horizontal: false, vertical: true)
+                    .foregroundStyle(isSelected ? .primary : .secondary)
+                    .fontWeight(isSelected ? .semibold : .regular)
+                    .frame(width: 60, alignment: .top)
+            }
+        }
+        .buttonStyle(.plain)
+        .help(Text("「\(String(localized: title))」方式でドラッグロックを開始します。"))
+    }
+
+    private func mouseButtonSelection(imageName: String, title: LocalizedStringResource, button: MouseButton) -> some View {
+        let isSelected = eventManager.enabledButtonRawValues.contains(button.rawValue)
+        
+        return Button {
+            withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) {
+                if isSelected {
+                    eventManager.enabledButtonRawValues.remove(button.rawValue)
+                } else {
+                    eventManager.enabledButtonRawValues.insert(button.rawValue)
+                }
+            }
+        } label: {
+            VStack(spacing: 4) {
+                ZStack(alignment: .bottomTrailing) {
+                    Image(imageName)
+                        .resizable()
+                        .aspectRatio(contentMode: .fit)
+                        .frame(height: 80) // ユーザー指定の高さ 80
+                        .clipShape(RoundedRectangle(cornerRadius: 8))
+                        .overlay(
+                            RoundedRectangle(cornerRadius: 8)
+                                .stroke(isSelected ? Color.accentColor : Color.primary.opacity(0.1), lineWidth: isSelected ? 2.5 : 1)
+                        )
+                    
+                    if isSelected {
+                        Image(systemName: "checkmark.circle.fill")
+                            .foregroundStyle(.white, Color.accentColor)
+                            .font(.system(size: 14))
+                            .background(Circle().fill(.white).padding(2))
+                            .offset(x: 5, y: 5)
+                    }
+                }
+                .padding(.horizontal, -2.5)
+                .padding(.bottom, -2.5)
+                
+                Text(title)
+                    .font(.caption2)
+                    .multilineTextAlignment(.center)
+                    .lineLimit(2)
+                    .fixedSize(horizontal: false, vertical: true)
+                    .foregroundStyle(isSelected ? .primary : .secondary)
+                    .fontWeight(isSelected ? .semibold : .regular)
+                    .frame(width: 60, alignment: .top)
+            }
+        }
+        .buttonStyle(.plain)
+        .help(Text("\(String(localized: title))ボタンをドラッグロックの対象にします。"))
+    }
+    
     var body: some View {
         TabView(selection: $selectedTab) {
             // 一般タブ
@@ -333,82 +427,37 @@ struct SettingsView: View {
                             .foregroundStyle(.secondary)
                     }
                     
-                    VStack(alignment: .leading, spacing: 8) {
-                        HStack {
+                    HStack(alignment: .top, spacing: 12) {
+                        VStack(alignment: .leading, spacing: 2) {
                             Text("ロック対象ボタン")
-                            
-                            Spacer()
-                            
-                            HStack(spacing: 16) {
-                                Toggle(isOn: Binding(
-                                    get: { eventManager.enabledButtonRawValues.contains(MouseButton.left.rawValue) },
-                                    set: { isOn in
-                                        if isOn {
-                                            eventManager.enabledButtonRawValues.insert(MouseButton.left.rawValue)
-                                        } else {
-                                            eventManager.enabledButtonRawValues.remove(MouseButton.left.rawValue)
-                                        }
-                                    }
-                                )) {
-                                    Text("左")
-                                        .lineLimit(1)
-                                        .fixedSize(horizontal: true, vertical: false)
-                                }
-                                .toggleStyle(.checkbox)
-                                .environment(\.layoutDirection, systemLayoutDirection)
-                                
-                                Toggle(isOn: Binding(
-                                    get: { eventManager.enabledButtonRawValues.contains(MouseButton.middle.rawValue) },
-                                    set: { isOn in
-                                        if isOn {
-                                            eventManager.enabledButtonRawValues.insert(MouseButton.middle.rawValue)
-                                        } else {
-                                            eventManager.enabledButtonRawValues.remove(MouseButton.middle.rawValue)
-                                        }
-                                    }
-                                )) {
-                                    Text("ホイール")
-                                        .lineLimit(1)
-                                        .fixedSize(horizontal: true, vertical: false)
-                                }
-                                .toggleStyle(.checkbox)
-                                .environment(\.layoutDirection, systemLayoutDirection)
-                                
-                                Toggle(isOn: Binding(
-                                    get: { eventManager.enabledButtonRawValues.contains(MouseButton.right.rawValue) },
-                                    set: { isOn in
-                                        if isOn {
-                                            eventManager.enabledButtonRawValues.insert(MouseButton.right.rawValue)
-                                        } else {
-                                            eventManager.enabledButtonRawValues.remove(MouseButton.right.rawValue)
-                                        }
-                                    }
-                                )) {
-                                    Text("右")
-                                        .lineLimit(1)
-                                        .fixedSize(horizontal: true, vertical: false)
-                                }
-                                .toggleStyle(.checkbox)
-                                .environment(\.layoutDirection, systemLayoutDirection)
-                            }
-                            .environment(\.layoutDirection, .leftToRight)
+                            Text("ドラッグロックを使用するマウスボタンを選択します。")
+                                .font(.subheadline)
+                                .foregroundStyle(.secondary)
+                                .fixedSize(horizontal: false, vertical: true)
                         }
-                        Text("ドラッグロックを使用するマウスボタンを選択します。")
-                            .font(.subheadline)
-                            .foregroundStyle(.secondary)
+                        
+                        Spacer()
+                        
+                        mouseButtonSelection(imageName: "DragLocker_Button_Left", title: "左", button: .left)
+                        mouseButtonSelection(imageName: "DragLocker_Button_Wheel", title: "ホイール", button: .middle)
+                        mouseButtonSelection(imageName: "DragLocker_Button_Right", title: "右", button: .right)
                     }
                     
-                    Picker(selection: $eventManager.lockType) {
-                        ForEach(LockType.allCases, id: \.self) { type in
-                            Text(type.localizedName).tag(type)
+                    HStack(alignment: .top, spacing: 12) {
+                        VStack(alignment: .leading, spacing: 2) {
+                            Text("ロック方法")
+                            Text("ドラッグロックを開始する方法を選択します。")
+                                .font(.subheadline)
+                                .foregroundStyle(.secondary)
+                                .fixedSize(horizontal: false, vertical: true)
                         }
-                    } label: {
-                        Text("ロック方法")
-                        Text("ドラッグロックを開始する方法を選択します。")
-                            .font(.subheadline)
-                            .foregroundStyle(.secondary)
+                        
+                        Spacer()
+                        
+                        methodButton(imageName: "DragLocker_Method_Time", title: "時間", type: .time)
+                        methodButton(imageName: "DragLocker_Method_Distance", title: "距離", type: .distance)
+                        methodButton(imageName: "DragLocker_Method_Both", title: "両方", type: .both)
                     }
-                    .pickerStyle(.radioGroup)
                     
                     if eventManager.lockType == .time || eventManager.lockType == .both {
                         VStack(alignment: .leading) {
