@@ -1,6 +1,12 @@
 import AppKit
 import SwiftUI
 
+/// フォーカスを奪わないように設定されたカスタムウィンドウ
+class PointerIndicatorWindow: NSWindow {
+    override var canBecomeKey: Bool { false }
+    override var canBecomeMain: Bool { false }
+}
+
 class CursorManager {
     static let shared = CursorManager()
     
@@ -16,7 +22,7 @@ class CursorManager {
     }
     
     private func setupCursorWindow() {
-        let window = NSWindow(
+        let window = PointerIndicatorWindow(
             contentRect: NSRect(x: 0, y: 0, width: 80, height: 80),
             styleMask: [.borderless],
             backing: .buffered,
