@@ -195,6 +195,12 @@ struct ManagedAppPickerPopover: View {
             currentRunningApplications = runningApplications
             refreshRunningApplications()
         }
+        .onDisappear {
+            filterTask?.cancel()
+            filterTask = nil
+            currentRunningApplications = []
+            filteredRunningApplications = []
+        }
         .onChange(of: showAllRunningApps) { _, _ in
             updateFilteredApps()
         }

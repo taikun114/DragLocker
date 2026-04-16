@@ -2,25 +2,30 @@ import AppKit
 import SwiftUI
 import UniformTypeIdentifiers
 
-private struct ResolvedManagedApplicationInfo {
+private final class ResolvedManagedApplicationInfo {
     let name: String
     let icon: NSImage?
+    
+    init(name: String, icon: NSImage?) {
+        self.name = name
+        self.icon = icon
+    }
 }
 
 private final class ManagedApplicationDisplayResolver {
     static let shared = ManagedApplicationDisplayResolver()
 
     private let fileManager = FileManager.default
+    private let cache = NSCache<NSString, ResolvedManagedApplicationInfo>()
     private let lock = NSLock()
-    private var cache: [String: ResolvedManagedApplicationInfo] = [:]
     private var searchedBundleIdentifiers: Set<String> = []
 
     func resolvedInfo(for bundleIdentifier: String) -> ResolvedManagedApplicationInfo? {
-        lock.lock()
-        if let cachedInfo = cache[bundleIdentifier] {
-            lock.unlock()
+        if let cachedInfo = cache.object(forKey: bundleIdentifier as NSString) {
             return cachedInfo
         }
+
+        lock.lock()
         let hasSearched = searchedBundleIdentifiers.contains(bundleIdentifier)
         lock.unlock()
 
@@ -53,8 +58,8 @@ private final class ManagedApplicationDisplayResolver {
     }
 
     private func store(_ info: ResolvedManagedApplicationInfo, for bundleIdentifier: String) {
+        cache.setObject(info, forKey: bundleIdentifier as NSString)
         lock.lock()
-        cache[bundleIdentifier] = info
         searchedBundleIdentifiers.insert(bundleIdentifier)
         lock.unlock()
     }

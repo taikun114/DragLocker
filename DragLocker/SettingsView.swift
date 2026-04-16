@@ -20,302 +20,168 @@ struct SettingsView: View {
     }
     @State private var selectedTab: Tab = .general
     
-    private var padlockPreviewImage: Image {
-        let view = Image("Pointer_Locked")
-            .frame(width: 16, height: 16, alignment: .center)
-        
-        let hostingView = NSHostingView(rootView: view)
-        hostingView.setFrameSize(CGSize(width: 16, height: 16))
-        
-        let bitmap = hostingView.bitmapImageRepForCachingDisplay(in: NSRect(x: 0, y: 0, width: 16, height: 16))!
-        hostingView.cacheDisplay(in: NSRect(x: 0, y: 0, width: 16, height: 16), to: bitmap)
-        
-        return Image(nsImage: NSImage(cgImage: bitmap.cgImage!, size: CGSize(width: 16, height: 16)))
+    private static var iconCache: [IconStyle: Image] = [:]
+
+    private func getIcon(for style: IconStyle) -> Image {
+        if let cached = Self.iconCache[style] {
+            return cached
+        }
+        let generated = generateIcon(for: style)
+        Self.iconCache[style] = generated
+        return generated
     }
 
-    private var dotImage: Image {
-        let view = ZStack(alignment: .center) {
-            Circle().fill(Color.white).frame(width: 8, height: 8)
-            Circle().fill(Color.black).frame(width: 6, height: 6)
-        }
-        .frame(width: 16, height: 16, alignment: .center)
-        
-        let hostingView = NSHostingView(rootView: view)
-        hostingView.setFrameSize(CGSize(width: 16, height: 16))
-        
-        let bitmap = hostingView.bitmapImageRepForCachingDisplay(in: NSRect(x: 0, y: 0, width: 16, height: 16))!
-        hostingView.cacheDisplay(in: NSRect(x: 0, y: 0, width: 16, height: 16), to: bitmap)
-        
-        return Image(nsImage: NSImage(cgImage: bitmap.cgImage!, size: CGSize(width: 16, height: 16)))
-    }
-    
-    private var largeRingImage: Image {
-        // 16x16ピクセルのピッカー用に最適化した「大きなリング」
-        // ホワイト(1px) - ブラック(1px) - ホワイト(1px) の計3px構造
-        
-        let view = Circle()
-            .stroke(Color.white, lineWidth: 3)
-            .frame(width: 13, height: 13)
-            .overlay(
-                Circle()
-                    .stroke(Color.black, lineWidth: 1)
-                    .frame(width: 13, height: 13)
+    private func generateIcon(for style: IconStyle) -> Image {
+        let view: AnyView
+        switch style {
+        case .padlock:
+            view = AnyView(Image("Pointer_Locked").frame(width: 16, height: 16, alignment: .center))
+        case .dot:
+            view = AnyView(ZStack(alignment: .center) {
+                Circle().fill(Color.white).frame(width: 8, height: 8)
+                Circle().fill(Color.black).frame(width: 6, height: 6)
+            }.frame(width: 16, height: 16, alignment: .center))
+        case .largeRing:
+            view = AnyView(Circle()
+                .stroke(Color.white, lineWidth: 3)
+                .frame(width: 13, height: 13)
+                .overlay(
+                    Circle()
+                        .stroke(Color.black, lineWidth: 1)
+                        .frame(width: 13, height: 13)
+                )
+                .frame(width: 16, height: 16, alignment: .center))
+        case .trafficLight:
+            let scale = 16.0 / 35.0
+            view = AnyView(HStack(spacing: 3 * scale) {
+                Circle().fill(Color.green).frame(width: 7 * scale, height: 7 * scale)
+                Circle().fill(Color.yellow).frame(width: 7 * scale, height: 7 * scale)
+                Circle().fill(Color.red).frame(width: 7 * scale, height: 7 * scale)
+            }
+            .padding(.horizontal, 4 * scale)
+            .padding(.vertical, 3 * scale)
+            .background(
+                Capsule()
+                    .fill(Color.black)
+                    .overlay(
+                        Capsule()
+                            .stroke(Color.white, lineWidth: 1.0 * scale)
+                    )
             )
-            .frame(width: 16, height: 16, alignment: .center)
-        
-        let hostingView = NSHostingView(rootView: view)
-        hostingView.setFrameSize(CGSize(width: 16, height: 16))
-        
-        let bitmap = hostingView.bitmapImageRepForCachingDisplay(in: NSRect(x: 0, y: 0, width: 16, height: 16))!
-        hostingView.cacheDisplay(in: NSRect(x: 0, y: 0, width: 16, height: 16), to: bitmap)
-        
-        return Image(nsImage: NSImage(cgImage: bitmap.cgImage!, size: CGSize(width: 16, height: 16)))
-    }
+            .frame(width: 16, height: 16, alignment: .center))
+        case .smallTrafficLight:
+            let scale = 16.0 / 24.0
+            view = AnyView(HStack(spacing: 2 * scale) {
+                Circle().fill(Color.green).frame(width: 5 * scale, height: 5 * scale)
+                Circle().fill(Color.yellow).frame(width: 5 * scale, height: 5 * scale)
+                Circle().fill(Color.red).frame(width: 5 * scale, height: 5 * scale)
+            }
+            .padding(.horizontal, 2.5 * scale)
+            .padding(.vertical, 2 * scale)
+            .background(
+                Capsule()
+                    .fill(Color.black)
+                    .overlay(
+                        Capsule()
+                            .stroke(Color.white, lineWidth: 1.0 * scale)
+                    )
+            )
+            .frame(width: 16, height: 16, alignment: .center))
+        case .trafficLightVertical:
+            let scale = 16.0 / 35.0
+            view = AnyView(VStack(spacing: 3 * scale) {
+                Circle().fill(Color.green).frame(width: 7 * scale, height: 7 * scale)
+                Circle().fill(Color.yellow).frame(width: 7 * scale, height: 7 * scale)
+                Circle().fill(Color.red).frame(width: 7 * scale, height: 7 * scale)
+            }
+            .padding(.horizontal, 3 * scale)
+            .padding(.vertical, 4 * scale)
+            .background(
+                Capsule()
+                    .fill(Color.black)
+                    .overlay(
+                        Capsule()
+                            .stroke(Color.white, lineWidth: 1.0 * scale)
+                    )
+            )
+            .frame(width: 16, height: 16, alignment: .center))
+        case .smallTrafficLightVertical:
+            let scale = 16.0 / 24.0
+            view = AnyView(VStack(spacing: 2 * scale) {
+                Circle().fill(Color.green).frame(width: 5 * scale, height: 5 * scale)
+                Circle().fill(Color.yellow).frame(width: 5 * scale, height: 5 * scale)
+                Circle().fill(Color.red).frame(width: 5 * scale, height: 5 * scale)
+            }
+            .padding(.horizontal, 2 * scale)
+            .padding(.vertical, 2.5 * scale)
+            .background(
+                Capsule()
+                    .fill(Color.black)
+                    .overlay(
+                        Capsule()
+                            .stroke(Color.white, lineWidth: 1.0 * scale)
+                    )
+            )
+            .frame(width: 16, height: 16, alignment: .center))
+        case .textHorizontal:
+            view = AnyView(HStack(spacing: 1) {
+                Text(verbatim: "L")
+                Text(verbatim: "M").padding(.leading, -1.5)
+                Text(verbatim: "R")
+            }
+            .font(.system(size: 6.5, weight: .bold, design: .monospaced))
+            .foregroundColor(.white)
+            .padding(.horizontal, 2)
+            .frame(height: 9)
+            .background(
+                Capsule()
+                    .fill(Color.black)
+                    .overlay(
+                        Capsule()
+                            .stroke(Color.white, lineWidth: 1.0)
+                    )
+            )
+            .frame(width: 16, height: 16, alignment: .center))
+        case .textVertical:
+            view = AnyView(VStack(spacing: -1.2) {
+                Text(verbatim: "L")
+                Text(verbatim: "M")
+                Text(verbatim: "R")
+            }
+            .font(.system(size: 4, weight: .bold, design: .monospaced))
+            .foregroundColor(.white)
+            .padding(.vertical, 0.5)
+            .frame(width: 7)
+            .background(
+                Capsule()
+                    .fill(Color.black)
+                    .overlay(
+                        Capsule()
+                            .stroke(Color.white, lineWidth: 1.0)
+                    )
+            )
+            .frame(width: 16, height: 16, alignment: .center))
+        case .focus:
+            view = AnyView(ZStack {
+                FocusCorner(length: 5, thickness: 2, innerThickness: 1, alignment: .topLeading, containerSize: 16)
+                FocusCorner(length: 5, thickness: 2, innerThickness: 1, alignment: .topTrailing, containerSize: 16)
+                FocusCorner(length: 5, thickness: 2, innerThickness: 1, alignment: .bottomLeading, containerSize: 16)
+                FocusCorner(length: 5, thickness: 2, innerThickness: 1, alignment: .bottomTrailing, containerSize: 16)
+            }.frame(width: 16, height: 16, alignment: .center))
+        }
 
-    private var trafficLightImage: Image {
-        let scale = 16.0 / 35.0
-        let view = HStack(spacing: 3 * scale) {
-            Circle().fill(Color.green).frame(width: 7 * scale, height: 7 * scale)
-            Circle().fill(Color.yellow).frame(width: 7 * scale, height: 7 * scale)
-            Circle().fill(Color.red).frame(width: 7 * scale, height: 7 * scale)
-        }
-        .padding(.horizontal, 4 * scale)
-        .padding(.vertical, 3 * scale)
-        .background(
-            Capsule()
-                .fill(Color.black)
-                .overlay(
-                    Capsule()
-                        .stroke(Color.white, lineWidth: 1.0 * scale)
-                )
-        )
-        .frame(width: 16, height: 16, alignment: .center)
-        
         let hostingView = NSHostingView(rootView: view)
         hostingView.setFrameSize(CGSize(width: 16, height: 16))
-        
         let bitmap = hostingView.bitmapImageRepForCachingDisplay(in: NSRect(x: 0, y: 0, width: 16, height: 16))!
         hostingView.cacheDisplay(in: NSRect(x: 0, y: 0, width: 16, height: 16), to: bitmap)
-        
-        return Image(nsImage: NSImage(cgImage: bitmap.cgImage!, size: CGSize(width: 16, height: 16)))
-    }
-    
-    private var smallTrafficLightImage: Image {
-        let scale = 16.0 / 24.0
-        let view = HStack(spacing: 2 * scale) {
-            Circle().fill(Color.green).frame(width: 5 * scale, height: 5 * scale)
-            Circle().fill(Color.yellow).frame(width: 5 * scale, height: 5 * scale)
-            Circle().fill(Color.red).frame(width: 5 * scale, height: 5 * scale)
-        }
-        .padding(.horizontal, 2.5 * scale)
-        .padding(.vertical, 2 * scale)
-        .background(
-            Capsule()
-                .fill(Color.black)
-                .overlay(
-                    Capsule()
-                        .stroke(Color.white, lineWidth: 1.0 * scale)
-                )
-        )
-        .frame(width: 16, height: 16, alignment: .center)
-        
-        let hostingView = NSHostingView(rootView: view)
-        hostingView.setFrameSize(CGSize(width: 16, height: 16))
-        
-        let bitmap = hostingView.bitmapImageRepForCachingDisplay(in: NSRect(x: 0, y: 0, width: 16, height: 16))!
-        hostingView.cacheDisplay(in: NSRect(x: 0, y: 0, width: 16, height: 16), to: bitmap)
-        
-        return Image(nsImage: NSImage(cgImage: bitmap.cgImage!, size: CGSize(width: 16, height: 16)))
-    }
-    
-    private var trafficLightVerticalImage: Image {
-        let scale = 16.0 / 35.0
-        let view = VStack(spacing: 3 * scale) {
-            Circle().fill(Color.green).frame(width: 7 * scale, height: 7 * scale)
-            Circle().fill(Color.yellow).frame(width: 7 * scale, height: 7 * scale)
-            Circle().fill(Color.red).frame(width: 7 * scale, height: 7 * scale)
-        }
-        .padding(.horizontal, 3 * scale)
-        .padding(.vertical, 4 * scale)
-        .background(
-            Capsule()
-                .fill(Color.black)
-                .overlay(
-                    Capsule()
-                        .stroke(Color.white, lineWidth: 1.0 * scale)
-                )
-        )
-        .frame(width: 16, height: 16, alignment: .center)
-        
-        let hostingView = NSHostingView(rootView: view)
-        hostingView.setFrameSize(CGSize(width: 16, height: 16))
-        
-        let bitmap = hostingView.bitmapImageRepForCachingDisplay(in: NSRect(x: 0, y: 0, width: 16, height: 16))!
-        hostingView.cacheDisplay(in: NSRect(x: 0, y: 0, width: 16, height: 16), to: bitmap)
-        
-        return Image(nsImage: NSImage(cgImage: bitmap.cgImage!, size: CGSize(width: 16, height: 16)))
-    }
-    
-    private var smallTrafficLightVerticalImage: Image {
-        let scale = 16.0 / 24.0
-        let view = VStack(spacing: 2 * scale) {
-            Circle().fill(Color.green).frame(width: 5 * scale, height: 5 * scale)
-            Circle().fill(Color.yellow).frame(width: 5 * scale, height: 5 * scale)
-            Circle().fill(Color.red).frame(width: 5 * scale, height: 5 * scale)
-        }
-        .padding(.horizontal, 2 * scale)
-        .padding(.vertical, 2.5 * scale)
-        .background(
-            Capsule()
-                .fill(Color.black)
-                .overlay(
-                    Capsule()
-                        .stroke(Color.white, lineWidth: 1.0 * scale)
-                )
-        )
-        .frame(width: 16, height: 16, alignment: .center)
-        
-        let hostingView = NSHostingView(rootView: view)
-        hostingView.setFrameSize(CGSize(width: 16, height: 16))
-        
-        let bitmap = hostingView.bitmapImageRepForCachingDisplay(in: NSRect(x: 0, y: 0, width: 16, height: 16))!
-        hostingView.cacheDisplay(in: NSRect(x: 0, y: 0, width: 16, height: 16), to: bitmap)
-        
-        return Image(nsImage: NSImage(cgImage: bitmap.cgImage!, size: CGSize(width: 16, height: 16)))
-    }
-    
-    private var textImage: Image {
-        let view = HStack(spacing: 1) {
-            Text(verbatim: "L")
-            Text(verbatim: "M")
-                .padding(.leading, -1.5)
-            Text(verbatim: "R")
-        }
-        .font(.system(size: 6.5, weight: .bold, design: .monospaced))
-        .foregroundColor(.white)
-        .padding(.horizontal, 2)
-        .frame(height: 9) // 楕円ではなく「横長カプセル」に見えるよう高さを絞る
-        .background(
-            Capsule()
-                .fill(Color.black)
-                .overlay(
-                    Capsule()
-                        .stroke(Color.white, lineWidth: 1.0)
-                )
-        )
-        .frame(width: 16, height: 16, alignment: .center)
-        
-        let hostingView = NSHostingView(rootView: view)
-        hostingView.setFrameSize(CGSize(width: 16, height: 16))
-        
-        let bitmap = hostingView.bitmapImageRepForCachingDisplay(in: NSRect(x: 0, y: 0, width: 16, height: 16))!
-        hostingView.cacheDisplay(in: NSRect(x: 0, y: 0, width: 16, height: 16), to: bitmap)
-        
-        return Image(nsImage: NSImage(cgImage: bitmap.cgImage!, size: CGSize(width: 16, height: 16)))
-    }
-    
-    private var textVerticalImage: Image {
-        let view = VStack(spacing: -1.2) {
-            Text(verbatim: "L")
-            Text(verbatim: "M")
-            Text(verbatim: "R")
-        }
-        .font(.system(size: 4, weight: .bold, design: .monospaced)) // 極限まで詰めても枠内に収まるサイズ
-        .foregroundColor(.white)
-        .padding(.vertical, 0.5)
-        .frame(width: 7) // スリムさを維持
-        .background(
-            Capsule()
-                .fill(Color.black)
-                .overlay(
-                    Capsule()
-                        .stroke(Color.white, lineWidth: 1.0)
-                )
-        )
-        .frame(width: 16, height: 16, alignment: .center)
-        
-        let hostingView = NSHostingView(rootView: view)
-        hostingView.setFrameSize(CGSize(width: 16, height: 16))
-        
-        let bitmap = hostingView.bitmapImageRepForCachingDisplay(in: NSRect(x: 0, y: 0, width: 16, height: 16))!
-        hostingView.cacheDisplay(in: NSRect(x: 0, y: 0, width: 16, height: 16), to: bitmap)
-        
-        return Image(nsImage: NSImage(cgImage: bitmap.cgImage!, size: CGSize(width: 16, height: 16)))
-    }
-    
-    private var focusImage: Image {
-        // 16x16ピクセルのピッカー用に最適化した「コンパクト版」フォーカスアイコン
-        // 1x環境でボケないよう、3px厚 (1白-1黒-1白) の整数値のみで構成
-        
-        let view = ZStack {
-            // 左上 (サイズ5x5, 厚み2)
-            FocusCorner(length: 5, thickness: 2, innerThickness: 1, alignment: .topLeading, containerSize: 16)
-            
-            // 右上
-            FocusCorner(length: 5, thickness: 2, innerThickness: 1, alignment: .topTrailing, containerSize: 16)
-            
-            // 左下
-            FocusCorner(length: 5, thickness: 2, innerThickness: 1, alignment: .bottomLeading, containerSize: 16)
-            
-            // 右下
-            FocusCorner(length: 5, thickness: 2, innerThickness: 1, alignment: .bottomTrailing, containerSize: 16)
-        }
-        .frame(width: 16, height: 16, alignment: .center)
-        
-        let hostingView = NSHostingView(rootView: view)
-        hostingView.setFrameSize(CGSize(width: 16, height: 16))
-        
-        // 透過情報を維持したままビットマップ化
-        let bitmap = hostingView.bitmapImageRepForCachingDisplay(in: NSRect(x: 0, y: 0, width: 16, height: 16))!
-        hostingView.cacheDisplay(in: NSRect(x: 0, y: 0, width: 16, height: 16), to: bitmap)
-        
         return Image(nsImage: NSImage(cgImage: bitmap.cgImage!, size: CGSize(width: 16, height: 16)))
     }
     
     @ViewBuilder
     private func previewIcon(for style: IconStyle) -> some View {
-        switch style {
-        case .padlock:
-            padlockPreviewImage
-                .resizable()
-                .frame(width: 16, height: 16)
-        case .dot:
-            dotImage
-                .resizable()
-                .frame(width: 16, height: 16)
-        case .largeRing:
-            largeRingImage
-                .resizable()
-                .frame(width: 16, height: 16)
-        case .focus:
-            focusImage
-                .resizable()
-                .frame(width: 16, height: 16)
-        case .trafficLight:
-            trafficLightImage
-                .resizable()
-                .frame(width: 16, height: 16)
-        case .trafficLightVertical:
-            trafficLightVerticalImage
-                .resizable()
-                .frame(width: 16, height: 16)
-        case .smallTrafficLight:
-            smallTrafficLightImage
-                .resizable()
-                .frame(width: 16, height: 16)
-        case .smallTrafficLightVertical:
-            smallTrafficLightVerticalImage
-                .resizable()
-                .frame(width: 16, height: 16)
-        case .textHorizontal:
-            textImage
-                .resizable()
-                .frame(width: 16, height: 16)
-        case .textVertical:
-            textVerticalImage
-                .resizable()
-                .frame(width: 16, height: 16)
-        }
+        getIcon(for: style)
+            .resizable()
+            .frame(width: 16, height: 16)
     }
     
     private func methodButton(imageName: String, title: LocalizedStringResource, type: LockType) -> some View {
@@ -854,6 +720,11 @@ struct SettingsView: View {
         .onDisappear {
             // 設定画面を閉じるときにメモリを整理
             SoundManager.shared.cleanupExcept(activeStyle: eventManager.soundStyle)
+            // 大量にメモリを消費する可能性のあるリストをクリア
+            runningApplications = []
+            selectedManagedAppIds = []
+            hoverTask?.cancel()
+            hoverTask = nil
             // 設定画面を閉じたらDockアイコンを非表示にする
             NSApp.setActivationPolicy(.accessory)
         }
