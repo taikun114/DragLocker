@@ -8,6 +8,7 @@ class CursorManager {
     static let animationDuration: Double = 0.1
     
     private var cursorWindow: NSWindow?
+    private var positionUpdateTimer: Timer?
     
     init() {
         setupCursorWindow()
@@ -34,6 +35,8 @@ class CursorManager {
     
     /// インジケーターを非表示
     func hideCustomCursor() {
+        stopPositionUpdateTimer()
+        
         // アニメーション（0.1s）が完了するのを確実に待ってからウィンドウを隠す (0.05sのマージン)
         DispatchQueue.main.asyncAfter(deadline: .now() + Self.animationDuration + 0.05) {
             // その間に再度ロックされた場合は隠さない
@@ -65,6 +68,24 @@ class CursorManager {
         
         updatePosition()
         window.orderFront(nil)
+        
+        // 高速移動時のズレを防ぎ、停止時にも正確な位置に配置されるようタイマーで更新を開始
+        startPositionUpdateTimer()
+    }
+    
+    private func startPositionUpdateTimer() {
+        positionUpdateTimer?.invalidate()
+        // 120Hzでリフレッシュして滑らかな追従を実現
+        let timer = Timer(timeInterval: 1.0 / 120.0, repeats: true) { [weak self] _ in
+            self?.updatePosition()
+        }
+        positionUpdateTimer = timer
+        RunLoop.main.add(timer, forMode: .common)
+    }
+    
+    private func stopPositionUpdateTimer() {
+        positionUpdateTimer?.invalidate()
+        positionUpdateTimer = nil
     }
     
     /// 指定された位置にウィンドウの位置を更新
