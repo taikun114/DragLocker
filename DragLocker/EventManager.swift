@@ -572,35 +572,38 @@ class EventManager: NSObject, ObservableObject {
     }
 
     private func windowOwnerPID(at location: CGPoint) -> pid_t? {
-        let windowList = CGWindowListCopyWindowInfo([.optionOnScreenOnly, .excludeDesktopElements], kCGNullWindowID) as? [[String: Any]] ?? []
+        autoreleasepool {
+            let windowList = CGWindowListCopyWindowInfo([.optionOnScreenOnly, .excludeDesktopElements], kCGNullWindowID) as? [[String: Any]] ?? []
 
-        for windowInfo in windowList {
-            guard let windowPID = windowInfo[kCGWindowOwnerPID as String] as? Int,
-                  let boundsDict = windowInfo[kCGWindowBounds as String] as? [String: Any],
-                  let bounds = CGRect(dictionaryRepresentation: boundsDict as CFDictionary) else {
-                continue
-            }
+            for windowInfo in windowList {
+                guard let windowPID = windowInfo[kCGWindowOwnerPID as String] as? Int,
+                      let boundsDict = windowInfo[kCGWindowBounds as String] as? [String: Any],
+                      let bounds = CGRect(dictionaryRepresentation: boundsDict as CFDictionary) else {
+                    continue
+                }
 
-            if !bounds.contains(location) {
-                continue
-            }
+                if !bounds.contains(location) {
+                    continue
+                }
 
-            let layer = windowInfo[kCGWindowLayer as String] as? Int ?? 0
-            let alpha = windowInfo[kCGWindowAlpha as String] as? Double ?? 1.0
-            if layer == 0 && alpha > 0 {
-                return pid_t(windowPID)
+                let layer = windowInfo[kCGWindowLayer as String] as? Int ?? 0
+                let alpha = windowInfo[kCGWindowAlpha as String] as? Double ?? 1.0
+                if layer == 0 && alpha > 0 {
+                    return pid_t(windowPID)
+                }
             }
+            return nil
         }
-
-        return nil
     }
 
     private func bundleIdentifierForApplication(at location: CGPoint) -> String? {
-        guard let targetPID = windowOwnerPID(at: location) else {
-            return nil
-        }
+        autoreleasepool {
+            guard let targetPID = windowOwnerPID(at: location) else {
+                return nil
+            }
 
-        return NSRunningApplication(processIdentifier: targetPID)?.bundleIdentifier
+            return NSRunningApplication(processIdentifier: targetPID)?.bundleIdentifier
+        }
     }
 
     private func shouldLock(at location: CGPoint) -> Bool {
@@ -645,11 +648,11 @@ class EventManager: NSObject, ObservableObject {
             if let tap = eventTap {
                 CGEvent.tapEnable(tap: tap, enable: true)
             }
-            return Unmanaged.passRetained(event)
+            return Unmanaged.passUnretained(event)
         }
 
         // アプリケーション機能が一時停止中の場合は何も処理せずイベントを流す
-        guard isEnabled else { return Unmanaged.passRetained(event) }
+        guard isEnabled else { return Unmanaged.passUnretained(event) }
 
         if type == .keyDown {
             let keyCode = event.getIntegerValueField(.keyboardEventKeycode)
@@ -657,7 +660,7 @@ class EventManager: NSObject, ObservableObject {
                 print("Escape pressed: Releasing all locks")
                 releaseAllLocks()
             }
-            return Unmanaged.passRetained(event) // キーボードイベントはそのまま通す
+            return Unmanaged.passUnretained(event) // キーボードイベントはそのまま通す
         }
 
         // 各ボタンのイベント判定
@@ -690,7 +693,7 @@ class EventManager: NSObject, ObservableObject {
                     if buttonStates[button] == .holding {
                         cancelHold(for: button)
                     }
-                    return Unmanaged.passRetained(event)
+                    return Unmanaged.passUnretained(event)
                 }
 
                 if buttonStates[button] == .idle {
@@ -707,7 +710,7 @@ class EventManager: NSObject, ObservableObject {
                     print("\(button) down while locked: Releasing lock")
                     releaseLock(for: button)
                 }
-                return Unmanaged.passRetained(event)
+                return Unmanaged.passUnretained(event)
             }
 
             if type == button.mouseUpType {
@@ -719,7 +722,7 @@ class EventManager: NSObject, ObservableObject {
                 if buttonStates[button] == .holding {
                     print("\(button) up: Normal click, canceling timer")
                     cancelHold(for: button)
-                    return Unmanaged.passRetained(event)
+                    return Unmanaged.passUnretained(event)
                 } else if buttonStates[button] == .locked {
                     print("\(button) up while locked: Ignoring to keep the lock")
                     return nil
@@ -736,10 +739,16 @@ class EventManager: NSObject, ObservableObject {
                         let currentLocation = event.location
                         let distance = sqrt(pow(currentLocation.x - startLocation.x, 2) + pow(currentLocation.y - startLocation.y, 2))
                         
-                        if distance >= lockDistance && shouldLock(at: currentLocation) {
-                            print("\(button) distance (\(distance)) exceeded threshold (\(lockDistance)): Locking")
-                            updateButtonState(button, to: .locked)
-                            break
+                        if distance >= lockDistance {
+                            if shouldLock(at: currentLocation) {
+                                print("\(button) distance (\(distance)) exceeded threshold (\(lockDistance)): Locking")
+                                updateButtonState(button, to: .locked)
+                                break
+                            } else {
+                                // 閾値を超えたが対象外アプリの場合は、そのボタンのトラッキングを中止してリソースを節約
+                                print("\(button) distance exceeded but app is filtered: Canceling hold")
+                                cancelHold(for: button)
+                            }
                         }
                     }
                 }
@@ -759,11 +768,11 @@ class EventManager: NSObject, ObservableObject {
                         }
                     }
                 }
-                return Unmanaged.passRetained(event)
+                return Unmanaged.passUnretained(event)
             }
         }
 
-        return Unmanaged.passRetained(event)
+        return Unmanaged.passUnretained(event)
     }
 
     private func updateButtonState(_ button: MouseButton, to newState: EventManagerState) {
@@ -937,7 +946,7 @@ extension EventManager: UNUserNotificationCenterDelegate {
 
 // C関数としてのコールバック
 func eventTapCallback(proxy: CGEventTapProxy, type: CGEventType, event: CGEvent, refcon: UnsafeMutableRawPointer?) -> Unmanaged<CGEvent>? {
-    guard let refcon = refcon else { return Unmanaged.passRetained(event) }
+    guard let refcon = refcon else { return Unmanaged.passUnretained(event) }
     let manager = Unmanaged<EventManager>.fromOpaque(refcon).takeUnretainedValue()
     
     return manager.handleEvent(proxy: proxy, type: type, event: event)
