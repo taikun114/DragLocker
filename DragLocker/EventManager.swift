@@ -56,22 +56,37 @@ enum MouseButton: Int, CaseIterable, Sendable {
 }
 
 enum IconStyle: String, CaseIterable, Sendable {
-    case padlock = "南京錠"
-    case dot = "ドット"
-    case largeRing = "大きなリング"
-    case focus = "フォーカス"
-    case trafficLight = "信号機（横）"
-    case smallTrafficLight = "小さな信号機（横）"
-    case trafficLightVertical = "信号機（縦）"
-    case smallTrafficLightVertical = "小さな信号機（縦）"
-    case textHorizontal = "テキスト（横）"
-    case textVertical = "テキスト（縦）"
+    case padlock = "padlock"
+    case dot = "dot"
+    case largeRing = "large_ring"
+    case focus = "focus"
+    case trafficLight = "traffic_light"
+    case smallTrafficLight = "small_traffic_light"
+    case trafficLightVertical = "traffic_light_vertical"
+    case smallTrafficLightVertical = "small_traffic_light_vertical"
+    case textHorizontal = "text_horizontal"
+    case textVertical = "text_vertical"
+
+    var localizedName: LocalizedStringResource {
+        switch self {
+        case .padlock: return LocalizedStringResource("南京錠", comment: "ポインタ付近に表示するアイコンの種類：鍵")
+        case .dot: return LocalizedStringResource("ドット", comment: "ポインタ付近に表示するアイコンの種類：点")
+        case .largeRing: return LocalizedStringResource("大きなリング", comment: "ポインタ付近に表示するアイコンの種類：大きな円")
+        case .focus: return LocalizedStringResource("フォーカス", comment: "ポインタ付近に表示するアイコンの種類：カメラのファインダーのような角括弧")
+        case .trafficLight: return LocalizedStringResource("信号機（横）", comment: "アイコンスタイル：ボタンごとのロックを表示する信号機スタイル")
+        case .smallTrafficLight: return LocalizedStringResource("小さな信号機（横）", comment: "アイコンスタイル：信号機スタイルの縮小版")
+        case .trafficLightVertical: return LocalizedStringResource("信号機（縦）", comment: "アイコンスタイル：ボタンごとのロックを垂直に表示する信号機スタイル")
+        case .smallTrafficLightVertical: return LocalizedStringResource("小さな信号機（縦）", comment: "アイコンスタイル：垂直信号機スタイルの縮小版")
+        case .textHorizontal: return LocalizedStringResource("テキスト（横）", comment: "ポインタ付近に表示するアイコンの種類：テキスト（横）")
+        case .textVertical: return LocalizedStringResource("テキスト（縦）", comment: "ポインタ付近に表示するアイコンの種類：テキスト（縦）")
+        }
+    }
 }
 
 enum LockType: String, CaseIterable, Sendable {
-    case time = "時間"
-    case distance = "距離"
-    case both = "両方"
+    case time = "time"
+    case distance = "distance"
+    case both = "both"
 
     var localizedName: LocalizedStringResource {
         switch self {
@@ -83,8 +98,8 @@ enum LockType: String, CaseIterable, Sendable {
 }
 
 enum AppListMode: String, CaseIterable, Sendable {
-    case exclude = "除外する"
-    case include = "含める"
+    case exclude = "exclude"
+    case include = "include"
 
     var localizedName: LocalizedStringResource {
         switch self {
