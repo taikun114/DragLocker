@@ -129,8 +129,6 @@ enum ManagedApplicationListEvaluator {
 class EventManager: NSObject, ObservableObject {
     static let shared = EventManager()
 
-    private let ownPID = ProcessInfo.processInfo.processIdentifier
-
     @Published var isTrusted: Bool = false
     @Published var isEnabled: Bool = true {
         didSet {
@@ -576,16 +574,6 @@ class EventManager: NSObject, ObservableObject {
         }
     }
 
-    // マウス座標にあるアプリがDragLocker自身かどうかを判定する
-    private func isEventTargetingOwnApp(event: CGEvent) -> Bool {
-        let mouseLocation = event.location
-        guard let targetPID = windowOwnerPID(at: mouseLocation) else {
-            return false
-        }
-
-        return targetPID == ownPID
-    }
-
     private func windowOwnerPID(at location: CGPoint) -> pid_t? {
         autoreleasepool {
             let windowList = CGWindowListCopyWindowInfo([.optionOnScreenOnly, .excludeDesktopElements], kCGNullWindowID) as? [[String: Any]] ?? []
@@ -690,17 +678,6 @@ class EventManager: NSObject, ObservableObject {
                 if type == .otherMouseDown {
                     let buttonNumber = event.getIntegerValueField(.mouseEventButtonNumber)
                     if buttonNumber != 2 { continue } // 2が中ボタン
-                }
-
-                // DragLockerアプリ自身へのクリックではロック機能を発動しない
-                if isEventTargetingOwnApp(event: event) {
-                    print("\(button) down: Targeting own app, ignoring")
-                    if buttonStates[button] == .locked {
-                        releaseLock(for: button)
-                    } else if buttonStates[button] == .holding {
-                        cancelHold(for: button)
-                    }
-                    return Unmanaged.passRetained(event)
                 }
 
                 if !shouldLock(at: event.location) {
