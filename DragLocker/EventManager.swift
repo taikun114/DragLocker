@@ -267,6 +267,12 @@ class EventManager: NSObject, ObservableObject {
         }
     }
 
+    @Published var isIgnoreSystemOverlaysEnabled: Bool = false {
+        didSet {
+            UserDefaults.standard.set(isIgnoreSystemOverlaysEnabled, forKey: "isIgnoreSystemOverlaysEnabled")
+        }
+    }
+
     @Published var managedAppBundleIdentifiers: [String] = [] {
         didSet {
             if let encoded = try? JSONEncoder().encode(managedAppBundleIdentifiers) {
@@ -278,11 +284,13 @@ class EventManager: NSObject, ObservableObject {
     }
 
     private var dragStartLocations: [MouseButton: CGPoint] = [:]
+    private var lastLocation: CGPoint = .zero
 
     // アプリケーション確認のキャッシュ（メモリ負荷軽減とリーク防止）
     private var lastAppCheckTime: Date = .distantPast
     private var lastAppCheckLocation: CGPoint = .zero
     private var lastAppBundleIdentifier: String?
+    private var lastAppIsOverlay: Bool = false
 
     // ウィンドウリストのキャッシュ（高頻度な呼び出しによるメモリ負荷を軽減）
     private var lastWindowList: [[String: Any]]?
@@ -312,6 +320,8 @@ class EventManager: NSObject, ObservableObject {
         } else {
             self.appListMode = .exclude
         }
+
+        self.isIgnoreSystemOverlaysEnabled = UserDefaults.standard.bool(forKey: "isIgnoreSystemOverlaysEnabled")
 
         if let appListData = UserDefaults.standard.data(forKey: "managedAppBundleIdentifiersData"),
            let decodedAppBundleIdentifiers = try? JSONDecoder().decode([String].self, from: appListData) {
@@ -594,80 +604,112 @@ class EventManager: NSObject, ObservableObject {
         }
     }
 
-    private func windowOwnerPID(at location: CGPoint) -> pid_t? {
+    private func windowOwnerPID(at location: CGPoint) -> (pid: pid_t, isOverlay: Bool)? {
         return autoreleasepool {
-            let now = Date()
+            let windowList = CGWindowListCopyWindowInfo([.optionOnScreenOnly, .excludeDesktopElements], kCGNullWindowID) as? [[String: Any]] ?? []
             
-            // 0.1秒以内であれば前回のウィンドウリストを再利用する
-            let windowList: [[String: Any]]
-            if let lastList = lastWindowList, now.timeIntervalSince(lastWindowListTime) < 0.1 {
-                windowList = lastList
-            } else {
-                // ブリッジのオーバーヘッドを最小限にするため、必要な情報だけを取得するオプションがあれば良いが、
-                // CGWindowListCopyWindowInfo は一括取得のみ。
-                windowList = CGWindowListCopyWindowInfo([.optionOnScreenOnly, .excludeDesktopElements], kCGNullWindowID) as? [[String: Any]] ?? []
-                lastWindowList = windowList
-                lastWindowListTime = now
-            }
-
+            var bestAppPID: pid_t? = nil
+            var bestAppLayer: Int = -1
+            
+            var bestOverlayPID: pid_t? = nil
+            var bestOverlayLayer: Int = -1
+            
             for windowInfo in windowList {
                 guard let windowPID = windowInfo[kCGWindowOwnerPID as String] as? Int,
                       let boundsDict = windowInfo[kCGWindowBounds as String] as? [String: Any],
                       let bounds = CGRect(dictionaryRepresentation: boundsDict as CFDictionary) else {
                     continue
                 }
-
-                if !bounds.contains(location) {
-                    continue
+                
+                if bounds.contains(location) {
+                    let layer = windowInfo[kCGWindowLayer as String] as? Int ?? 0
+                    let alpha = windowInfo[kCGWindowAlpha as String] as? Double ?? 1.0
+                    let ownerName = windowInfo[kCGWindowOwnerName as String] as? String
+                    let windowName = windowInfo[kCGWindowName as String] as? String
+                    
+                    // デバッグ用: 座標も一緒に出力
+                    print("[Debug] Window at \(location): owner='\(ownerName ?? "n/a")', layer=\(layer), alpha=\(alpha), name='\(windowName ?? "n/a")'")
+                    
+                    let pid = pid_t(windowPID)
+                    
+                    // 1. 通常のアプリ (layer 0〜19)
+                    // 最前面のアプリ (layer 3) など、Dockアイコンのないものも含めて捕捉
+                    if layer < 20 && ownerName != "Dock" && ownerName != "AssistiveControl" {
+                        if bestAppPID == nil || layer > bestAppLayer {
+                            bestAppPID = pid
+                            bestAppLayer = layer
+                        }
+                        continue
+                    }
+                    
+                    // 2. システムオーバーレイ (layer 21〜1999)
+                    // 20: Dock背景 は無視する
+                    // 2000以上: AssistiveControlの管理用オーバーレイ などは無視する
+                    if layer >= 21 && layer < 2000 {
+                        // Launchpad(27, 29), メニューバー(24, 25), 通知(23), キーボード(101)など
+                        if bestOverlayPID == nil || layer > bestOverlayLayer {
+                            bestOverlayPID = pid
+                            bestOverlayLayer = layer
+                        }
+                    }
                 }
-
-                let layer = windowInfo[kCGWindowLayer as String] as? Int ?? 0
-                let alpha = windowInfo[kCGWindowAlpha as String] as? Double ?? 1.0
-                if layer == 0 && alpha > 0 {
-                    return pid_t(windowPID)
-                }
+            }
+            
+            if let opid = bestOverlayPID {
+                return (opid, true)
+            }
+            if let apid = bestAppPID {
+                return (apid, false)
             }
             return nil
         }
     }
 
-    private func bundleIdentifierForApplication(at location: CGPoint) -> String? {
+    private func bundleIdentifierForApplication(at location: CGPoint) -> (identifier: String?, isOverlay: Bool) {
         let dx = location.x - lastAppCheckLocation.x
         let dy = location.y - lastAppCheckLocation.y
         let distanceSquared = dx * dx + dy * dy
         
-        // 先に座標移動をチェック（計算コストが低いため）
         if distanceSquared < 4.0 {
-            // その後で時間をチェック
             if Date().timeIntervalSince(lastAppCheckTime) < 0.5 {
-                return lastAppBundleIdentifier
+                return (lastAppBundleIdentifier, lastAppIsOverlay)
             }
         }
 
-        let identifier = autoreleasepool { () -> String? in
-            guard let targetPID = windowOwnerPID(at: location) else {
-                return nil
+        let result = autoreleasepool { () -> (identifier: String?, isOverlay: Bool) in
+            guard let target = windowOwnerPID(at: location) else {
+                return (nil, false)
             }
 
-            return NSRunningApplication(processIdentifier: targetPID)?.bundleIdentifier
+            let identifier = NSRunningApplication(processIdentifier: target.pid)?.bundleIdentifier
+            return (identifier, target.isOverlay)
         }
         
         lastAppCheckTime = Date()
         lastAppCheckLocation = location
-        lastAppBundleIdentifier = identifier
+        lastAppBundleIdentifier = result.identifier
+        lastAppIsOverlay = result.isOverlay
         
-        return identifier
+        return result
     }
 
     private func shouldLock(at location: CGPoint) -> Bool {
-        let targetBundleIdentifier = bundleIdentifierForApplication(at: location)
+        // windowOwnerPID が左上原点(Top-Left)を期待しているため、そのまま渡す
+        let result = bundleIdentifierForApplication(at: location)
+        
+        // システムオーバーレイを無視する設定がオンの場合、オーバーレイ上ではロックしない
+        if isIgnoreSystemOverlaysEnabled && result.isOverlay {
+            print("App filter check at \(location): System overlay ignored (\(result.identifier ?? "unknown"))")
+            return false
+        }
+        
         let shouldLock = ManagedApplicationListEvaluator.shouldLock(
-            bundleIdentifier: targetBundleIdentifier,
+            bundleIdentifier: result.identifier,
             mode: appListMode,
-            listedBundleIdentifiers: managedAppBundleIdentifiersSet // キャッシュされたSetを使用
+            listedBundleIdentifiers: managedAppBundleIdentifiersSet
         )
 
-        print("App filter check at \(location): bundleIdentifier=\(targetBundleIdentifier ?? "none"), mode=\(appListMode.rawValue), shouldLock=\(shouldLock)")
+        print("App filter check at \(location): bundleIdentifier=\(result.identifier ?? "none"), mode=\(appListMode.rawValue), shouldLock=\(shouldLock)")
         return shouldLock
     }
 
@@ -716,11 +758,11 @@ class EventManager: NSObject, ObservableObject {
         }
 
         // 各ボタンのイベント判定
+        let currentLocation = event.location
+
+        // マウスダウン・アップの処理
         for button in MouseButton.allCases {
-            // このボタンが有効設定になっていない場合はスキップ
-            if !enabledButtonRawValues.contains(button.rawValue) {
-                continue
-            }
+            if !enabledButtonRawValues.contains(button.rawValue) { continue }
 
             if type == button.mouseDownType {
                 // 中ボタン(OtherMouse)の場合は、ボタン番号が正しいかチェック
@@ -736,8 +778,8 @@ class EventManager: NSObject, ObservableObject {
                     return Unmanaged.passUnretained(event)
                 }
 
-                if !shouldLock(at: event.location) {
-                    print("\(button) down: Current app is filtered out")
+                if !shouldLock(at: currentLocation) {
+                    print("\(button) down at \(currentLocation): Current app is filtered out")
                     if buttonStates[button] == .holding {
                         cancelHold(for: button)
                     }
@@ -745,9 +787,10 @@ class EventManager: NSObject, ObservableObject {
                 }
 
                 if buttonStates[button] == .idle {
-                    print("\(button) down: Starting tracking")
+                    print("\(button) down at \(currentLocation): Starting tracking")
                     updateButtonState(button, to: .holding)
-                    dragStartLocations[button] = event.location
+                    dragStartLocations[button] = currentLocation
+                    lastLocation = currentLocation
                     
                     if lockType == .time || lockType == .both {
                         DispatchQueue.main.async {
@@ -775,23 +818,22 @@ class EventManager: NSObject, ObservableObject {
             }
         }
 
-        // ドラッグイベントの処理
+        // ドラッグ・移動イベントの処理
         if type == .leftMouseDragged || type == .rightMouseDragged || type == .otherMouseDragged || type == .mouseMoved {
-            // 自動ロック判定（ドラッグ中かつ未ロックの場合）
+            lastLocation = currentLocation
+            
             if (lockType == .distance || lockType == .both) && !isLocked {
                 for button in MouseButton.allCases {
                     if buttonStates[button] == .holding, let startLocation = dragStartLocations[button] {
-                        let currentLocation = event.location
                         let distance = sqrt(pow(currentLocation.x - startLocation.x, 2) + pow(currentLocation.y - startLocation.y, 2))
                         
                         if distance >= lockDistance {
                             if shouldLock(at: currentLocation) {
-                                print("\(button) distance (\(distance)) exceeded threshold (\(lockDistance)): Locking")
+                                print("\(button) distance (\(distance)) exceeded threshold (\(lockDistance)) at \(currentLocation): Locking")
                                 updateButtonState(button, to: .locked)
                                 break
                             } else {
-                                // 閾値を超えたが対象外アプリの場合は、そのボタンのトラッキングを中止してリソースを節約
-                                print("\(button) distance exceeded but app is filtered: Canceling hold")
+                                print("\(button) distance exceeded but app is filtered at \(currentLocation): Canceling hold")
                                 cancelHold(for: button)
                             }
                         }
@@ -857,8 +899,9 @@ class EventManager: NSObject, ObservableObject {
             DispatchQueue.main.async { [weak self] in
                 guard let self = self else { return }
                 if self.buttonStates[button] == .holding {
-                    guard self.shouldLock(at: NSEvent.mouseLocation) else {
-                        print("Timer fired: \(button) Current app is filtered out")
+                    // lastLocation (Top-Left) を使用して判定を統一
+                    guard self.shouldLock(at: self.lastLocation) else {
+                        print("Timer fired: \(button) at \(self.lastLocation) Current app is filtered out")
                         self.cancelHold(for: button)
                         return
                     }

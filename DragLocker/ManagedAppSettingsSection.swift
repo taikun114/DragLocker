@@ -396,7 +396,7 @@ struct ManagedAppSettingsSection: View {
     private var managedAppListView: some View {
         managedAppList
             .onDrop(of: [.fileURL], isTargeted: nil, perform: handleDroppedAppProviders)
-            .frame(minHeight: 190)
+            .frame(minHeight: 150)
             .scrollContentBackground(.hidden)
             .padding(.bottom, 24)
             .accessibilityLabel("特定のアプリでの動作リスト")
@@ -412,6 +412,12 @@ struct ManagedAppSettingsSection: View {
 
     var body: some View {
         Section {
+            Toggle(isOn: $eventManager.isIgnoreSystemOverlaysEnabled) {
+                Text("システムオーバーレイを無視")
+                Text("Dockやコントロールセンターなどのシステムオーバーレイ上でロックされないようにします。")
+                    .font(.subheadline)
+                    .foregroundStyle(.secondary)
+            }
             listModePicker
             managedAppListView
         } header: {

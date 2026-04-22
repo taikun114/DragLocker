@@ -179,6 +179,22 @@
         }
       }
     },
+    "Dockやコントロールセンターなどのシステムオーバーレイ上でロックされないようにします。" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Prevents drag lock over system overlays like the Dock or Control Center."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dockやコントロールセンターなどのシステムオーバーレイ上でロックされないようにします。"
+          }
+        }
+      }
+    },
     "DragLocker" : {
       "localizations" : {
         "en" : {
@@ -1122,6 +1138,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "システム"
+          }
+        }
+      }
+    },
+    "システムオーバーレイを無視" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ignore System Overlays"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "システムオーバーレイを無視"
           }
         }
       }
