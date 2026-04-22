@@ -274,6 +274,15 @@ class EventManager: NSObject, ObservableObject {
 
     private var dragStartLocations: [MouseButton: CGPoint] = [:]
 
+    // アプリケーション確認のキャッシュ（メモリ負荷軽減とリーク防止）
+    private var lastAppCheckTime: Date = .distantPast
+    private var lastAppCheckLocation: CGPoint = .zero
+    private var lastAppBundleIdentifier: String?
+
+    // ウィンドウリストのキャッシュ（高頻度な呼び出しによるメモリ負荷を軽減）
+    private var lastWindowList: [[String: Any]]?
+    private var lastWindowListTime: Date = .distantPast
+
     override init() {
         // 保存された設定の読み込み
         let savedDelay = UserDefaults.standard.double(forKey: "lockDelay")
@@ -468,12 +477,7 @@ class EventManager: NSObject, ObservableObject {
         
         UNUserNotificationCenter.current().add(request) { error in
             if let error = error {
-                print("Failed to send test notification: \(error)")
-            } else {
-                // 送信から5秒後に通知を削除（通知センターに残さない）
-                DispatchQueue.main.asyncAfter(deadline: .now() + 5.0) {
-                    UNUserNotificationCenter.current().removeDeliveredNotifications(withIdentifiers: ["DragLockerTestNotification"])
-                }
+                print("Failed to send toggle notification: \(error)")
             }
         }
     }
@@ -513,7 +517,16 @@ class EventManager: NSObject, ObservableObject {
             trigger: nil
         )
         
-        UNUserNotificationCenter.current().add(request)
+        UNUserNotificationCenter.current().add(request) { error in
+            if let error = error {
+                print("Failed to send test notification: \(error)")
+            } else {
+                // テスト通知は5秒後に自動で削除する
+                DispatchQueue.main.asyncAfter(deadline: .now() + 5.0) {
+                    UNUserNotificationCenter.current().removeDeliveredNotifications(withIdentifiers: ["DragLockerTestNotification"])
+                }
+            }
+        }
     }
 
     func openNotificationSettings() {
@@ -575,8 +588,18 @@ class EventManager: NSObject, ObservableObject {
     }
 
     private func windowOwnerPID(at location: CGPoint) -> pid_t? {
-        autoreleasepool {
-            let windowList = CGWindowListCopyWindowInfo([.optionOnScreenOnly, .excludeDesktopElements], kCGNullWindowID) as? [[String: Any]] ?? []
+        return autoreleasepool {
+            let now = Date()
+            let windowList: [[String: Any]]
+            
+            // 0.1秒以内であれば前回のウィンドウリストを再利用する
+            if let lastList = lastWindowList, now.timeIntervalSince(lastWindowListTime) < 0.1 {
+                windowList = lastList
+            } else {
+                windowList = CGWindowListCopyWindowInfo([.optionOnScreenOnly, .excludeDesktopElements], kCGNullWindowID) as? [[String: Any]] ?? []
+                lastWindowList = windowList
+                lastWindowListTime = now
+            }
 
             for windowInfo in windowList {
                 guard let windowPID = windowInfo[kCGWindowOwnerPID as String] as? Int,
@@ -600,13 +623,29 @@ class EventManager: NSObject, ObservableObject {
     }
 
     private func bundleIdentifierForApplication(at location: CGPoint) -> String? {
-        autoreleasepool {
+        let now = Date()
+        let dx = location.x - lastAppCheckLocation.x
+        let dy = location.y - lastAppCheckLocation.y
+        let distanceSquared = dx * dx + dy * dy
+        
+        // 0.5秒以内かつマウスがほとんど動いていない（2px未満）場合はキャッシュを返す
+        if now.timeIntervalSince(lastAppCheckTime) < 0.5 && distanceSquared < 4.0 {
+            return lastAppBundleIdentifier
+        }
+
+        let identifier = autoreleasepool { () -> String? in
             guard let targetPID = windowOwnerPID(at: location) else {
                 return nil
             }
 
             return NSRunningApplication(processIdentifier: targetPID)?.bundleIdentifier
         }
+        
+        lastAppCheckTime = now
+        lastAppCheckLocation = location
+        lastAppBundleIdentifier = identifier
+        
+        return identifier
     }
 
     private func shouldLock(at location: CGPoint) -> Bool {
@@ -784,8 +823,10 @@ class EventManager: NSObject, ObservableObject {
 
         // グローバルのロック状態を更新
         let anyLocked = !lockedButtons.isEmpty
-        DispatchQueue.main.async {
-            self.isLocked = anyLocked
+        if self.isLocked != anyLocked {
+            DispatchQueue.main.async {
+                self.isLocked = anyLocked
+            }
         }
 
         // サウンド再生の判定
