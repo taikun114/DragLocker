@@ -680,6 +680,13 @@ class EventManager: NSObject, ObservableObject {
                     if buttonNumber != 2 { continue } // 2が中ボタン
                 }
 
+                // すでにロックされている場合は、アプリのフィルタに関係なく解除を優先する
+                if buttonStates[button] == .locked {
+                    print("\(button) down while locked: Releasing lock")
+                    releaseLock(for: button)
+                    return Unmanaged.passUnretained(event)
+                }
+
                 if !shouldLock(at: event.location) {
                     print("\(button) down: Current app is filtered out")
                     if buttonStates[button] == .holding {
@@ -698,9 +705,6 @@ class EventManager: NSObject, ObservableObject {
                             self.startTimer(for: button)
                         }
                     }
-                } else if buttonStates[button] == .locked {
-                    print("\(button) down while locked: Releasing lock")
-                    releaseLock(for: button)
                 }
                 return Unmanaged.passUnretained(event)
             }
