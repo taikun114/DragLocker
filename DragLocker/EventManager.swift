@@ -128,6 +128,9 @@ enum ManagedApplicationListEvaluator {
 
 class EventManager: NSObject, ObservableObject {
     static let shared = EventManager()
+    
+    // パフォーマンス向上のためのSetキャッシュ
+    private var managedAppBundleIdentifiersSet: Set<String> = []
 
     @Published var isTrusted: Bool = false
     @Published var isEnabled: Bool = true {
@@ -269,6 +272,8 @@ class EventManager: NSObject, ObservableObject {
             if let encoded = try? JSONEncoder().encode(managedAppBundleIdentifiers) {
                 UserDefaults.standard.set(encoded, forKey: "managedAppBundleIdentifiersData")
             }
+            // 配列が更新されたらSetのキャッシュも更新する
+            managedAppBundleIdentifiersSet = Set(managedAppBundleIdentifiers)
         }
     }
 
@@ -311,8 +316,10 @@ class EventManager: NSObject, ObservableObject {
         if let appListData = UserDefaults.standard.data(forKey: "managedAppBundleIdentifiersData"),
            let decodedAppBundleIdentifiers = try? JSONDecoder().decode([String].self, from: appListData) {
             self.managedAppBundleIdentifiers = decodedAppBundleIdentifiers
+            self.managedAppBundleIdentifiersSet = Set(decodedAppBundleIdentifiers)
         } else {
             self.managedAppBundleIdentifiers = []
+            self.managedAppBundleIdentifiersSet = []
         }
 
         if let savedButtons = UserDefaults.standard.array(forKey: "enabledButtonRawValues") as? [Int] {
@@ -590,12 +597,14 @@ class EventManager: NSObject, ObservableObject {
     private func windowOwnerPID(at location: CGPoint) -> pid_t? {
         return autoreleasepool {
             let now = Date()
-            let windowList: [[String: Any]]
             
             // 0.1秒以内であれば前回のウィンドウリストを再利用する
+            let windowList: [[String: Any]]
             if let lastList = lastWindowList, now.timeIntervalSince(lastWindowListTime) < 0.1 {
                 windowList = lastList
             } else {
+                // ブリッジのオーバーヘッドを最小限にするため、必要な情報だけを取得するオプションがあれば良いが、
+                // CGWindowListCopyWindowInfo は一括取得のみ。
                 windowList = CGWindowListCopyWindowInfo([.optionOnScreenOnly, .excludeDesktopElements], kCGNullWindowID) as? [[String: Any]] ?? []
                 lastWindowList = windowList
                 lastWindowListTime = now
@@ -623,14 +632,16 @@ class EventManager: NSObject, ObservableObject {
     }
 
     private func bundleIdentifierForApplication(at location: CGPoint) -> String? {
-        let now = Date()
         let dx = location.x - lastAppCheckLocation.x
         let dy = location.y - lastAppCheckLocation.y
         let distanceSquared = dx * dx + dy * dy
         
-        // 0.5秒以内かつマウスがほとんど動いていない（2px未満）場合はキャッシュを返す
-        if now.timeIntervalSince(lastAppCheckTime) < 0.5 && distanceSquared < 4.0 {
-            return lastAppBundleIdentifier
+        // 先に座標移動をチェック（計算コストが低いため）
+        if distanceSquared < 4.0 {
+            // その後で時間をチェック
+            if Date().timeIntervalSince(lastAppCheckTime) < 0.5 {
+                return lastAppBundleIdentifier
+            }
         }
 
         let identifier = autoreleasepool { () -> String? in
@@ -641,7 +652,7 @@ class EventManager: NSObject, ObservableObject {
             return NSRunningApplication(processIdentifier: targetPID)?.bundleIdentifier
         }
         
-        lastAppCheckTime = now
+        lastAppCheckTime = Date()
         lastAppCheckLocation = location
         lastAppBundleIdentifier = identifier
         
@@ -649,12 +660,11 @@ class EventManager: NSObject, ObservableObject {
     }
 
     private func shouldLock(at location: CGPoint) -> Bool {
-        let listedBundleIdentifiers = Set(managedAppBundleIdentifiers)
         let targetBundleIdentifier = bundleIdentifierForApplication(at: location)
         let shouldLock = ManagedApplicationListEvaluator.shouldLock(
             bundleIdentifier: targetBundleIdentifier,
             mode: appListMode,
-            listedBundleIdentifiers: listedBundleIdentifiers
+            listedBundleIdentifiers: managedAppBundleIdentifiersSet // キャッシュされたSetを使用
         )
 
         print("App filter check at \(location): bundleIdentifier=\(targetBundleIdentifier ?? "none"), mode=\(appListMode.rawValue), shouldLock=\(shouldLock)")
