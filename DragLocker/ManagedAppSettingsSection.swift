@@ -414,7 +414,7 @@ struct ManagedAppSettingsSection: View {
         Section {
             Toggle(isOn: $eventManager.isIgnoreSystemOverlaysEnabled) {
                 Text("システムオーバーレイを無視")
-                Text("Dockやコントロールセンターなどのシステムオーバーレイ上でロックされないようにします。")
+                Text("Launchpadやメニューバー、通知パネルなどのシステムオーバーレイ上でドラッグロックしないようにします（ただし、Dockはシステムの制約により除外することができません）。")
                     .font(.subheadline)
                     .foregroundStyle(.secondary)
             }

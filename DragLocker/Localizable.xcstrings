@@ -179,18 +179,18 @@
         }
       }
     },
-    "Dockやコントロールセンターなどのシステムオーバーレイ上でロックされないようにします。" : {
+    "Launchpadやメニューバー、通知パネルなどのシステムオーバーレイ上でドラッグロックしないようにします（ただし、Dockはシステムの制約により除外することができません）。" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Prevents drag lock over system overlays like the Dock or Control Center."
+            "value" : "Prevents drag lock over system overlays like Launchpad, the menu bar, or notifications (note: the Dock cannot be excluded due to system limitations)."
           }
         },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Dockやコントロールセンターなどのシステムオーバーレイ上でロックされないようにします。"
+            "value" : "Launchpadやメニューバー、通知パネルなどのシステムオーバーレイ上でドラッグロックしないようにします（ただし、Dockはシステムの制約により除外することができません）。"
           }
         }
       }
