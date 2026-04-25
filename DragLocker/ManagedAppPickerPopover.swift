@@ -2,6 +2,7 @@ import AppKit
 import SwiftUI
 
 struct ManagedAppPickerPopover: View {
+    @Environment(\.colorScheme) var colorScheme
     @Binding var showAllRunningApps: Bool
 
     let runningApplications: [NSRunningApplication]
@@ -203,6 +204,9 @@ struct ManagedAppPickerPopover: View {
         }
         .onChange(of: showAllRunningApps) { _, _ in
             updateFilteredApps()
+        }
+        .onChange(of: colorScheme) { _, _ in
+            refreshRunningApplications()
         }
     }
 }

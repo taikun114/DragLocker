@@ -19,6 +19,13 @@ private final class ManagedApplicationDisplayResolver {
     private let cache = NSCache<NSString, ResolvedManagedApplicationInfo>()
     private let lock = NSLock()
     private var searchedBundleIdentifiers: Set<String> = []
+    
+    func clearCache() {
+        lock.lock()
+        cache.removeAllObjects()
+        searchedBundleIdentifiers.removeAll()
+        lock.unlock()
+    }
 
     func resolvedInfo(for bundleIdentifier: String) -> ResolvedManagedApplicationInfo? {
         if let cachedInfo = cache.object(forKey: bundleIdentifier as NSString) {
@@ -100,6 +107,7 @@ private final class ManagedApplicationDisplayResolver {
 }
 
 struct ManagedAppSettingsSection: View {
+    @Environment(\.colorScheme) var colorScheme
     @ObservedObject var eventManager: EventManager
 
     @Binding var isShowingManagedAppPopover: Bool
@@ -408,6 +416,7 @@ struct ManagedAppSettingsSection: View {
             .overlay(alignment: .bottom) {
                 listToolbarOverlay
             }
+            .id(colorScheme)
     }
 
     var body: some View {
@@ -470,6 +479,9 @@ struct ManagedAppSettingsSection: View {
             }
         } message: {
             Text("選択された\(pendingContextMenuRemovalIds.count)個のアプリをリストから削除してもよろしいですか？")
+        }
+        .onChange(of: colorScheme) { _, _ in
+            ManagedApplicationDisplayResolver.shared.clearCache()
         }
     }
 }
