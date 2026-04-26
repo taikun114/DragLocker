@@ -862,14 +862,10 @@ class EventManager: NSObject, ObservableObject {
                         let distance = sqrt(pow(currentLocation.x - startLocation.x, 2) + pow(currentLocation.y - startLocation.y, 2))
                         
                         if distance >= lockDistance {
-                            if shouldLock(at: currentLocation) {
-                                print("\(button) distance (\(distance)) exceeded threshold (\(lockDistance)) at \(currentLocation): Locking")
-                                updateButtonState(button, to: .locked)
-                                break
-                            } else {
-                                print("\(button) distance exceeded but app is filtered at \(currentLocation): Canceling hold")
-                                cancelHold(for: button)
-                            }
+                            // ロックするかどうかの判定はマウスダウン時に行われているため、ここでは判定せずにロックを開始する
+                            print("\(button) distance (\(distance)) exceeded threshold (\(lockDistance)) at \(currentLocation): Locking")
+                            updateButtonState(button, to: .locked)
+                            break
                         }
                     }
                 }
@@ -933,12 +929,7 @@ class EventManager: NSObject, ObservableObject {
             DispatchQueue.main.async { [weak self] in
                 guard let self = self else { return }
                 if self.buttonStates[button] == .holding {
-                    // lastLocation (Top-Left) を使用して判定を統一
-                    guard self.shouldLock(at: self.lastLocation) else {
-                        print("Timer fired: \(button) at \(self.lastLocation) Current app is filtered out")
-                        self.cancelHold(for: button)
-                        return
-                    }
+                    // ロックするかどうかの判定はマウスダウン時に行われているため、ここでは判定せずにロックを開始する
                     print("Timer fired: \(button) Lock active!")
                     self.updateButtonState(button, to: .locked)
                 }
