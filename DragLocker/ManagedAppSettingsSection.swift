@@ -245,7 +245,9 @@ struct ManagedAppSettingsSection: View {
         group.notify(queue: .main) {
             if invalidItemsCount > 0 {
                 showingInvalidAppAlert = true
+                #if DEBUG
                 print("Dropped items include \(invalidItemsCount) non-application item(s).")
+                #endif
             }
         }
 

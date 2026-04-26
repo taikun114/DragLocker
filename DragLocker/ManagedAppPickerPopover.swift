@@ -80,7 +80,9 @@ struct ManagedAppPickerPopover: View {
 
     private func refreshRunningApplications() {
         currentRunningApplications = NSWorkspace.shared.runningApplications
+        #if DEBUG
         print("ManagedAppPickerPopover refreshed running applications: \(currentRunningApplications.count)")
+        #endif
         updateFilteredApps()
     }
 

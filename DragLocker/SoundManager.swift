@@ -88,7 +88,9 @@ class SoundManager {
             for key in keysToRemove {
                 self.players.removeValue(forKey: key)
             }
+            #if DEBUG
             print("Sound memory cleaned up. Remaining players: \(self.players.keys.count)")
+            #endif
         }
     }
     

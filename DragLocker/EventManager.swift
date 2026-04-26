@@ -653,7 +653,9 @@ class EventManager: NSObject, ObservableObject {
                     let windowName = windowInfo[kCGWindowName as String] as? String
                     
                     // デバッグ用: 座標も一緒に出力
+                    #if DEBUG
                     print("[Debug] Window at \(location): owner='\(ownerName ?? "n/a")', layer=\(layer), alpha=\(alpha), name='\(windowName ?? "n/a")'")
+                    #endif
                     
                     let pid = pid_t(windowPID)
                     
@@ -729,7 +731,9 @@ class EventManager: NSObject, ObservableObject {
         
         // システムオーバーレイを無視する設定がオンの場合、オーバーレイ上ではロックしない
         if isIgnoreSystemOverlaysEnabled && result.isOverlay {
+            #if DEBUG
             print("App filter check at \(location): System overlay ignored (bundleId=\(result.identifier ?? "unknown"), exe=\(result.executableName ?? "unknown"), path=\(result.executablePath ?? "unknown"))")
+            #endif
             return false
         }
         
@@ -741,28 +745,38 @@ class EventManager: NSObject, ObservableObject {
             listedIdentifiers: managedAppBundleIdentifiersSet
         )
 
+        #if DEBUG
         print("App filter check at \(location): bundleIdentifier=\(result.identifier ?? "none"), executableName=\(result.executableName ?? "none"), executablePath=\(result.executablePath ?? "none"), mode=\(appListMode.rawValue), shouldLock=\(shouldLock)")
+        #endif
         return shouldLock
     }
 
     func addManagedApp(bundleIdentifier: String) {
         guard !managedAppBundleIdentifiers.contains(bundleIdentifier) else {
+            #if DEBUG
             print("Managed app already exists: \(bundleIdentifier)")
+            #endif
             return
         }
 
         managedAppBundleIdentifiers.append(bundleIdentifier)
+        #if DEBUG
         print("Managed app added: \(bundleIdentifier)")
+        #endif
     }
 
     func removeManagedApp(bundleIdentifier: String) {
         managedAppBundleIdentifiers.removeAll { $0 == bundleIdentifier }
+        #if DEBUG
         print("Managed app removed: \(bundleIdentifier)")
+        #endif
     }
 
     func clearManagedApps() {
         managedAppBundleIdentifiers = []
+        #if DEBUG
         print("Managed app list cleared")
+        #endif
     }
 
     // イベント処理のエントリーポイント
@@ -784,7 +798,9 @@ class EventManager: NSObject, ObservableObject {
             let keyCode = event.getIntegerValueField(.keyboardEventKeycode)
             if keyCode == 53 /* Escape key */ {
                 if isUnlockAllWithEscEnabled {
+                    #if DEBUG
                     print("Escape pressed: Releasing all locks")
+                    #endif
                     releaseAllLocks()
                 }
             }
@@ -807,13 +823,17 @@ class EventManager: NSObject, ObservableObject {
 
                 // すでにロックされている場合は、アプリのフィルタに関係なく解除を優先する
                 if buttonStates[button] == .locked {
+                    #if DEBUG
                     print("\(button) down while locked: Releasing lock")
+                    #endif
                     releaseLock(for: button)
                     return Unmanaged.passUnretained(event)
                 }
 
                 if !shouldLock(at: currentLocation) {
+                    #if DEBUG
                     print("\(button) down at \(currentLocation): Current app is filtered out")
+                    #endif
                     if buttonStates[button] == .holding {
                         cancelHold(for: button)
                     }
@@ -821,7 +841,9 @@ class EventManager: NSObject, ObservableObject {
                 }
 
                 if buttonStates[button] == .idle {
+                    #if DEBUG
                     print("\(button) down at \(currentLocation): Starting tracking")
+                    #endif
                     updateButtonState(button, to: .holding)
                     dragStartLocations[button] = currentLocation
                     lastLocation = currentLocation
@@ -842,11 +864,15 @@ class EventManager: NSObject, ObservableObject {
                 }
 
                 if buttonStates[button] == .holding {
+                    #if DEBUG
                     print("\(button) up: Normal click, canceling timer")
+                    #endif
                     cancelHold(for: button)
                     return Unmanaged.passUnretained(event)
                 } else if buttonStates[button] == .locked {
+                    #if DEBUG
                     print("\(button) up while locked: Ignoring to keep the lock")
+                    #endif
                     return nil
                 }
             }
@@ -863,7 +889,9 @@ class EventManager: NSObject, ObservableObject {
                         
                         if distance >= lockDistance {
                             // ロックするかどうかの判定はマウスダウン時に行われているため、ここでは判定せずにロックを開始する
+                            #if DEBUG
                             print("\(button) distance (\(distance)) exceeded threshold (\(lockDistance)) at \(currentLocation): Locking")
+                            #endif
                             updateButtonState(button, to: .locked)
                             break
                         }
@@ -930,7 +958,9 @@ class EventManager: NSObject, ObservableObject {
                 guard let self = self else { return }
                 if self.buttonStates[button] == .holding {
                     // ロックするかどうかの判定はマウスダウン時に行われているため、ここでは判定せずにロックを開始する
+                    #if DEBUG
                     print("Timer fired: \(button) Lock active!")
+                    #endif
                     self.updateButtonState(button, to: .locked)
                 }
             }
@@ -1008,7 +1038,9 @@ class EventManager: NSObject, ObservableObject {
         }
 
         mouseUpEvent?.post(tap: .cghidEventTap)
+        #if DEBUG
         print("Synthetic \(button) mouse up posted")
+        #endif
     }
 
     private func updateLaunchAtLogin(enabled: Bool) {

@@ -62,29 +62,39 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate {
 
     func completeOnboarding() {
         print("DEBUG: completeOnboarding() called")
+        #if DEBUG
         print("DEBUG: UserDefaults before set = \(UserDefaults.standard.bool(forKey: "hasCompletedOnboarding"))")
+        #endif
 
         // UserDefaultsに保存してディスクに即時同期
         UserDefaults.standard.set(true, forKey: "hasCompletedOnboarding")
         UserDefaults.standard.synchronize()
+        #if DEBUG
         print("DEBUG: UserDefaults after set = \(UserDefaults.standard.bool(forKey: "hasCompletedOnboarding"))")
+        #endif
 
         // デリゲートを外してwindowWillCloseによるterminate()を防ぐ
         onboardingWindow?.delegate = nil
 
         // ウィンドウを画面から非表示にする
         onboardingWindow?.orderOut(nil)
+        #if DEBUG
         print("DEBUG: Window ordered out")
+        #endif
 
         // レンダリングパイプラインが解放されるのを待ってから破棄
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) { [weak self] in
+            #if DEBUG
             print("DEBUG: Async block executing")
+            #endif
             self?.onboardingWindow?.contentView = nil
             self?.onboardingWindow = nil
             print("DEBUG: Window cleaned up")
 
             EventManager.shared.resumeFromOnboarding()
+            #if DEBUG
             print("DEBUG: resumeFromOnboarding called, isEnabled = \(EventManager.shared.isEnabled)")
+            #endif
 
             // @AppStorageがMenuBarExtraを挿入する時間を確保してからDockアイコンを非表示にする
             DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
