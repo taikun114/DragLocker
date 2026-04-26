@@ -179,22 +179,6 @@
         }
       }
     },
-    "Launchpadやメニューバー、通知パネルなどのシステムオーバーレイ上でドラッグロックしないようにします（ただし、Dockはシステムの制約により除外することができません）。" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Prevents drag lock over system overlays like Launchpad, the menu bar, or notifications (note: the Dock cannot be excluded due to system limitations)."
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Launchpadやメニューバー、通知パネルなどのシステムオーバーレイ上でドラッグロックしないようにします（ただし、Dockはシステムの制約により除外することができません）。"
-          }
-        }
-      }
-    },
     "DragLocker" : {
       "localizations" : {
         "en" : {
@@ -306,6 +290,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "DragLockerへようこそ"
+          }
+        }
+      }
+    },
+    "Escキーですべてのロックを解除" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Unlock All with Esc Key"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Escキーですべてのロックを解除"
           }
         }
       }
@@ -473,6 +473,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "KeyboardShortcutsのGitHubページを開いてもよろしいですか？"
+          }
+        }
+      }
+    },
+    "Launchpadやメニューバー、通知パネルなどのシステムオーバーレイ上でドラッグロックしないようにします（ただし、Dockはシステムの制約により除外することができません）。" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Prevents drag lock over system overlays like Launchpad, the menu bar, or notifications (note: the Dock cannot be excluded due to system limitations)."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Launchpadやメニューバー、通知パネルなどのシステムオーバーレイ上でドラッグロックしないようにします（ただし、Dockはシステムの制約により除外することができません）。"
           }
         }
       }
@@ -1700,6 +1716,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "ドラッグロックを開始する方法を選択します。"
+          }
+        }
+      }
+    },
+    "ドラッグロック中にEscキーを押してすべてのボタンのロックを解除します。" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Press the Esc key during drag lock to unlock all buttons."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ドラッグロック中にEscキーを押してすべてのボタンのロックを解除します。"
           }
         }
       }

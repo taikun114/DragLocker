@@ -339,6 +339,13 @@ struct SettingsView: View {
                                 .foregroundStyle(.secondary)
                         }
                     }
+
+                    Toggle(isOn: $eventManager.isUnlockAllWithEscEnabled) {
+                        Text("Escキーですべてのロックを解除")
+                        Text("ドラッグロック中にEscキーを押してすべてのボタンのロックを解除します。")
+                            .font(.subheadline)
+                            .foregroundStyle(.secondary)
+                    }
                     
                     if eventManager.lockType == .distance || eventManager.lockType == .both {
                         VStack(alignment: .leading) {

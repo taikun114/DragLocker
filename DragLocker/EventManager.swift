@@ -273,6 +273,12 @@ class EventManager: NSObject, ObservableObject {
         }
     }
 
+    @Published var isUnlockAllWithEscEnabled: Bool = true {
+        didSet {
+            UserDefaults.standard.set(isUnlockAllWithEscEnabled, forKey: "isUnlockAllWithEscEnabled")
+        }
+    }
+
     @Published var managedAppBundleIdentifiers: [String] = [] {
         didSet {
             if let encoded = try? JSONEncoder().encode(managedAppBundleIdentifiers) {
@@ -322,6 +328,12 @@ class EventManager: NSObject, ObservableObject {
         }
 
         self.isIgnoreSystemOverlaysEnabled = UserDefaults.standard.bool(forKey: "isIgnoreSystemOverlaysEnabled")
+
+        if UserDefaults.standard.object(forKey: "isUnlockAllWithEscEnabled") == nil {
+            self.isUnlockAllWithEscEnabled = true
+        } else {
+            self.isUnlockAllWithEscEnabled = UserDefaults.standard.bool(forKey: "isUnlockAllWithEscEnabled")
+        }
 
         if let appListData = UserDefaults.standard.data(forKey: "managedAppBundleIdentifiersData"),
            let decodedAppBundleIdentifiers = try? JSONDecoder().decode([String].self, from: appListData) {
@@ -751,8 +763,10 @@ class EventManager: NSObject, ObservableObject {
         if type == .keyDown {
             let keyCode = event.getIntegerValueField(.keyboardEventKeycode)
             if keyCode == 53 /* Escape key */ {
-                print("Escape pressed: Releasing all locks")
-                releaseAllLocks()
+                if isUnlockAllWithEscEnabled {
+                    print("Escape pressed: Releasing all locks")
+                    releaseAllLocks()
+                }
             }
             return Unmanaged.passUnretained(event) // キーボードイベントはそのまま通す
         }
