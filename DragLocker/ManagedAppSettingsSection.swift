@@ -35,6 +35,11 @@ private final class ManagedApplicationDisplayResolver {
         lock.lock()
         let hasSearched = searchedBundleIdentifiers.contains(identifier)
         lock.unlock()
+        
+        if hasSearched {
+            return nil
+        }
+        
         // バンドル識別子、フルパス、または実行ファイル名で実行中のアプリを検索
         if let runningApplication = NSWorkspace.shared.runningApplications.first(where: { 
             !$0.isTerminated && ($0.bundleIdentifier == identifier || $0.executableURL?.path == identifier || $0.executableURL?.lastPathComponent == identifier)

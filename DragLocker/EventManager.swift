@@ -926,9 +926,13 @@ class EventManager: NSObject, ObservableObject {
 
         // ロック中のボタンセットを更新
         if newState == .locked {
-            lockedButtons.insert(button)
+            if !lockedButtons.contains(button) {
+                lockedButtons.insert(button)
+            }
         } else {
-            lockedButtons.remove(button)
+            if lockedButtons.contains(button) {
+                lockedButtons.remove(button)
+            }
         }
 
         // グローバルのロック状態を更新
