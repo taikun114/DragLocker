@@ -164,11 +164,7 @@ struct DragLockerApp: App {
             }
             .keyboardShortcut("q")
         } label: {
-            if !eventManager.isEnabled {
-                Image("MenuBarIcon_Paused")
-            } else {
-                Image(eventManager.isLocked ? "MenuBarIcon_Locked" : "MenuBarIcon")
-            }
+            MenuBarIconView()
         }
         
         // 設定画面のWindow定義
@@ -176,6 +172,19 @@ struct DragLockerApp: App {
             SettingsView()
                 .environmentObject(eventManager)
                 .frame(width: 450, height: 350)
+        }
+    }
+}
+
+struct MenuBarIconView: View {
+    @ObservedObject var eventManager = EventManager.shared
+    @ObservedObject var lockState = LockStateManager.shared
+    
+    var body: some View {
+        if !eventManager.isEnabled {
+            Image("MenuBarIcon_Paused")
+        } else {
+            Image(lockState.isLocked ? "MenuBarIcon_Locked" : "MenuBarIcon")
         }
     }
 }

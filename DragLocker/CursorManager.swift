@@ -46,7 +46,7 @@ class CursorManager {
         // アニメーション（0.1s）が完了するのを確実に待ってからウィンドウを隠す (0.05sのマージン)
         DispatchQueue.main.asyncAfter(deadline: .now() + Self.animationDuration + 0.05) {
             // その間に再度ロックされた場合は隠さない
-            if EventManager.shared.lockedButtons.isEmpty {
+            if LockStateManager.shared.lockedButtons.isEmpty {
                 self.cursorWindow?.orderOut(nil)
             }
         }
@@ -150,10 +150,11 @@ class CursorManager {
 
 struct CursorView: View {
     @ObservedObject var eventManager = EventManager.shared
+    @ObservedObject var lockState = LockStateManager.shared
     
     var body: some View {
         let style = eventManager.pointerIconStyle
-        let isLocked = !eventManager.lockedButtons.isEmpty
+        let isLocked = !lockState.lockedButtons.isEmpty
         
         // スタイルごとのアニメーション用スケール
         let startScale: CGFloat = (style == .focus) ? 1.2 : 1.0
@@ -194,17 +195,17 @@ struct CursorView: View {
                 HStack(spacing: 3) {
                     // 左クリック (緑)
                     Circle()
-                        .fill(eventManager.lockedButtons.contains(.left) ? Color.green : Color.gray)
+                        .fill(lockState.lockedButtons.contains(.left) ? Color.green : Color.gray)
                         .frame(width: 7, height: 7)
                     
                     // 中クリック (黄)
                     Circle()
-                        .fill(eventManager.lockedButtons.contains(.middle) ? Color.yellow : Color.gray)
+                        .fill(lockState.lockedButtons.contains(.middle) ? Color.yellow : Color.gray)
                         .frame(width: 7, height: 7)
                     
                     // 右クリック (赤)
                     Circle()
-                        .fill(eventManager.lockedButtons.contains(.right) ? Color.red : Color.gray)
+                        .fill(lockState.lockedButtons.contains(.right) ? Color.red : Color.gray)
                         .frame(width: 7, height: 7)
                 }
                 .padding(.horizontal, 4)
@@ -221,17 +222,17 @@ struct CursorView: View {
                 HStack(spacing: 2) {
                     // 左クリック (緑)
                     Circle()
-                        .fill(eventManager.lockedButtons.contains(.left) ? Color.green : Color.gray)
+                        .fill(lockState.lockedButtons.contains(.left) ? Color.green : Color.gray)
                         .frame(width: 5, height: 5)
                     
                     // 中クリック (黄)
                     Circle()
-                        .fill(eventManager.lockedButtons.contains(.middle) ? Color.yellow : Color.gray)
+                        .fill(lockState.lockedButtons.contains(.middle) ? Color.yellow : Color.gray)
                         .frame(width: 5, height: 5)
                     
                     // 右クリック (赤)
                     Circle()
-                        .fill(eventManager.lockedButtons.contains(.right) ? Color.red : Color.gray)
+                        .fill(lockState.lockedButtons.contains(.right) ? Color.red : Color.gray)
                         .frame(width: 5, height: 5)
                 }
                 .padding(.horizontal, 2.5)
@@ -248,17 +249,17 @@ struct CursorView: View {
                 VStack(spacing: 3) {
                     // 左クリック (緑)
                     Circle()
-                        .fill(eventManager.lockedButtons.contains(.left) ? Color.green : Color.gray)
+                        .fill(lockState.lockedButtons.contains(.left) ? Color.green : Color.gray)
                         .frame(width: 7, height: 7)
                     
                     // 中クリック (黄)
                     Circle()
-                        .fill(eventManager.lockedButtons.contains(.middle) ? Color.yellow : Color.gray)
+                        .fill(lockState.lockedButtons.contains(.middle) ? Color.yellow : Color.gray)
                         .frame(width: 7, height: 7)
                     
                     // 右クリック (赤)
                     Circle()
-                        .fill(eventManager.lockedButtons.contains(.right) ? Color.red : Color.gray)
+                        .fill(lockState.lockedButtons.contains(.right) ? Color.red : Color.gray)
                         .frame(width: 7, height: 7)
                 }
                 .padding(.horizontal, 3)
@@ -275,17 +276,17 @@ struct CursorView: View {
                 VStack(spacing: 2) {
                     // 左クリック (緑)
                     Circle()
-                        .fill(eventManager.lockedButtons.contains(.left) ? Color.green : Color.gray)
+                        .fill(lockState.lockedButtons.contains(.left) ? Color.green : Color.gray)
                         .frame(width: 5, height: 5)
                     
                     // 中クリック (黄)
                     Circle()
-                        .fill(eventManager.lockedButtons.contains(.middle) ? Color.yellow : Color.gray)
+                        .fill(lockState.lockedButtons.contains(.middle) ? Color.yellow : Color.gray)
                         .frame(width: 5, height: 5)
                     
                     // 右クリック (赤)
                     Circle()
-                        .fill(eventManager.lockedButtons.contains(.right) ? Color.red : Color.gray)
+                        .fill(lockState.lockedButtons.contains(.right) ? Color.red : Color.gray)
                         .frame(width: 5, height: 5)
                 }
                 .padding(.horizontal, 2)
@@ -301,12 +302,12 @@ struct CursorView: View {
             } else if style == .textHorizontal {
                 HStack(spacing: 1) {
                     Text(verbatim: "L")
-                        .opacity(eventManager.lockedButtons.contains(.left) ? 1.0 : 0.5)
+                        .opacity(lockState.lockedButtons.contains(.left) ? 1.0 : 0.5)
                     Text(verbatim: "M")
-                        .opacity(eventManager.lockedButtons.contains(.middle) ? 1.0 : 0.5)
+                        .opacity(lockState.lockedButtons.contains(.middle) ? 1.0 : 0.5)
                         .padding(.leading, -1.5) // Lの右上の余白を埋めるために少し詰める
                     Text(verbatim: "R")
-                        .opacity(eventManager.lockedButtons.contains(.right) ? 1.0 : 0.5)
+                        .opacity(lockState.lockedButtons.contains(.right) ? 1.0 : 0.5)
                 }
                 .font(.system(size: 11, weight: .bold, design: .monospaced))
                 .foregroundColor(.white)
@@ -323,11 +324,11 @@ struct CursorView: View {
             } else if style == .textVertical {
                 VStack(spacing: -2.8) { // 極限まで詰める
                     Text(verbatim: "L")
-                        .opacity(eventManager.lockedButtons.contains(.left) ? 1.0 : 0.5)
+                        .opacity(lockState.lockedButtons.contains(.left) ? 1.0 : 0.5)
                     Text(verbatim: "M")
-                        .opacity(eventManager.lockedButtons.contains(.middle) ? 1.0 : 0.5)
+                        .opacity(lockState.lockedButtons.contains(.middle) ? 1.0 : 0.5)
                     Text(verbatim: "R")
-                        .opacity(eventManager.lockedButtons.contains(.right) ? 1.0 : 0.5)
+                        .opacity(lockState.lockedButtons.contains(.right) ? 1.0 : 0.5)
                 }
                 .font(.system(size: 8, weight: .bold, design: .monospaced))
                 .foregroundColor(.white)

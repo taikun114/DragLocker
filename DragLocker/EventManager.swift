@@ -178,8 +178,11 @@ class EventManager: NSObject, ObservableObject {
         .middle: .idle
     ]
 
-    @Published var isLocked: Bool = false {
+    var isLocked: Bool = false {
         didSet {
+            DispatchQueue.main.async {
+                LockStateManager.shared.isLocked = self.isLocked
+            }
             // アイコン表示設定が有効な場合のみカーソルの表示切り替え
             DispatchQueue.main.async {
                 if self.isLocked && self.isIconEnabled {
@@ -190,7 +193,13 @@ class EventManager: NSObject, ObservableObject {
             }
         }
     }
-    @Published var lockedButtons: Set<MouseButton> = []
+    var lockedButtons: Set<MouseButton> = [] {
+        didSet {
+            DispatchQueue.main.async {
+                LockStateManager.shared.lockedButtons = self.lockedButtons
+            }
+        }
+    }
     private var holdTimers: [MouseButton: Timer] = [:]
 
     @Published var enabledButtonRawValues: Set<Int> = [0] {
