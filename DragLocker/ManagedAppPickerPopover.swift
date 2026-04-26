@@ -55,8 +55,12 @@ struct ManagedAppPickerPopover: View {
 
                 return apps
                     .filter { app in
-                        guard let bundleIdentifier = app.bundleIdentifier else { return true }
-                        return !existingIds.contains(bundleIdentifier)
+                        if let bundleIdentifier = app.bundleIdentifier {
+                            return !existingIds.contains(bundleIdentifier)
+                        } else if let executablePath = app.executableURL?.path {
+                            return !existingIds.contains(executablePath)
+                        }
+                        return true
                     }
                     .sorted { app1, app2 in
                         let name1 = app1.localizedName ?? app1.bundleIdentifier ?? ""
@@ -128,14 +132,31 @@ struct ManagedAppPickerPopover: View {
                         } else {
                             ForEach(filteredRunningApplications, id: \.processIdentifier) { app in
                                 Button {
-                                    guard let bundleIdentifier = app.bundleIdentifier else { return }
-                                    onSelectRunningApplication(bundleIdentifier)
+                                    if let bundleIdentifier = app.bundleIdentifier {
+                                        onSelectRunningApplication(bundleIdentifier)
+                                    } else if let executablePath = app.executableURL?.path {
+                                        onSelectRunningApplication(executablePath)
+                                    }
                                 } label: {
                                     HStack {
                                         Image(nsImage: app.icon ?? NSImage())
                                             .resizable()
                                             .frame(width: 16, height: 16)
-                                        Text(displayName(for: app))
+                                        
+                                        let name = displayName(for: app)
+                                        let isGenericName = name.lowercased() == "java"
+                                        
+                                        VStack(alignment: .leading, spacing: 0) {
+                                            Text(name)
+                                            if isGenericName, let path = app.executableURL?.path {
+                                                Text(path)
+                                                    .font(.caption2)
+                                                    .foregroundStyle(.secondary)
+                                                    .lineLimit(1)
+                                                    .truncationMode(.middle)
+                                            }
+                                        }
+                                        
                                         Spacer()
                                         Text(String(describing: app.processIdentifier))
                                             .font(.caption)
@@ -144,7 +165,9 @@ struct ManagedAppPickerPopover: View {
                                     .contentShape(Rectangle())
                                 }
                                 .buttonStyle(.plain)
-                                .help("PID: \(String(describing: app.processIdentifier))、\(displayName(for: app))")
+                                .help(app.bundleIdentifier != nil ? 
+                                      String(localized: "PID: \(String(app.processIdentifier)), \(displayName(for: app))", comment: "アプリ追加リストのツールチップ（バンドルIDあり）") : 
+                                      String(localized: "PID: \(String(app.processIdentifier)), \(displayName(for: app)) (\(app.executableURL?.path ?? ""))", comment: "アプリ追加リストのツールチップ（バンドルIDなし・パス表示）"))
                                 .padding(.vertical, 4)
                             }
                         }

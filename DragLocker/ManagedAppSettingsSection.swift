@@ -27,39 +27,74 @@ private final class ManagedApplicationDisplayResolver {
         lock.unlock()
     }
 
-    func resolvedInfo(for bundleIdentifier: String) -> ResolvedManagedApplicationInfo? {
-        if let cachedInfo = cache.object(forKey: bundleIdentifier as NSString) {
+    func resolvedInfo(for identifier: String) -> ResolvedManagedApplicationInfo? {
+        if let cachedInfo = cache.object(forKey: identifier as NSString) {
             return cachedInfo
         }
 
         lock.lock()
-        let hasSearched = searchedBundleIdentifiers.contains(bundleIdentifier)
+        let hasSearched = searchedBundleIdentifiers.contains(identifier)
         lock.unlock()
+        // バンドル識別子、フルパス、または実行ファイル名で実行中のアプリを検索
+        if let runningApplication = NSWorkspace.shared.runningApplications.first(where: { 
+            !$0.isTerminated && ($0.bundleIdentifier == identifier || $0.executableURL?.path == identifier || $0.executableURL?.lastPathComponent == identifier)
+        }) {
+            var icon = runningApplication.icon
+            
+            // アイコンの改善を試みる
+            if let exeURL = runningApplication.executableURL {
+                // 親ディレクトリを遡って .app を探す (.bundle は六角形アイコンになることがあるため除外)
+                if icon == nil || icon?.size.width ?? 0 <= 32 {
+                    var current = exeURL.deletingLastPathComponent()
+                    while current.path != "/" {
+                        if current.pathExtension.lowercased() == "app" {
+                            icon = NSWorkspace.shared.icon(forFile: current.path)
+                            break
+                        }
+                        current = current.deletingLastPathComponent()
+                    }
+                }
+                
+                // それでも取れない場合は実行ファイル自体のアイコン
+                if icon == nil {
+                    icon = NSWorkspace.shared.icon(forFile: exeURL.path)
+                }
+            }
 
-        if let runningApplication = NSRunningApplication.runningApplications(withBundleIdentifier: bundleIdentifier).first(where: { !$0.isTerminated }) {
             let resolvedInfo = ResolvedManagedApplicationInfo(
-                name: runningApplication.localizedName ?? bundleIdentifier,
-                icon: runningApplication.icon
+                name: runningApplication.localizedName ?? identifier,
+                icon: icon
             )
-            store(resolvedInfo, for: bundleIdentifier)
+            store(resolvedInfo, for: identifier)
             return resolvedInfo
         }
 
-        if let applicationURL = NSWorkspace.shared.urlForApplication(withBundleIdentifier: bundleIdentifier),
-           let resolvedInfo = resolvedInfo(from: applicationURL, fallbackName: bundleIdentifier) {
-            store(resolvedInfo, for: bundleIdentifier)
+        // バンドル識別子としてURLを解決してみる
+        if let applicationURL = NSWorkspace.shared.urlForApplication(withBundleIdentifier: identifier),
+           let resolvedInfo = resolvedInfo(from: applicationURL, fallbackName: identifier) {
+            store(resolvedInfo, for: identifier)
+            return resolvedInfo
+        }
+        
+        // ファイルパスとして直接アイコンを取得してみる（識別子がフルパスの場合）
+        if identifier.starts(with: "/"), fileManager.fileExists(atPath: identifier) {
+            let url = URL(fileURLWithPath: identifier)
+            let icon = NSWorkspace.shared.icon(forFile: identifier)
+            let name = url.lastPathComponent
+            let resolvedInfo = ResolvedManagedApplicationInfo(name: name, icon: icon)
+            store(resolvedInfo, for: identifier)
             return resolvedInfo
         }
 
         if !hasSearched,
-           let applicationURL = searchApplicationURLInUserApplications(bundleIdentifier: bundleIdentifier),
-           let resolvedInfo = resolvedInfo(from: applicationURL, fallbackName: bundleIdentifier) {
-            store(resolvedInfo, for: bundleIdentifier)
+           let applicationURL = searchApplicationURLInUserApplications(bundleIdentifier: identifier),
+           let resolvedInfo = resolvedInfo(from: applicationURL, fallbackName: identifier) {
+            store(resolvedInfo, for: identifier)
             return resolvedInfo
         }
 
         lock.lock()
-        searchedBundleIdentifiers.insert(bundleIdentifier)
+        searchedBundleIdentifiers.insert(identifier)
         lock.unlock()
         return nil
     }
@@ -254,9 +289,22 @@ struct ManagedAppSettingsSection: View {
                         .resizable()
                         .frame(width: 16, height: 16)
                 }
-                Text(appInfo.name)
+                
+                if bundleIdentifier.starts(with: "/") {
+                    (Text(appInfo.name) + 
+                     Text(" (\(bundleIdentifier))")
+                        .foregroundStyle(.secondary)
+                        .font(.caption))
+                    .lineLimit(1)
+                    .truncationMode(.middle)
+                } else {
+                    Text(appInfo.name)
+                        .lineLimit(1)
+                }
             }
-            .help(appInfo.name)
+            .help(bundleIdentifier.starts(with: "/") ? 
+                  String(localized: "\(appInfo.name) (\(bundleIdentifier))", comment: "設定画面のアプリリストのツールチップ（パス表示）") : 
+                  appInfo.name)
             .contextMenu {
                 Button(role: .destructive) {
                     requestContextMenuRemoval(for: bundleIdentifier)

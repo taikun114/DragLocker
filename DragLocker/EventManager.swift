@@ -112,16 +112,27 @@ enum AppListMode: String, CaseIterable, Sendable {
 enum ManagedApplicationListEvaluator {
     static func shouldLock(
         bundleIdentifier: String?,
+        executableName: String?,
+        executablePath: String?,
         mode: AppListMode,
-        listedBundleIdentifiers: Set<String>
+        listedIdentifiers: Set<String>
     ) -> Bool {
+        let isMatch: Bool
+        if let bundleIdentifier = bundleIdentifier, listedIdentifiers.contains(bundleIdentifier) {
+            isMatch = true
+        } else if let executableName = executableName, listedIdentifiers.contains(executableName) {
+            isMatch = true
+        } else if let executablePath = executablePath, listedIdentifiers.contains(executablePath) {
+            isMatch = true
+        } else {
+            isMatch = false
+        }
+
         switch mode {
         case .exclude:
-            guard let bundleIdentifier else { return true }
-            return !listedBundleIdentifiers.contains(bundleIdentifier)
+            return !isMatch
         case .include:
-            guard let bundleIdentifier else { return false }
-            return listedBundleIdentifiers.contains(bundleIdentifier)
+            return isMatch
         }
     }
 }
@@ -296,6 +307,8 @@ class EventManager: NSObject, ObservableObject {
     private var lastAppCheckTime: Date = .distantPast
     private var lastAppCheckLocation: CGPoint = .zero
     private var lastAppBundleIdentifier: String?
+    private var lastAppExecutableName: String?
+    private var lastAppExecutablePath: String?
     private var lastAppIsOverlay: Bool = false
 
     // ウィンドウリストのキャッシュ（高頻度な呼び出しによるメモリ負荷を軽減）
@@ -677,51 +690,58 @@ class EventManager: NSObject, ObservableObject {
         }
     }
 
-    private func bundleIdentifierForApplication(at location: CGPoint) -> (identifier: String?, isOverlay: Bool) {
+    private func appIdentityForApplication(at location: CGPoint) -> (identifier: String?, executableName: String?, executablePath: String?, isOverlay: Bool) {
         let dx = location.x - lastAppCheckLocation.x
         let dy = location.y - lastAppCheckLocation.y
         let distanceSquared = dx * dx + dy * dy
         
         if distanceSquared < 4.0 {
             if Date().timeIntervalSince(lastAppCheckTime) < 0.5 {
-                return (lastAppBundleIdentifier, lastAppIsOverlay)
+                return (lastAppBundleIdentifier, lastAppExecutableName, lastAppExecutablePath, lastAppIsOverlay)
             }
         }
 
-        let result = autoreleasepool { () -> (identifier: String?, isOverlay: Bool) in
+        let result = autoreleasepool { () -> (identifier: String?, executableName: String?, executablePath: String?, isOverlay: Bool) in
             guard let target = windowOwnerPID(at: location) else {
-                return (nil, false)
+                return (nil, nil, nil, false)
             }
 
-            let identifier = NSRunningApplication(processIdentifier: target.pid)?.bundleIdentifier
-            return (identifier, target.isOverlay)
+            let runningApp = NSRunningApplication(processIdentifier: target.pid)
+            let identifier = runningApp?.bundleIdentifier
+            let executableURL = runningApp?.executableURL
+            let executableName = executableURL?.lastPathComponent
+            let executablePath = executableURL?.path
+            return (identifier, executableName, executablePath, target.isOverlay)
         }
         
         lastAppCheckTime = Date()
         lastAppCheckLocation = location
         lastAppBundleIdentifier = result.identifier
+        lastAppExecutableName = result.executableName
+        lastAppExecutablePath = result.executablePath
         lastAppIsOverlay = result.isOverlay
         
         return result
     }
 
     private func shouldLock(at location: CGPoint) -> Bool {
-        // windowOwnerPID が左上原点(Top-Left)を期待しているため、そのまま渡す
-        let result = bundleIdentifierForApplication(at: location)
+        let result = appIdentityForApplication(at: location)
         
         // システムオーバーレイを無視する設定がオンの場合、オーバーレイ上ではロックしない
         if isIgnoreSystemOverlaysEnabled && result.isOverlay {
-            print("App filter check at \(location): System overlay ignored (\(result.identifier ?? "unknown"))")
+            print("App filter check at \(location): System overlay ignored (bundleId=\(result.identifier ?? "unknown"), exe=\(result.executableName ?? "unknown"), path=\(result.executablePath ?? "unknown"))")
             return false
         }
         
         let shouldLock = ManagedApplicationListEvaluator.shouldLock(
             bundleIdentifier: result.identifier,
+            executableName: result.executableName,
+            executablePath: result.executablePath,
             mode: appListMode,
-            listedBundleIdentifiers: managedAppBundleIdentifiersSet
+            listedIdentifiers: managedAppBundleIdentifiersSet
         )
 
-        print("App filter check at \(location): bundleIdentifier=\(result.identifier ?? "none"), mode=\(appListMode.rawValue), shouldLock=\(shouldLock)")
+        print("App filter check at \(location): bundleIdentifier=\(result.identifier ?? "none"), executableName=\(result.executableName ?? "none"), executablePath=\(result.executablePath ?? "none"), mode=\(appListMode.rawValue), shouldLock=\(shouldLock)")
         return shouldLock
     }
 

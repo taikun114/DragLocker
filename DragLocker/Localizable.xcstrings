@@ -1,6 +1,22 @@
 {
   "sourceLanguage" : "en",
   "strings" : {
+    " (%@)" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : " (%1$@)"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "（%1$@）"
+          }
+        }
+      }
+    },
     "「%@」方式でドラッグロックを開始します。" : {
       "localizations" : {
         "en" : {
@@ -13,6 +29,23 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "「%@」方式でドラッグロックを開始します。"
+          }
+        }
+      }
+    },
+    "%@ (%@)" : {
+      "comment" : "設定画面のアプリリストのツールチップ（パス表示）",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$@ (%2$@)"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$@（%2$@）"
           }
         }
       }
@@ -591,8 +624,8 @@
         }
       }
     },
-    "PID: %@、%@" : {
-      "comment" : "プロセス情報（PIDと名前）の表示形式",
+    "PID: %@, %@" : {
+      "comment" : "アプリ追加リストのツールチップ（バンドルIDあり）",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -604,6 +637,23 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "PID: %1$@、%2$@"
+          }
+        }
+      }
+    },
+    "PID: %@, %@ (%@)" : {
+      "comment" : "アプリ追加リストのツールチップ（バンドルIDなし・パス表示）",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "PID: %1$@, %2$@ (%3$@)"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "PID: %1$@、%2$@（%3$@）"
           }
         }
       }
