@@ -98,6 +98,22 @@
         }
       }
     },
+    "%@をプレビュー再生します。" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Previews %@."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@をプレビュー再生します。"
+          }
+        }
+      }
+    },
     "8ビット" : {
       "comment" : "サウンドの種類：レトロなゲーム風の音",
       "localizations" : {
@@ -339,6 +355,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Escキーですべてのロックを解除"
+          }
+        }
+      }
+    },
+    "Finderからオーディオファイルを選択します。" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Select an audio file from Finder."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Finderからオーディオファイルを選択します。"
           }
         }
       }
@@ -875,6 +907,23 @@
         }
       }
     },
+    "カスタム" : {
+      "comment" : "サウンドの種類：ユーザーが選択したカスタムオーディオファイル",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Custom"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "カスタム"
+          }
+        }
+      }
+    },
     "カスタムサウンドの再生音量を調整します。" : {
       "comment" : "音量スライダーの説明文",
       "localizations" : {
@@ -1103,6 +1152,38 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "サウンド"
+          }
+        }
+      }
+    },
+    "サウンド%lldに設定されたカスタムサウンド「%@」を削除してもよろしいですか？" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Are you sure you want to delete the custom sound \"%2$@\" set for Sound %1$lld?"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "サウンド%1$lldに設定されたカスタムサウンド「%2$@」を削除してもよろしいですか？"
+          }
+        }
+      }
+    },
+    "サウンド%lldを削除" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Delete Sound %lld"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "サウンド%lldを削除"
           }
         }
       }
@@ -2583,6 +2664,22 @@
         }
       }
     },
+    "最大10秒までのオーディオファイルを設定することができます。" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "You can set audio files up to 10 seconds."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "最大10秒までのオーディオファイルを設定することができます。"
+          }
+        }
+      }
+    },
     "切り替えショートカット" : {
       "localizations" : {
         "en" : {
@@ -2660,6 +2757,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "削除"
+          }
+        }
+      }
+    },
+    "削除..." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Delete..."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "削除..."
           }
         }
       }
@@ -2743,6 +2856,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "右"
+          }
+        }
+      }
+    },
+    "各サウンドには、最大10秒までのオーディオファイルを設定することができ、片方だけが設定された場合はロック時と解除時に同じサウンドが使用されます。" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Each sound can be set with an audio file up to 10 seconds. If only one is set, the same sound is used for both locking and unlocking."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "各サウンドには、最大10秒までのオーディオファイルを設定することができ、片方だけが設定された場合はロック時と解除時に同じサウンドが使用されます。"
           }
         }
       }
@@ -3194,6 +3323,22 @@
         }
       }
     },
+    "設定されたカスタムオーディオを削除します。" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Deletes the configured custom audio."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "設定されたカスタムオーディオを削除します。"
+          }
+        }
+      }
+    },
     "設定を開く" : {
       "comment" : "システム設定を開くボタンのラベル",
       "localizations" : {
@@ -3391,6 +3536,22 @@
         }
       }
     },
+    "選択..." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Select..."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "選択..."
+          }
+        }
+      }
+    },
     "選択された%lld個のアプリをリストから削除してもよろしいですか？" : {
       "comment" : "複数削除アラートの確認メッセージ",
       "localizations" : {
@@ -3486,6 +3647,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "除外する"
+          }
+        }
+      }
+    },
+    "音声が長すぎます" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Audio is too long"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "音声が長すぎます"
           }
         }
       }

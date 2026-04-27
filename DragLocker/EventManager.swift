@@ -6,6 +6,8 @@ import ServiceManagement
 import SwiftUI
 import KeyboardShortcuts
 import UserNotifications
+import AVFoundation
+import CoreMedia
 
 extension KeyboardShortcuts.Name {
     static let toggleMonitoring = Self("toggleMonitoring")
@@ -232,6 +234,30 @@ class EventManager: NSObject, ObservableObject {
         }
     }
 
+    @Published var customSound1Path: String? {
+        didSet {
+            UserDefaults.standard.set(customSound1Path, forKey: "customSound1Path")
+        }
+    }
+
+    @Published var customSound1Name: String? {
+        didSet {
+            UserDefaults.standard.set(customSound1Name, forKey: "customSound1Name")
+        }
+    }
+
+    @Published var customSound2Path: String? {
+        didSet {
+            UserDefaults.standard.set(customSound2Path, forKey: "customSound2Path")
+        }
+    }
+
+    @Published var customSound2Name: String? {
+        didSet {
+            UserDefaults.standard.set(customSound2Name, forKey: "customSound2Name")
+        }
+    }
+
     @Published var isIconEnabled: Bool = false {
         didSet {
             UserDefaults.standard.set(isIconEnabled, forKey: "isIconEnabled")
@@ -379,6 +405,11 @@ class EventManager: NSObject, ObservableObject {
         let savedVolume = UserDefaults.standard.double(forKey: "soundVolume")
         self.soundVolume = (savedVolume == 0 && !UserDefaults.standard.dictionaryRepresentation().keys.contains("soundVolume")) ? 0.5 : savedVolume
         self.isSoundInverted = UserDefaults.standard.bool(forKey: "isSoundInverted")
+
+        self.customSound1Path = UserDefaults.standard.string(forKey: "customSound1Path")
+        self.customSound1Name = UserDefaults.standard.string(forKey: "customSound1Name")
+        self.customSound2Path = UserDefaults.standard.string(forKey: "customSound2Path")
+        self.customSound2Name = UserDefaults.standard.string(forKey: "customSound2Name")
 
         self.isIconEnabled = UserDefaults.standard.bool(forKey: "isIconEnabled")
         if let savedStyle = UserDefaults.standard.string(forKey: "pointerIconStyle"), let style = IconStyle(rawValue: savedStyle) {
@@ -786,6 +817,83 @@ class EventManager: NSObject, ObservableObject {
         #if DEBUG
         print("Managed app list cleared")
         #endif
+    }
+
+    // MARK: - Custom Sound Management
+
+    private var customSoundsDirectory: URL {
+        let paths = FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask)
+        let appSupportDirectory = paths[0].appendingPathComponent(Bundle.main.bundleIdentifier ?? "com.taikun.DragLocker")
+        let customSoundsDir = appSupportDirectory.appendingPathComponent("CustomSounds")
+        
+        if !FileManager.default.fileExists(atPath: customSoundsDir.path) {
+            try? FileManager.default.createDirectory(at: customSoundsDir, withIntermediateDirectories: true)
+        }
+        
+        return customSoundsDir
+    }
+
+    func saveCustomSound(url: URL, index: Int) async throws {
+        // セキュリティスコープのアクセスを開始（ファイルピッカーから取得したURL用）
+        let accessing = url.startAccessingSecurityScopedResource()
+        defer { if accessing { url.stopAccessingSecurityScopedResource() } }
+        
+        // ファイルの長さをチェック
+        let asset = AVURLAsset(url: url)
+        let duration = try await asset.load(.duration)
+        let seconds = CMTimeGetSeconds(duration)
+        if seconds > 10.0 {
+            throw NSError(domain: "DragLocker", code: 1, userInfo: [NSLocalizedDescriptionKey: "音声が長すぎます。最大10秒までのオーディオファイルを設定することができます。"])
+        }
+        
+        let fileExtension = url.pathExtension
+        let originalNameWithoutExtension = url.deletingPathExtension().lastPathComponent
+        let fileName = "\(originalNameWithoutExtension)_sound_\(index)_\(UUID().uuidString).\(fileExtension)"
+        let destinationURL = customSoundsDirectory.appendingPathComponent(fileName)
+        
+        // 古いファイルを削除
+        deleteCustomSound(index: index)
+        
+        // 新しいファイルをコピー
+        try FileManager.default.copyItem(at: url, to: destinationURL)
+        
+        DispatchQueue.main.async {
+            if index == 1 {
+                self.customSound1Path = fileName
+                self.customSound1Name = originalNameWithoutExtension
+            } else {
+                self.customSound2Path = fileName
+                self.customSound2Name = originalNameWithoutExtension
+            }
+            // プリロード
+            SoundManager.shared.loadSound(style: .custom)
+        }
+    }
+
+    func deleteCustomSound(index: Int) {
+        let fileName = index == 1 ? customSound1Path : customSound2Path
+        if let fileName = fileName {
+            let fileURL = customSoundsDirectory.appendingPathComponent(fileName)
+            try? FileManager.default.removeItem(at: fileURL)
+        }
+        
+        DispatchQueue.main.async {
+            if index == 1 {
+                self.customSound1Path = nil
+                self.customSound1Name = nil
+            } else {
+                self.customSound2Path = nil
+                self.customSound2Name = nil
+            }
+            // プリロード情報を更新
+            SoundManager.shared.loadSound(style: .custom)
+        }
+    }
+
+    func getCustomSoundURL(index: Int) -> URL? {
+        let fileName = index == 1 ? customSound1Path : customSound2Path
+        guard let fileName = fileName else { return nil }
+        return customSoundsDirectory.appendingPathComponent(fileName)
     }
 
     // イベント処理のエントリーポイント

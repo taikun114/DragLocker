@@ -21,6 +21,7 @@ enum SoundStyle: String, CaseIterable, Sendable {
     case eightBit = "8bit"
     case eightBitLow = "8bit_low"
     case drum = "drum"
+    case custom = "custom"
 
     var localizedName: LocalizedStringResource {
         switch self {
@@ -41,6 +42,7 @@ enum SoundStyle: String, CaseIterable, Sendable {
         case .eightBit: return LocalizedStringResource("8ビット", comment: "サウンドの種類：レトロなゲーム風の音")
         case .eightBitLow: return LocalizedStringResource("8ビット（低）", comment: "サウンドの種類：低いトーンの8ビット音")
         case .drum: return LocalizedStringResource("ドラム", comment: "サウンドの種類：太鼓のような音")
+        case .custom: return LocalizedStringResource("カスタム", comment: "サウンドの種類：ユーザーが選択したカスタムオーディオファイル")
         }
     }
 }
@@ -59,6 +61,25 @@ class SoundManager {
         if style == .system { return }
         
         queue.async {
+            if style == .custom {
+                // カスタムサウンドのロード
+                for index in [1, 2] {
+                    let key = "custom_\(index)"
+                    if let url = EventManager.shared.getCustomSoundURL(index: index) {
+                        do {
+                            let player = try AVAudioPlayer(contentsOf: url)
+                            player.prepareToPlay()
+                            self.players[key] = player
+                        } catch {
+                            print("Failed to load custom sound \(index): \(error)")
+                        }
+                    } else {
+                        self.players.removeValue(forKey: key)
+                    }
+                }
+                return
+            }
+            
             for suffix in ["_up", "_down"] {
                 let key = "\(style.rawValue)\(suffix)"
                 if self.players[key] == nil {
@@ -81,12 +102,19 @@ class SoundManager {
     // 指定されたスタイル以外をメモリから解放する
     func cleanupExcept(activeStyle: SoundStyle) {
         queue.async {
-            let activeUpKey = "\(activeStyle.rawValue)_up"
-            let activeDownKey = "\(activeStyle.rawValue)_down"
-            
-            let keysToRemove = self.players.keys.filter { $0 != activeUpKey && $0 != activeDownKey }
-            for key in keysToRemove {
-                self.players.removeValue(forKey: key)
+            if activeStyle == .custom {
+                let keysToRemove = self.players.keys.filter { $0 != "custom_1" && $0 != "custom_2" }
+                for key in keysToRemove {
+                    self.players.removeValue(forKey: key)
+                }
+            } else {
+                let activeUpKey = "\(activeStyle.rawValue)_up"
+                let activeDownKey = "\(activeStyle.rawValue)_down"
+                
+                let keysToRemove = self.players.keys.filter { $0 != activeUpKey && $0 != activeDownKey }
+                for key in keysToRemove {
+                    self.players.removeValue(forKey: key)
+                }
             }
             #if DEBUG
             print("Sound memory cleaned up. Remaining players: \(self.players.keys.count)")
@@ -98,6 +126,38 @@ class SoundManager {
         if style == .system {
             queue.async {
                 NSSound.beep()
+            }
+            return
+        }
+        
+        if style == .custom {
+            let effectiveIsLocked = isInverted ? !isLocked : isLocked
+            
+            queue.async { [weak self] in
+                guard let self = self else { return }
+                
+                let hasSound1 = self.players["custom_1"] != nil
+                let hasSound2 = self.players["custom_2"] != nil
+                
+                if hasSound1 && hasSound2 {
+                    // 両方ある場合は使い分け（ロックで1、解除で2）
+                    let key = effectiveIsLocked ? "custom_1" : "custom_2"
+                    self.playByKey(key: key, volume: volume)
+                } else if hasSound1 {
+                    // サウンド1のみの場合は両方で1を再生
+                    self.playByKey(key: "custom_1", volume: volume)
+                } else if hasSound2 {
+                    // サウンド2のみの場合は両方で2を再生
+                    self.playByKey(key: "custom_2", volume: volume)
+                } else {
+                    // まだロードされていない可能性があるため、その場でロードを試みる
+                    self.loadAndPlayCustom(index: effectiveIsLocked ? 1 : 2, volume: volume) { [weak self] success in
+                        if !success {
+                            // 指定された方がロードできなかった場合、もう一方を試す
+                            self?.loadAndPlayCustom(index: effectiveIsLocked ? 2 : 1, volume: volume, completion: nil)
+                        }
+                    }
+                }
             }
             return
         }
@@ -115,6 +175,22 @@ class SoundManager {
             return
         }
         
+        if style == .custom {
+            let hasSound1 = players["custom_1"] != nil
+            let hasSound2 = players["custom_2"] != nil
+            
+            if hasSound1 || hasSound2 {
+                // 1回目
+                play(style: .custom, volume: volume, isLocked: true, isInverted: isInverted)
+                
+                // 0.4秒後に2回目
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.4) {
+                    self.play(style: .custom, volume: volume, isLocked: false, isInverted: isInverted)
+                }
+            }
+            return
+        }
+        
         // ロック音を再生
         let firstSuffix = isInverted ? "_down" : "_up"
         playSpecific(style: style, volume: volume, suffix: firstSuffix)
@@ -123,6 +199,39 @@ class SoundManager {
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.4) {
             let secondSuffix = isInverted ? "_up" : "_down"
             self.playSpecific(style: style, volume: volume, suffix: secondSuffix)
+        }
+    }
+
+    func playByKey(key: String, volume: Double) {
+        queue.async { [weak self] in
+            if let player = self?.players[key] {
+                player.volume = Float(volume)
+                player.currentTime = 0
+                player.play()
+            }
+        }
+    }
+
+    private func loadAndPlayCustom(index: Int, volume: Double, completion: ((Bool) -> Void)?) {
+        guard let url = EventManager.shared.getCustomSoundURL(index: index) else {
+            completion?(false)
+            return
+        }
+        
+        queue.async { [weak self] in
+            do {
+                let player = try AVAudioPlayer(contentsOf: url)
+                player.volume = Float(volume)
+                player.prepareToPlay()
+                
+                let key = "custom_\(index)"
+                self?.players[key] = player
+                player.play()
+                completion?(true)
+            } catch {
+                print("Failed to load and play custom sound \(index): \(error)")
+                completion?(false)
+            }
         }
     }
     
@@ -178,6 +287,7 @@ class SoundManager {
         case .eightBit: return "8bit"
         case .eightBitLow: return "8bit_low"
         case .drum: return "drum"
+        case .custom: return ""
         }
     }
 }

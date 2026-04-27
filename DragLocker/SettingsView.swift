@@ -1,5 +1,6 @@
 import SwiftUI
 import KeyboardShortcuts
+import UniformTypeIdentifiers
 
 struct SettingsView: View {
     @EnvironmentObject var eventManager: EventManager
@@ -13,12 +14,23 @@ struct SettingsView: View {
     @State private var runningApplications: [NSRunningApplication] = []
     @State private var showingInvalidAppAlert = false
     @State private var showingClearAllManagedAppsConfirmation = false
+    @State private var showingAudioLengthError = false
+    @State private var audioErrorMessage = ""
+    @State private var showingDeleteSoundConfirmation = false
+    @State private var soundIndexToDelete: Int = 1
+    @State private var soundNameToDelete: String = ""
     
     // タブの選択状態を管理するための列挙型と状態変数
-    private enum Tab: Hashable {
+    enum Tab: Hashable {
         case general, customization, behavior, info
     }
-    @State private var selectedTab: Tab = .general
+    @State private var selectedTab: Tab
+    private let shouldResetOnAppear: Bool
+    
+    init(initialTab: Tab = .general, shouldResetOnAppear: Bool = true) {
+        self._selectedTab = State(initialValue: initialTab)
+        self.shouldResetOnAppear = shouldResetOnAppear
+    }
     
     private static var iconCache: [IconStyle: Image] = [:]
 
@@ -602,7 +614,7 @@ struct SettingsView: View {
                     
                     HStack(alignment: .top) {
                         Picker(selection: $eventManager.soundStyle) {
-                            ForEach(SoundStyle.allCases, id: \.self) { style in
+                            ForEach(SoundStyle.allCases.filter { $0 != .custom }, id: \.self) { style in
                                 Text(style.localizedName)
                                     .tag(style)
                                     .onHover { isHovering in
@@ -624,6 +636,25 @@ struct SettingsView: View {
                                     Divider()
                                 }
                             }
+                            
+                            Divider()
+                            
+                            Text(SoundStyle.custom.localizedName)
+                                .tag(SoundStyle.custom)
+                                .onHover { isHovering in
+                                    if isHovering {
+                                        SoundManager.shared.loadSound(style: .custom)
+                                        hoverTask?.cancel()
+                                        hoverTask = Task {
+                                            try? await Task.sleep(nanoseconds: 500_000_000) // 0.5秒
+                                            if !Task.isCancelled {
+                                                SoundManager.shared.preview(style: .custom, volume: eventManager.soundVolume, isInverted: eventManager.isSoundInverted)
+                                            }
+                                        }
+                                    } else {
+                                        hoverTask?.cancel()
+                                    }
+                                }
                         } label: {
                             Text("サウンドスタイル")
                                 .foregroundStyle(eventManager.isSoundEnabled ? .primary : .secondary)
@@ -645,6 +676,21 @@ struct SettingsView: View {
                         .foregroundStyle(.secondary)
                         .disabled(!eventManager.isSoundEnabled)
                         .help("現在のサウンドをプレビュー再生します。")
+                    }
+                    
+                    if eventManager.soundStyle == .custom {
+                        VStack(alignment: .leading, spacing: 8) {
+                            HStack {
+                                customSoundView(title: "サウンド 1", index: 1)
+                                Divider()
+                                customSoundView(title: "サウンド 2", index: 2)
+                            }
+                            .fixedSize(horizontal: false, vertical: true)
+                            
+                            Text("各サウンドには、最大10秒までのオーディオファイルを設定することができ、片方だけが設定された場合はロック時と解除時に同じサウンドが使用されます。")
+                                .font(.subheadline)
+                                .foregroundStyle(.secondary)
+                        }
                     }
                     
                     VStack(alignment: .leading) {
@@ -718,8 +764,10 @@ struct SettingsView: View {
             NSApp.setActivationPolicy(.regular)
             // アプリを前面に持ってくる
             NSApp.activate(ignoringOtherApps: true)
-            // 設定画面を開くたびに「一般」タブにリセットする
-            selectedTab = .general
+            // 設定画面を開くたびに「一般」タブにリセットする（プレビュー以外）
+            if shouldResetOnAppear {
+                selectedTab = .general
+            }
         }
         .onChange(of: lockDelay) { _, newValue in
             eventManager.lockDelay = newValue
@@ -735,11 +783,121 @@ struct SettingsView: View {
             // 設定画面を閉じたらDockアイコンを非表示にする
             NSApp.setActivationPolicy(.accessory)
         }
+        .alert("音声が長すぎます", isPresented: $showingAudioLengthError) {
+            Button("OK", role: .cancel) { }
+        } message: {
+            Text("最大10秒までのオーディオファイルを設定することができます。")
+        }
+        .alert("サウンド\(soundIndexToDelete)を削除", isPresented: $showingDeleteSoundConfirmation) {
+            Button("削除", role: .destructive) {
+                eventManager.deleteCustomSound(index: soundIndexToDelete)
+            }
+            Button("キャンセル", role: .cancel) { }
+        } message: {
+            Text("サウンド\(soundIndexToDelete)に設定されたカスタムサウンド「\(soundNameToDelete)」を削除してもよろしいですか？")
+        }
+    }
+    
+    @ViewBuilder
+    private func customSoundView(title: String, index: Int) -> some View {
+        let fileName = index == 1 ? eventManager.customSound1Name : eventManager.customSound2Name
+        
+        VStack(alignment: .leading, spacing: 0) {
+            HStack {
+                Text(title)
+                
+                Spacer()
+                
+                Button {
+                    SoundManager.shared.playByKey(key: "custom_\(index)", volume: eventManager.soundVolume)
+                } label: {
+                    Image(systemName: "play.circle")
+                        .font(.title3)
+                }
+                .buttonStyle(.plain)
+                .foregroundStyle(.secondary)
+                .disabled(fileName == nil)
+                .help("\(title)をプレビュー再生します。")
+            }
+            
+            let displayName = fileName.map { ($0 as NSString).deletingPathExtension } ?? "ファイルが選択されていません"
+            Text(displayName)
+                .font(.subheadline)
+                .foregroundStyle(.secondary)
+                .lineLimit(1)
+                .truncationMode(.middle)
+                .padding(.bottom, 16)
+                .help(displayName)
+            
+            HStack {
+                Button("選択...") {
+                    selectAudioFile(index: index)
+                }
+                .help("Finderからオーディオファイルを選択します。")
+                
+                Button("削除...", role: .destructive) {
+                    soundIndexToDelete = index
+                    soundNameToDelete = displayName
+                    showingDeleteSoundConfirmation = true
+                }
+                .disabled(fileName == nil)
+                .help("設定されたカスタムオーディオを削除します。")
+            }
+        }
+        .frame(maxWidth: .infinity)
+    }
+    
+    private func selectAudioFile(index: Int) {
+        let panel = NSOpenPanel()
+        panel.allowsMultipleSelection = false
+        panel.canChooseDirectories = false
+        panel.allowedContentTypes = [.audio, .mp3, .quickTimeMovie] // mp4などオーディオが含まれるものも考慮
+        
+        guard let window = NSApp.keyWindow else {
+            // ウィンドウが見つからない場合はフォールバック
+            if panel.runModal() == .OK, let url = panel.url {
+                Task {
+                    try? await eventManager.saveCustomSound(url: url, index: index)
+                }
+            }
+            return
+        }
+        
+        panel.beginSheetModal(for: window) { response in
+            if response == .OK, let url = panel.url {
+                Task {
+                    do {
+                        try await self.eventManager.saveCustomSound(url: url, index: index)
+                    } catch {
+                        self.audioErrorMessage = error.localizedDescription
+                        self.showingAudioLengthError = true
+                    }
+                }
+            }
+        }
     }
 }
 
-#Preview {
-    SettingsView()
-        .environmentObject(EventManager())
+#Preview("一般") {
+    SettingsView(initialTab: .general, shouldResetOnAppear: false)
+        .environmentObject(EventManager.shared)
+        .frame(width: 450, height: 350)
+}
+
+#Preview("カスタマイズ") {
+    SettingsView(initialTab: .customization, shouldResetOnAppear: false)
+        .environmentObject(EventManager.shared)
+        .frame(width: 450, height: 350)
+}
+
+#Preview("動作") {
+    SettingsView(initialTab: .behavior, shouldResetOnAppear: false)
+        .environmentObject(EventManager.shared)
+        .frame(width: 450, height: 350)
+}
+
+#Preview("情報") {
+    SettingsView(initialTab: .info, shouldResetOnAppear: false)
+        .environmentObject(EventManager.shared)
         .frame(width: 450, height: 350)
 }
