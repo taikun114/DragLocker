@@ -148,6 +148,22 @@
         }
       }
     },
+    "80 × 80（Retinaディスプレイでは160 × 160）ピクセル以下の透過画像を使用することを推奨します。\n大きな画像は表示エリア（80 × 80）に収まるように縮小されます。" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Using a transparent image of 80 × 80 pixels (160 × 160 on Retina displays) or less is recommended.\nLarger images will be scaled down to fit the display area (80 × 80)."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "80 × 80（Retinaディスプレイでは160 × 160）ピクセル以下の透過画像を使用することを推奨します。\n大きな画像は表示エリア（80 × 80）に収まるように縮小されます。"
+          }
+        }
+      }
+    },
     "Buy Me a Coffeeで、緑茶一杯分の金額からサポートしていただけます。" : {
       "localizations" : {
         "en" : {
@@ -690,6 +706,38 @@
         }
       }
     },
+    "Xオフセット" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "X Offset"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Xオフセット"
+          }
+        }
+      }
+    },
+    "Yオフセット" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Y Offset"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Yオフセット"
+          }
+        }
+      }
+    },
     "アイコン" : {
       "comment" : "設定画面のアイコンセクションヘッダー",
       "localizations" : {
@@ -908,7 +956,7 @@
       }
     },
     "カスタム" : {
-      "comment" : "サウンドの種類：ユーザーが選択したカスタムオーディオファイル",
+      "comment" : "サウンドの種類：ユーザーが選択したカスタムオーディオファイル\nポインタ付近に表示するアイコンの種類：カスタム画像",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -937,6 +985,38 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "カスタムサウンドの再生音量を調整します。"
+          }
+        }
+      }
+    },
+    "カスタム画像" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Custom Image"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "カスタム画像"
+          }
+        }
+      }
+    },
+    "カスタム画像を削除" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Delete Custom Image"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "カスタム画像を削除"
           }
         }
       }
@@ -2380,6 +2460,38 @@
         }
       }
     },
+    "リセット" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Reset"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "リセット"
+          }
+        }
+      }
+    },
+    "リセット..." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Reset..."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "リセット..."
+          }
+        }
+      }
+    },
     "リポジトリにスターをつけてくれるととてもうれしいです！" : {
       "localizations" : {
         "en" : {
@@ -2893,6 +3005,38 @@
         }
       }
     },
+    "大きさ" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Size"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "大きさ"
+          }
+        }
+      }
+    },
+    "大きさ、Xオフセット、Yオフセットを既定値に戻してもよろしいですか？" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Are you sure you want to reset the size, X offset, and Y offset to their default values?"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "大きさ、Xオフセット、Yオフセットを既定値に戻してもよろしいですか？"
+          }
+        }
+      }
+    },
     "大きなリング" : {
       "comment" : "ポインタ付近に表示するアイコンの種類：大きな円",
       "localizations" : {
@@ -3335,6 +3479,38 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "設定されたカスタムオーディオを削除します。"
+          }
+        }
+      }
+    },
+    "設定されたカスタム画像「%@」を削除してもよろしいですか？" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Are you sure you want to delete the custom image \"%@\"?"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "設定されたカスタム画像「%@」を削除してもよろしいですか？"
+          }
+        }
+      }
+    },
+    "設定をリセットしますか？" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Reset settings?"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "設定をリセットしますか？"
           }
         }
       }

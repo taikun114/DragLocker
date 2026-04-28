@@ -974,7 +974,7 @@ struct SettingsView: View {
                     }
                 }
                 .frame(width: 160, height: 160)
-                .background(Color(NSColor.controlBackgroundColor))
+                .background(VisualEffectView(material: .hudWindow, blendingMode: .behindWindow))
                 .clipShape(RoundedRectangle(cornerRadius: 8))
                 .overlay(RoundedRectangle(cornerRadius: 8).stroke(Color.primary.opacity(0.1), lineWidth: 1))
                 .onReceive(Timer.publish(every: 2.0, on: .main, in: .common).autoconnect()) { _ in
