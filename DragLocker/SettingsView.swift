@@ -1,6 +1,7 @@
 import SwiftUI
 import KeyboardShortcuts
 import UniformTypeIdentifiers
+import Combine
 
 struct SettingsView: View {
     @EnvironmentObject var eventManager: EventManager
@@ -19,6 +20,14 @@ struct SettingsView: View {
     @State private var showingDeleteSoundConfirmation = false
     @State private var soundIndexToDelete: Int = 1
     @State private var soundNameToDelete: String = ""
+    @State private var previewCursorPhase: Int = 0
+    @State private var showingCustomIconError = false
+    @State private var iconErrorMessage = ""
+    @State private var showingDeleteIconConfirmation = false
+    @State private var iconNameToDelete = ""
+    @State private var showingResetIconSettingsConfirmation = false
+    @State private var isAppActive = true
+    @State private var cachedTrimmedImage: (path: String, image: NSImage, originalSize: NSSize)? = nil
     
     // タブの選択状態を管理するための列挙型と状態変数
     enum Tab: Hashable {
@@ -35,6 +44,11 @@ struct SettingsView: View {
     private static var iconCache: [IconStyle: Image] = [:]
 
     private func getIcon(for style: IconStyle) -> Image {
+        // カスタムスタイルの場合はスライダーの値に依存するためキャッシュしない
+        if style == .custom {
+            return generateIcon(for: style)
+        }
+        
         if let cached = Self.iconCache[style] {
             return cached
         }
@@ -180,6 +194,46 @@ struct SettingsView: View {
                 FocusCorner(length: 5, thickness: 2, innerThickness: 1, alignment: .bottomLeading, containerSize: 16)
                 FocusCorner(length: 5, thickness: 2, innerThickness: 1, alignment: .bottomTrailing, containerSize: 16)
             }.frame(width: 16, height: 16, alignment: .center))
+        case .custom:
+            if let path = eventManager.customIconPath {
+                let trimmedImage: NSImage
+                let originalSize: NSSize
+                
+                if let cached = cachedTrimmedImage, cached.path == path {
+                    trimmedImage = cached.image
+                    originalSize = cached.originalSize
+                } else if let nsImage = NSImage(contentsOfFile: path) {
+                    originalSize = nsImage.size
+                    trimmedImage = nsImage.trimmedToOpaqueContent()
+                    DispatchQueue.main.async {
+                        self.cachedTrimmedImage = (path, trimmedImage, originalSize)
+                    }
+                } else {
+                    trimmedImage = NSImage()
+                    originalSize = NSSize(width: 1, height: 1)
+                }
+                
+                // プレビューエリア（80x80）でのベースとなるフィット倍率（実寸ベース）
+                let fitScale = min(1.0, 80.0 / max(1, originalSize.width), 80.0 / max(1, originalSize.height))
+                
+                // プレビュー上でのコンテンツ（トリミング後の領域）の表示サイズ
+                let contentDisplaySizeIn80 = max(trimmedImage.size.width, trimmedImage.size.height) * fitScale * eventManager.customIconScale
+                
+                // プレビュー上のサイズが 80px を超えた時だけ、ピッカー内でもズームを開始する
+                // これにより、プレビューで見切れていないのにピッカーで見切れる現象を防ぐ
+                let normalizedScale = contentDisplaySizeIn80 / 80.0
+                
+                view = AnyView(
+                    Image(nsImage: trimmedImage)
+                        .resizable()
+                        .scaledToFit() // 全体が収まるようにフィットさせる
+                        .frame(width: 16, height: 16)
+                        .scaleEffect(max(1.0, normalizedScale)) // 1.0未満にはしない（＝余計な余白を作らない）
+                        .clipped()
+                )
+            } else {
+                view = AnyView(Color.clear.frame(width: 16, height: 16))
+            }
         }
 
         let hostingView = NSHostingView(rootView: view)
@@ -579,6 +633,7 @@ struct SettingsView: View {
                             Label { Text("ドット") } icon: { previewIcon(for: .dot) }.tag(IconStyle.dot)
                             Label { Text("大きなリング") } icon: { previewIcon(for: .largeRing) }.tag(IconStyle.largeRing)
                             Label { Text("フォーカス") } icon: { previewIcon(for: .focus) }.tag(IconStyle.focus)
+                            Label { Text("カスタム") } icon: { previewIcon(for: .custom) }.tag(IconStyle.custom)
                         }
                         
                         Section("マルチインジケーター") {
@@ -599,6 +654,10 @@ struct SettingsView: View {
                     .labelStyle(.titleAndIcon)
                     .pickerStyle(.menu)
                     .disabled(!eventManager.isIconEnabled)
+                    
+                    if eventManager.pointerIconStyle == .custom {
+                        customIconSettingsView
+                    }
                 }
                 
                 Section(header: Text("サウンド")) {
@@ -876,6 +935,190 @@ struct SettingsView: View {
             }
         }
     }
+    
+    @ViewBuilder
+    private var customIconSettingsView: some View {
+        VStack(alignment: .leading, spacing: 16) {
+            HStack(alignment: .top, spacing: 16) {
+                // 左側：プレビュー画像エリア
+                ZStack {
+                    let isOld = ProcessInfo.processInfo.operatingSystemVersion.majorVersion < 26
+                    let suffix = isOld ? "_Old" : ""
+                    let cursors = ["Cursor_Pointer\(suffix)", "Cursor_PointingHand\(suffix)", "Cursor_IbeamVertical\(suffix)"]
+                    let currentCursorName = cursors[previewCursorPhase % cursors.count]
+                    
+                    if let path = eventManager.customIconPath,
+                       let nsImage = NSImage(contentsOfFile: path) {
+                        // 80x80より大きい場合はフィットさせ、小さい場合は実寸をベースにする
+                        let fitScale = min(1.0, 80.0 / max(1, nsImage.size.width), 80.0 / max(1, nsImage.size.height))
+                        let displayWidth = nsImage.size.width * fitScale
+                        let displayHeight = nsImage.size.height * fitScale
+                        
+                        Image(nsImage: nsImage)
+                            .resizable()
+                            .scaledToFit()
+                            .frame(width: displayWidth, height: displayHeight)
+                            .scaleEffect(eventManager.customIconScale)
+                            .frame(width: 80, height: 80)
+                            .clipped()
+                            .offset(x: eventManager.customIconXOffset, y: eventManager.customIconYOffset)
+                    }
+                    
+                    ForEach(cursors, id: \.self) { cursor in
+                        Image(cursor)
+                            .resizable()
+                            .scaledToFit()
+                            .frame(width: 160, height: 160)
+                            .opacity(cursor == currentCursorName ? 1.0 : 0.0)
+                            .animation(.easeInOut(duration: 0.5), value: currentCursorName)
+                    }
+                }
+                .frame(width: 160, height: 160)
+                .background(Color(NSColor.controlBackgroundColor))
+                .clipShape(RoundedRectangle(cornerRadius: 8))
+                .overlay(RoundedRectangle(cornerRadius: 8).stroke(Color.primary.opacity(0.1), lineWidth: 1))
+                .onReceive(Timer.publish(every: 2.0, on: .main, in: .common).autoconnect()) { _ in
+                    if isAppActive {
+                        previewCursorPhase += 1
+                    }
+                }
+                .onReceive(NotificationCenter.default.publisher(for: NSApplication.didBecomeActiveNotification)) { _ in
+                    isAppActive = true
+                }
+                .onReceive(NotificationCenter.default.publisher(for: NSApplication.didResignActiveNotification)) { _ in
+                    isAppActive = false
+                }
+
+                // 右側：画像選択・削除ボタンと説明テキスト
+                VStack(alignment: .leading, spacing: 0) {
+                    Text("カスタム画像")
+                    
+                    let displayName = eventManager.customIconName ?? "ファイルが選択されていません"
+                    Text(displayName)
+                        .font(.subheadline)
+                        .foregroundStyle(.secondary)
+                        .lineLimit(1)
+                        .truncationMode(.middle)
+                        .help(displayName)
+                    
+                    HStack {
+                        Button("選択...") {
+                            selectCustomIcon()
+                        }
+                        
+                        Button("削除...", role: .destructive) {
+                            iconNameToDelete = eventManager.customIconName ?? ""
+                            showingDeleteIconConfirmation = true
+                        }
+                        .disabled(eventManager.customIconPath == nil)
+                    }
+                    .padding(.vertical, 16)
+                    .alert("カスタム画像を削除", isPresented: $showingDeleteIconConfirmation) {
+                        Button("削除", role: .destructive) {
+                            eventManager.deleteCustomIcon()
+                        }
+                        Button("キャンセル", role: .cancel) { }
+                    } message: {
+                        Text("設定されたカスタム画像「\(iconNameToDelete)」を削除してもよろしいですか？")
+                    }
+                    
+                    Text("80 × 80（Retinaディスプレイでは160 × 160）ピクセル以下の透過画像を使用することを推奨します。\n大きな画像は表示エリア（80 × 80）に収まるように縮小されます。")
+                        .font(.subheadline)
+                        .foregroundStyle(.secondary)
+                        .fixedSize(horizontal: false, vertical: true)
+                }
+            }
+            
+            // 下部：スライダー
+            VStack(spacing: 16) {
+                HStack(spacing: 8) {
+                    Slider(
+                        value: $eventManager.customIconScale,
+                        in: 0.01...2.0,
+                        step: 0.01,
+                        label: { Text("大きさ") }
+                    )
+                    Text(eventManager.customIconScale, format: .percent.precision(.fractionLength(0)))
+                        .monospacedDigit()
+                        .foregroundStyle(.secondary)
+                        .frame(width: 50, alignment: .trailing)
+                }
+                
+                HStack(spacing: 8) {
+                    Slider(
+                        value: $eventManager.customIconXOffset,
+                        in: -40...40,
+                        step: 1,
+                        label: { Text("Xオフセット") }
+                    )
+                    Text(Int(eventManager.customIconXOffset), format: .number)
+                        .monospacedDigit()
+                        .foregroundStyle(.secondary)
+                        .frame(width: 50, alignment: .trailing)
+                }
+                
+                HStack(spacing: 8) {
+                    Slider(
+                        value: $eventManager.customIconYOffset,
+                        in: -40...40,
+                        step: 1,
+                        label: { Text("Yオフセット") }
+                    )
+                    Text(Int(eventManager.customIconYOffset), format: .number)
+                        .monospacedDigit()
+                        .foregroundStyle(.secondary)
+                        .frame(width: 50, alignment: .trailing)
+                }
+                
+                HStack {
+                    Spacer()
+                    Button("リセット...") {
+                        showingResetIconSettingsConfirmation = true
+                    }
+                    .alert("設定をリセットしますか？", isPresented: $showingResetIconSettingsConfirmation) {
+                        Button("リセット", role: .destructive) {
+                            eventManager.customIconScale = 1.0
+                            eventManager.customIconXOffset = 0
+                            eventManager.customIconYOffset = 0
+                        }
+                        Button("キャンセル", role: .cancel) { }
+                    } message: {
+                        Text("大きさ、Xオフセット、Yオフセットを既定値に戻してもよろしいですか？")
+                    }
+                }
+            }
+        }
+    }
+
+    private func selectCustomIcon() {
+        let panel = NSOpenPanel()
+        panel.allowsMultipleSelection = false
+        panel.canChooseDirectories = false
+        panel.allowedContentTypes = [.image]
+        
+        guard let window = NSApp.keyWindow else {
+            if panel.runModal() == .OK, let url = panel.url {
+                do {
+                    try eventManager.saveCustomIcon(url: url)
+                } catch {
+                    iconErrorMessage = error.localizedDescription
+                    showingCustomIconError = true
+                }
+            }
+            return
+        }
+        
+        panel.beginSheetModal(for: window) { response in
+            if response == .OK, let url = panel.url {
+                do {
+                    try eventManager.saveCustomIcon(url: url)
+                } catch {
+                    iconErrorMessage = error.localizedDescription
+                    showingCustomIconError = true
+                }
+            }
+        }
+    }
 }
 
 #Preview("一般") {
@@ -900,4 +1143,61 @@ struct SettingsView: View {
     SettingsView(initialTab: .info, shouldResetOnAppear: false)
         .environmentObject(EventManager.shared)
         .frame(width: 450, height: 350)
+}
+
+extension NSImage {
+    /// 画像の透明な余白を検出し、不透明な領域（アルファ値 > 0）だけにトリミングした新しい画像を返します。
+    func trimmedToOpaqueContent() -> NSImage {
+        guard let tiffData = self.tiffRepresentation,
+              let bitmapRep = NSBitmapImageRep(data: tiffData) else { return self }
+        
+        let width = bitmapRep.pixelsWide
+        let height = bitmapRep.pixelsHigh
+        
+        var minX = width
+        var minY = height
+        var maxX = 0
+        var maxY = 0
+        var foundOpaque = false
+        
+        for y in 0..<height {
+            for x in 0..<width {
+                let alpha = bitmapRep.colorAt(x: x, y: y)?.alphaComponent ?? 0
+                if alpha > 0 {
+                    minX = min(minX, x)
+                    minY = min(minY, y)
+                    maxX = max(maxX, x)
+                    maxY = max(maxY, y)
+                    foundOpaque = true
+                }
+            }
+        }
+        
+        if !foundOpaque { return self }
+        
+        // ピクセル単位の矩形
+        let pixelRect = NSRect(x: minX, y: minY, width: maxX - minX + 1, height: maxY - minY + 1)
+        
+        // ポイント単位に変換（Retina対応）
+        let scaleX = self.size.width / CGFloat(width)
+        let scaleY = self.size.height / CGFloat(height)
+        let pointRect = NSRect(x: CGFloat(minX) * scaleX,
+                               y: CGFloat(minY) * scaleY,
+                               width: CGFloat(pixelRect.width) * scaleX,
+                               height: CGFloat(pixelRect.height) * scaleY)
+        
+        let trimmed = NSImage(size: pointRect.size)
+        trimmed.lockFocus()
+        // 画像は通常、上下逆さまに描画されることがあるため注意が必要
+        self.draw(in: NSRect(origin: .zero, size: pointRect.size),
+                  from: NSRect(x: pointRect.origin.x,
+                               y: self.size.height - pointRect.maxY, // y座標の反転
+                               width: pointRect.width,
+                               height: pointRect.height),
+                  operation: .copy,
+                  fraction: 1.0)
+        trimmed.unlockFocus()
+        
+        return trimmed
+    }
 }

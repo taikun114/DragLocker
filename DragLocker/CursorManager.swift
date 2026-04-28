@@ -137,6 +137,9 @@ class CursorManager {
         case .textVertical:
             xOffset = 13.0
             yOffset = -14.0 // 以前よりポインタに近づける
+        case .custom:
+            xOffset = -40.0 + EventManager.shared.customIconXOffset
+            yOffset = -40.0 - EventManager.shared.customIconYOffset
         }
         
         let newOrigin = NSPoint(
@@ -342,6 +345,24 @@ struct CursorView: View {
                                 .stroke(Color.white, lineWidth: 1.0)
                         )
                 )
+            } else if style == .custom {
+                if let path = eventManager.customIconPath,
+                   let image = NSImage(contentsOfFile: path) {
+                    // 80x80より大きい場合はフィットさせ、小さい場合は実寸をベースにする
+                    let fitScale = min(1.0, 80.0 / max(1, image.size.width), 80.0 / max(1, image.size.height))
+                    let displayWidth = image.size.width * fitScale
+                    let displayHeight = image.size.height * fitScale
+                    
+                    Image(nsImage: image)
+                        .resizable()
+                        .scaledToFit()
+                        .frame(width: displayWidth, height: displayHeight)
+                        .scaleEffect(eventManager.customIconScale)
+                        .frame(width: 80, height: 80, alignment: .center)
+                        .clipped()
+                } else {
+                    Color.clear.frame(width: 80, height: 80)
+                }
             }
         }
         // コンテンツ全体にアニメーションを適用

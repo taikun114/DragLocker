@@ -68,6 +68,7 @@ enum IconStyle: String, CaseIterable, Sendable {
     case smallTrafficLightVertical = "small_traffic_light_vertical"
     case textHorizontal = "text_horizontal"
     case textVertical = "text_vertical"
+    case custom = "custom"
 
     var localizedName: LocalizedStringResource {
         switch self {
@@ -81,6 +82,7 @@ enum IconStyle: String, CaseIterable, Sendable {
         case .smallTrafficLightVertical: return LocalizedStringResource("小さな信号機（縦）", comment: "アイコンスタイル：垂直信号機スタイルの縮小版")
         case .textHorizontal: return LocalizedStringResource("テキスト（横）", comment: "ポインタ付近に表示するアイコンの種類：テキスト（横）")
         case .textVertical: return LocalizedStringResource("テキスト（縦）", comment: "ポインタ付近に表示するアイコンの種類：テキスト（縦）")
+        case .custom: return LocalizedStringResource("カスタム", comment: "ポインタ付近に表示するアイコンの種類：カスタム画像")
         }
     }
 }
@@ -258,6 +260,48 @@ class EventManager: NSObject, ObservableObject {
         }
     }
 
+    @Published var customIconPath: String? {
+        didSet {
+            UserDefaults.standard.set(customIconPath, forKey: "customIconPath")
+            DispatchQueue.main.async {
+                CursorManager.shared.updateCursorStyle()
+            }
+        }
+    }
+    
+    @Published var customIconName: String? {
+        didSet {
+            UserDefaults.standard.set(customIconName, forKey: "customIconName")
+        }
+    }
+
+    @Published var customIconScale: Double = 1.0 {
+        didSet {
+            UserDefaults.standard.set(customIconScale, forKey: "customIconScale")
+            DispatchQueue.main.async {
+                CursorManager.shared.updateCursorStyle()
+            }
+        }
+    }
+
+    @Published var customIconXOffset: Double = 0.0 {
+        didSet {
+            UserDefaults.standard.set(customIconXOffset, forKey: "customIconXOffset")
+            DispatchQueue.main.async {
+                CursorManager.shared.updateCursorStyle()
+            }
+        }
+    }
+
+    @Published var customIconYOffset: Double = 0.0 {
+        didSet {
+            UserDefaults.standard.set(customIconYOffset, forKey: "customIconYOffset")
+            DispatchQueue.main.async {
+                CursorManager.shared.updateCursorStyle()
+            }
+        }
+    }
+
     @Published var isIconEnabled: Bool = false {
         didSet {
             UserDefaults.standard.set(isIconEnabled, forKey: "isIconEnabled")
@@ -410,6 +454,18 @@ class EventManager: NSObject, ObservableObject {
         self.customSound1Name = UserDefaults.standard.string(forKey: "customSound1Name")
         self.customSound2Path = UserDefaults.standard.string(forKey: "customSound2Path")
         self.customSound2Name = UserDefaults.standard.string(forKey: "customSound2Name")
+
+        self.customIconPath = UserDefaults.standard.string(forKey: "customIconPath")
+        self.customIconName = UserDefaults.standard.string(forKey: "customIconName")
+        if let savedScale = UserDefaults.standard.object(forKey: "customIconScale") as? Double {
+            self.customIconScale = savedScale
+        }
+        if let savedXOffset = UserDefaults.standard.object(forKey: "customIconXOffset") as? Double {
+            self.customIconXOffset = savedXOffset
+        }
+        if let savedYOffset = UserDefaults.standard.object(forKey: "customIconYOffset") as? Double {
+            self.customIconYOffset = savedYOffset
+        }
 
         self.isIconEnabled = UserDefaults.standard.bool(forKey: "isIconEnabled")
         if let savedStyle = UserDefaults.standard.string(forKey: "pointerIconStyle"), let style = IconStyle(rawValue: savedStyle) {
@@ -821,16 +877,63 @@ class EventManager: NSObject, ObservableObject {
 
     // MARK: - Custom Sound Management
 
+    private var appSupportDirectory: URL {
+        let appSupport = FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask).first!
+        let appDir = appSupport.appendingPathComponent("DragLocker", isDirectory: true)
+        
+        if !FileManager.default.fileExists(atPath: appDir.path) {
+            try? FileManager.default.createDirectory(at: appDir, withIntermediateDirectories: true)
+        }
+        
+        return appDir
+    }
+
     private var customSoundsDirectory: URL {
-        let paths = FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask)
-        let appSupportDirectory = paths[0].appendingPathComponent(Bundle.main.bundleIdentifier ?? "com.taikun.DragLocker")
-        let customSoundsDir = appSupportDirectory.appendingPathComponent("CustomSounds")
+        let customSoundsDir = appSupportDirectory.appendingPathComponent("CustomSounds", isDirectory: true)
         
         if !FileManager.default.fileExists(atPath: customSoundsDir.path) {
             try? FileManager.default.createDirectory(at: customSoundsDir, withIntermediateDirectories: true)
         }
         
         return customSoundsDir
+    }
+
+    private var customIconsDirectory: URL {
+        let customIconsDir = appSupportDirectory.appendingPathComponent("CustomIcons", isDirectory: true)
+        
+        if !FileManager.default.fileExists(atPath: customIconsDir.path) {
+            try? FileManager.default.createDirectory(at: customIconsDir, withIntermediateDirectories: true)
+        }
+        
+        return customIconsDir
+    }
+
+    func saveCustomIcon(url: URL) throws {
+        let accessing = url.startAccessingSecurityScopedResource()
+        defer { if accessing { url.stopAccessingSecurityScopedResource() } }
+        
+        let fileExtension = url.pathExtension
+        let originalNameWithoutExtension = url.deletingPathExtension().lastPathComponent
+        let fileName = "\(originalNameWithoutExtension)_icon_\(UUID().uuidString).\(fileExtension)"
+        let destinationURL = customIconsDirectory.appendingPathComponent(fileName)
+        
+        deleteCustomIcon()
+        try FileManager.default.copyItem(at: url, to: destinationURL)
+        
+        DispatchQueue.main.async {
+            self.customIconPath = destinationURL.path
+            self.customIconName = originalNameWithoutExtension
+        }
+    }
+
+    func deleteCustomIcon() {
+        if let currentPath = customIconPath {
+            try? FileManager.default.removeItem(atPath: currentPath)
+            DispatchQueue.main.async {
+                self.customIconPath = nil
+                self.customIconName = nil
+            }
+        }
     }
 
     func saveCustomSound(url: URL, index: Int) async throws {
