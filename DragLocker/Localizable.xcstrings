@@ -2927,18 +2927,18 @@
         }
       }
     },
-    "最低限の初期設定が完了しました。\nドラッグロックの動作をカスタマイズするにはメニューバーアイコンから設定を開きます。\nDragLockerをお楽しみください！" : {
+    "最低限の初期設定が完了しました。\nドラッグロックの動作をカスタマイズするにはメニューバーアイコンから設定を開きます。\n\nDragLockerをお楽しみください！" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Minimum setup is complete.\nTo customize drag lock behavior, open settings from the menu bar icon.\nEnjoy DragLocker!"
+            "value" : "Minimum setup is complete.\nTo customize drag lock behavior, open settings from the menu bar icon.\n\nEnjoy DragLocker!"
           }
         },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "最低限の初期設定が完了しました。\nドラッグロックの動作をカスタマイズするにはメニューバーアイコンから設定を開きます。\nDragLockerをお楽しみください！"
+            "value" : "最低限の初期設定が完了しました。\nドラッグロックの動作をカスタマイズするにはメニューバーアイコンから設定を開きます。\n\nDragLockerをお楽しみください！"
           }
         }
       }

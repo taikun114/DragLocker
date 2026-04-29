@@ -163,7 +163,7 @@ struct OnboardingView: View {
     // MARK: - ページ1: ようこそ
 
     private var welcomePage: some View {
-        VStack(spacing: 12) {
+        VStack(spacing: 16) {
             Spacer()
 
             Image("DragLocker_Logo")
@@ -518,10 +518,15 @@ struct OnboardingView: View {
 
             Spacer()
 
-            Image("DragLocker_Logo")
+            Image("DragLocker_MenuBar")
                 .resizable()
                 .aspectRatio(contentMode: .fit)
-                .frame(width: 128, height: 128)
+                .frame(width: 256)
+                .clipShape(RoundedRectangle(cornerRadius: 8))
+                .overlay(
+                    RoundedRectangle(cornerRadius: 8)
+                        .stroke(Color.primary.opacity(0.1), lineWidth: 1)
+                )
 
             Spacer()
 
@@ -531,7 +536,7 @@ struct OnboardingView: View {
                     .bold()
                     .multilineTextAlignment(.center)
                 
-                Text("最低限の初期設定が完了しました。\nドラッグロックの動作をカスタマイズするにはメニューバーアイコンから設定を開きます。\nDragLockerをお楽しみください！")
+                Text("最低限の初期設定が完了しました。\nドラッグロックの動作をカスタマイズするにはメニューバーアイコンから設定を開きます。\n\nDragLockerをお楽しみください！")
                     .font(.subheadline)
                     .multilineTextAlignment(.center)
                     .fixedSize(horizontal: false, vertical: true)
