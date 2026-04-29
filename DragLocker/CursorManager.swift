@@ -43,8 +43,12 @@ class CursorManager {
     func hideCustomCursor() {
         stopPositionUpdateTimer()
         
-        // アニメーション（0.1s）が完了するのを確実に待ってからウィンドウを隠す (0.05sのマージン)
-        DispatchQueue.main.asyncAfter(deadline: .now() + Self.animationDuration + 0.05) {
+        // 現在のアニメーション設定に応じた待機時間を設定（ポップ系は0.3秒、それ以外は0.1秒）
+        let animationType = EventManager.shared.iconAnimation
+        let duration: Double = (animationType == .pop || animationType == .popPlus) ? 0.3 : Self.animationDuration
+        
+        // アニメーションが完了するのを確実に待ってからウィンドウを隠す (0.05sのマージン)
+        DispatchQueue.main.asyncAfter(deadline: .now() + duration + 0.05) {
             // その間に再度ロックされた場合は隠さない
             if LockStateManager.shared.lockedButtons.isEmpty {
                 self.cursorWindow?.orderOut(nil)
@@ -154,6 +158,9 @@ class CursorManager {
 struct CursorView: View {
     @ObservedObject var eventManager = EventManager.shared
     @ObservedObject var lockState = LockStateManager.shared
+    
+    // 初回表示時や状態変化時に確実にアニメーションを発生させるためのローカル状態
+    @State private var isVisible = false
     
     var body: some View {
         let style = eventManager.pointerIconStyle
@@ -365,11 +372,22 @@ struct CursorView: View {
         }
         
         // アニメーション設定の適用
-        .opacity(isLocked ? 1.0 : 0.0)
-        .scaleEffect(currentScale(animationType: eventManager.iconAnimation, isLocked: isLocked, style: style))
-        .animation(currentAnimation(animationType: eventManager.iconAnimation), value: isLocked)
+        // isVisible (ローカル状態) の変化に連動してアニメーションさせる
+        .opacity(isVisible ? 1.0 : 0.0)
+        .scaleEffect(currentScale(animationType: eventManager.iconAnimation, isLocked: isVisible, style: style))
+        .animation(currentAnimation(animationType: eventManager.iconAnimation), value: isVisible)
         .fixedSize()
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottomLeading)
+        .onAppear {
+            // ウィンドウが表示されたタイミングで状態を同期し、アニメーションを開始させる
+            // 確実を期すため、次のメインループで実行
+            DispatchQueue.main.async {
+                isVisible = isLocked
+            }
+        }
+        .onChange(of: isLocked) { oldValue, newValue in
+            isVisible = newValue
+        }
     }
     
     /// 現在のロック状態とアニメーション設定に基づいたスケールを返します
