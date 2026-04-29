@@ -159,9 +159,6 @@ struct CursorView: View {
         let style = eventManager.pointerIconStyle
         let isLocked = !lockState.lockedButtons.isEmpty
         
-        // スタイルごとのアニメーション用スケール
-        let startScale: CGFloat = (style == .focus) ? 1.2 : 1.0
-        
         ZStack(alignment: .center) {
             if style == .padlock {
                 Image("Pointer_Locked")
@@ -366,13 +363,49 @@ struct CursorView: View {
                 }
             }
         }
-        // コンテンツ全体にアニメーションを適用
-        // isLocked (ドラッグ中か) の変化に連動して自動的にアニメーションする
+        
+        // アニメーション設定の適用
         .opacity(isLocked ? 1.0 : 0.0)
-        .scaleEffect(isLocked ? 1.0 : startScale)
-        .animation(.easeOut(duration: CursorManager.animationDuration), value: isLocked)
+        .scaleEffect(currentScale(animationType: eventManager.iconAnimation, isLocked: isLocked, style: style))
+        .animation(currentAnimation(animationType: eventManager.iconAnimation), value: isLocked)
         .fixedSize()
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottomLeading)
+    }
+    
+    /// 現在のロック状態とアニメーション設定に基づいたスケールを返します
+    private func currentScale(animationType: IconAnimation, isLocked: Bool, style: IconStyle) -> CGFloat {
+        if isLocked {
+            return 1.0
+        }
+        
+        switch animationType {
+        case .default:
+            return (style == .focus) ? 1.2 : 1.0
+        case .none, .fade:
+            return 1.0
+        case .pop, .popPlus:
+            return 0.0
+        case .focus:
+            return 1.2
+        case .focusPlus:
+            return 1.4
+        }
+    }
+    
+    /// アニメーション設定に基づいたAnimationオブジェクトを返します
+    private func currentAnimation(animationType: IconAnimation) -> Animation? {
+        switch animationType {
+        case .default, .fade, .focus, .focusPlus:
+            return .easeOut(duration: CursorManager.animationDuration)
+        case .none:
+            return nil
+        case .pop:
+            // 0.3秒で、表示時はオーバーシュートして戻るような挙動
+            return .spring(response: 0.3, dampingFraction: 0.7)
+        case .popPlus:
+            // より強調されたポップ（減衰率を下げる）
+            return .spring(response: 0.3, dampingFraction: 0.5)
+        }
     }
 }
 

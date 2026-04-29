@@ -789,6 +789,22 @@
         }
       }
     },
+    "アイコン表示時と非表示時に適用されるアニメーションを選択します。" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Select the animation applied when the icon appears and disappears."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "アイコン表示時と非表示時に適用されるアニメーションを選択します。"
+          }
+        }
+      }
+    },
     "アイデアがありますか？" : {
       "localizations" : {
         "en" : {
@@ -851,6 +867,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "アクセシビリティ許可が付与されています。"
+          }
+        }
+      }
+    },
+    "アニメーション" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Animation"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "アニメーション"
           }
         }
       }
@@ -1618,6 +1650,23 @@
         }
       }
     },
+    "デフォルト" : {
+      "comment" : "アイコンアニメーション：各アイコンのデフォルト設定",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Default"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "デフォルト"
+          }
+        }
+      }
+    },
     "ドット" : {
       "comment" : "ポインタ付近に表示するアイコンの種類：点",
       "localizations" : {
@@ -2064,6 +2113,23 @@
         }
       }
     },
+    "なし" : {
+      "comment" : "アイコンアニメーション：アニメーションなし",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "None"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "なし"
+          }
+        }
+      }
+    },
     "バージョン: %@" : {
       "localizations" : {
         "en" : {
@@ -2244,8 +2310,25 @@
         }
       }
     },
+    "フェード" : {
+      "comment" : "アイコンアニメーション：不透明度の変化",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Fade"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "フェード"
+          }
+        }
+      }
+    },
     "フォーカス" : {
-      "comment" : "ポインタ付近に表示するアイコンの種類：カメラのファインダーのような角括弧",
+      "comment" : "アイコンアニメーション：フォーカスアイコン用のアニメーション\nポインタ付近に表示するアイコンの種類：カメラのファインダーのような角括弧",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -2257,6 +2340,23 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "フォーカス"
+          }
+        }
+      }
+    },
+    "フォーカス+" : {
+      "comment" : "アイコンアニメーション：より強調されたフォーカス",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Focus+"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "フォーカス+"
           }
         }
       }
@@ -2274,6 +2374,40 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "ホイール"
+          }
+        }
+      }
+    },
+    "ポップ" : {
+      "comment" : "アイコンアニメーション：拡大縮小しながら表示・非表示",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pop"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ポップ"
+          }
+        }
+      }
+    },
+    "ポップ+" : {
+      "comment" : "アイコンアニメーション：より強調されたポップ",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pop+"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ポップ+"
           }
         }
       }

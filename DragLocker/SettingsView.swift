@@ -659,6 +659,22 @@ struct SettingsView: View {
                     if eventManager.pointerIconStyle == .custom {
                         customIconSettingsView
                     }
+
+                    Picker(selection: $eventManager.iconAnimation) {
+                        Text(IconAnimation.default.localizedName).tag(IconAnimation.default)
+                        Divider()
+                        ForEach([IconAnimation.none, .fade, .pop, .popPlus, .focus, .focusPlus], id: \.self) { animation in
+                            Text(animation.localizedName).tag(animation)
+                        }
+                    } label: {
+                        Text("アニメーション")
+                            .foregroundStyle(eventManager.isIconEnabled ? .primary : .secondary)
+                        Text("アイコン表示時と非表示時に適用されるアニメーションを選択します。")
+                            .font(.subheadline)
+                            .foregroundStyle(eventManager.isIconEnabled ? .secondary : .tertiary)
+                    }
+                    .pickerStyle(.menu)
+                    .disabled(!eventManager.isIconEnabled)
                 }
                 
                 Section(header: Text("サウンド")) {

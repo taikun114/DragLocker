@@ -57,6 +57,28 @@ enum MouseButton: Int, CaseIterable, Sendable {
     }
 }
 
+enum IconAnimation: String, CaseIterable, Sendable {
+    case `default` = "default"
+    case none = "none"
+    case fade = "fade"
+    case pop = "pop"
+    case popPlus = "popPlus"
+    case focus = "focus"
+    case focusPlus = "focusPlus"
+
+    var localizedName: LocalizedStringResource {
+        switch self {
+        case .default: return LocalizedStringResource("デフォルト", comment: "アイコンアニメーション：各アイコンのデフォルト設定")
+        case .none: return LocalizedStringResource("なし", comment: "アイコンアニメーション：アニメーションなし")
+        case .fade: return LocalizedStringResource("フェード", comment: "アイコンアニメーション：不透明度の変化")
+        case .pop: return LocalizedStringResource("ポップ", comment: "アイコンアニメーション：拡大縮小しながら表示・非表示")
+        case .popPlus: return LocalizedStringResource("ポップ+", comment: "アイコンアニメーション：より強調されたポップ")
+        case .focus: return LocalizedStringResource("フォーカス", comment: "アイコンアニメーション：フォーカスアイコン用のアニメーション")
+        case .focusPlus: return LocalizedStringResource("フォーカス+", comment: "アイコンアニメーション：より強調されたフォーカス")
+        }
+    }
+}
+
 enum IconStyle: String, CaseIterable, Sendable {
     case padlock = "padlock"
     case dot = "dot"
@@ -311,6 +333,15 @@ class EventManager: NSObject, ObservableObject {
         }
     }
 
+    @Published var iconAnimation: IconAnimation = .default {
+        didSet {
+            UserDefaults.standard.set(iconAnimation.rawValue, forKey: "iconAnimation")
+            DispatchQueue.main.async {
+                CursorManager.shared.updateCursorStyle()
+            }
+        }
+    }
+
     @Published var isIconEnabled: Bool = false {
         didSet {
             UserDefaults.standard.set(isIconEnabled, forKey: "isIconEnabled")
@@ -482,6 +513,12 @@ class EventManager: NSObject, ObservableObject {
         }
 
         self.isIconEnabled = UserDefaults.standard.bool(forKey: "isIconEnabled")
+        if let savedAnimationRaw = UserDefaults.standard.string(forKey: "iconAnimation"), let animation = IconAnimation(rawValue: savedAnimationRaw) {
+            self.iconAnimation = animation
+        } else {
+            self.iconAnimation = .default
+        }
+
         if let savedStyle = UserDefaults.standard.string(forKey: "pointerIconStyle"), let style = IconStyle(rawValue: savedStyle) {
             self.pointerIconStyle = style
         }
