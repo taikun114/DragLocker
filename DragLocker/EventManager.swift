@@ -589,6 +589,35 @@ class EventManager: NSObject, ObservableObject {
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) { [weak self] in
             self?.sendInitialPausedNotification()
         }
+
+        // システムイベントの監視（スリープ、画面ロック、ユーザ切り替え時にロックを解除する）
+        NSWorkspace.shared.notificationCenter.addObserver(
+            self,
+            selector: #selector(handleSystemEvent),
+            name: NSWorkspace.willSleepNotification,
+            object: nil
+        )
+        NSWorkspace.shared.notificationCenter.addObserver(
+            self,
+            selector: #selector(handleSystemEvent),
+            name: NSWorkspace.sessionDidResignActiveNotification,
+            object: nil
+        )
+        DistributedNotificationCenter.default().addObserver(
+            self,
+            selector: #selector(handleSystemEvent),
+            name: NSNotification.Name("com.apple.screenIsLocked"),
+            object: nil
+        )
+    }
+
+    @objc private func handleSystemEvent() {
+        #if DEBUG
+        print("System event detected (Sleep/Lock/UserSwitch): Releasing all locks for safety")
+        #endif
+        DispatchQueue.main.async {
+            self.forceUnlock()
+        }
     }
 
     func start() {
