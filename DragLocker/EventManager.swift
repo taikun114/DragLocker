@@ -178,6 +178,10 @@ class EventManager: NSObject, ObservableObject {
             if isNotificationEnabled && !isProcessingNotificationAction {
                 sendToggleNotification(isEnabled: isEnabled)
             }
+            // 無効化された際にすべてのロックを解除する
+            if !isEnabled {
+                forceUnlock()
+            }
         }
     }
 
@@ -233,6 +237,24 @@ class EventManager: NSObject, ObservableObject {
     @Published var enabledButtonRawValues: Set<Int> = [0] {
         didSet {
             UserDefaults.standard.set(Array(enabledButtonRawValues), forKey: "enabledButtonRawValues")
+            
+            // 対象外になったボタンのロックを解除する
+            let removedValues = oldValue.subtracting(enabledButtonRawValues)
+            for rawValue in removedValues {
+                if let button = MouseButton(rawValue: rawValue) {
+                    if buttonStates[button] == .locked {
+                        #if DEBUG
+                        print("\(button) was removed from target buttons: Releasing lock")
+                        #endif
+                        releaseLock(for: button)
+                    } else if buttonStates[button] == .holding {
+                        #if DEBUG
+                        print("\(button) was removed from target buttons: Canceling hold")
+                        #endif
+                        cancelHold(for: button)
+                    }
+                }
+            }
         }
     }
 
@@ -1295,9 +1317,6 @@ class EventManager: NSObject, ObservableObject {
             self.isProcessingNotificationAction = true
         }
         isEnabled.toggle()
-        if !isEnabled {
-            forceUnlock()
-        }
         if isSilent {
             self.isProcessingNotificationAction = false
         }

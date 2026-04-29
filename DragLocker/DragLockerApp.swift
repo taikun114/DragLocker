@@ -14,6 +14,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate {
     }
 
     func applicationWillTerminate(_ notification: Notification) {
+        EventManager.shared.forceUnlock()
         CursorManager.shared.hideCustomCursor()
     }
 
