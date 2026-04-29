@@ -28,6 +28,10 @@ struct SettingsView: View {
     @State private var showingResetIconSettingsConfirmation = false
     @State private var isAppActive = true
     @State private var cachedTrimmedImage: (path: String, image: NSImage, originalSize: NSSize)? = nil
+    @State private var cachedOriginalImage: NSImage? = nil
+    @State private var cachedOriginalImagePath: String? = nil
+    @State private var customIconPreviewImage: Image? = nil
+    @State private var iconPreloadTask: Task<Void, Never>? = nil
     
     // タブの選択状態を管理するための列挙型と状態変数
     enum Tab: Hashable {
@@ -44,9 +48,13 @@ struct SettingsView: View {
     private static var iconCache: [IconStyle: Image] = [:]
 
     private func getIcon(for style: IconStyle) -> Image {
-        // カスタムスタイルの場合はスライダーの値に依存するためキャッシュしない
+        // カスタムスタイルの場合はバックグラウンドで生成済みのキャッシュを使用
         if style == .custom {
-            return generateIcon(for: style)
+            if let cached = customIconPreviewImage {
+                return cached
+            }
+            // まだロードされていない場合は空の画像を返す（バックグラウンドでロード中）
+            return Image(nsImage: NSImage(size: CGSize(width: 16, height: 16)))
         }
         
         if let cached = Self.iconCache[style] {
@@ -202,13 +210,8 @@ struct SettingsView: View {
                 if let cached = cachedTrimmedImage, cached.path == path {
                     trimmedImage = cached.image
                     originalSize = cached.originalSize
-                } else if let nsImage = NSImage(contentsOfFile: path) {
-                    originalSize = nsImage.size
-                    trimmedImage = nsImage.trimmedToOpaqueContent()
-                    DispatchQueue.main.async {
-                        self.cachedTrimmedImage = (path, trimmedImage, originalSize)
-                    }
                 } else {
+                    // キャッシュがない場合は空の画像を返す（バックグラウンドでロード中）
                     trimmedImage = NSImage()
                     originalSize = NSSize(width: 1, height: 1)
                 }
@@ -846,6 +849,8 @@ struct SettingsView: View {
             if shouldResetOnAppear {
                 selectedTab = .general
             }
+            // カスタムアイコンのバックグラウンドプリロード
+            preloadCustomIconImages()
         }
         .onChange(of: lockDelay) { _, newValue in
             eventManager.lockDelay = newValue
@@ -858,8 +863,24 @@ struct SettingsView: View {
             selectedManagedAppIds = []
             hoverTask?.cancel()
             hoverTask = nil
+            iconPreloadTask?.cancel()
+            iconPreloadTask = nil
+            // カスタムアイコンのキャッシュをクリア
+            cachedOriginalImage = nil
+            cachedOriginalImagePath = nil
+            cachedTrimmedImage = nil
+            customIconPreviewImage = nil
             // 設定画面を閉じたらDockアイコンを非表示にする
             NSApp.setActivationPolicy(.accessory)
+        }
+        .onChange(of: eventManager.customIconPath) { _, _ in
+            preloadCustomIconImages()
+        }
+        .onChange(of: eventManager.customIconScale) { _, _ in
+            refreshCustomIconPreview()
+        }
+        .onChange(of: eventManager.customIconOpacity) { _, _ in
+            refreshCustomIconPreview()
         }
         .alert("音声が長すぎます", isPresented: $showingAudioLengthError) {
             Button("OK", role: .cancel) { }
@@ -966,8 +987,7 @@ struct SettingsView: View {
                     let cursors = ["Cursor_Pointer\(suffix)", "Cursor_PointingHand\(suffix)", "Cursor_IbeamVertical\(suffix)"]
                     let currentCursorName = cursors[previewCursorPhase % cursors.count]
                     
-                    if let path = eventManager.customIconPath,
-                       let nsImage = NSImage(contentsOfFile: path) {
+                    if let nsImage = cachedOriginalImage {
                         // 80x80より大きい場合はフィットさせ、小さい場合は実寸をベースにする
                         let fitScale = min(1.0, 80.0 / max(1, nsImage.size.width), 80.0 / max(1, nsImage.size.height))
                         let displayWidth = nsImage.size.width * fitScale
@@ -1124,6 +1144,105 @@ struct SettingsView: View {
         }
     }
 
+    /// バックグラウンドでカスタムアイコン画像を読み込み、キャッシュを更新する
+    private func preloadCustomIconImages() {
+        iconPreloadTask?.cancel()
+        
+        guard let path = eventManager.customIconPath else {
+            cachedOriginalImage = nil
+            cachedOriginalImagePath = nil
+            cachedTrimmedImage = nil
+            customIconPreviewImage = nil
+            return
+        }
+        
+        // 既にキャッシュ済みの場合はプレビューだけ再生成
+        if cachedOriginalImagePath == path, cachedOriginalImage != nil {
+            refreshCustomIconPreview()
+            return
+        }
+        
+        let scale = eventManager.customIconScale
+        let opacity = eventManager.customIconOpacity
+        
+        iconPreloadTask = Task.detached(priority: .userInitiated) {
+            guard let nsImage = NSImage(contentsOfFile: path) else { return }
+            let originalSize = nsImage.size
+            let trimmed = nsImage.trimmedToOpaqueContent()
+            
+            // Pickerアイコンプレビュー（16x16）の生成
+            let previewImage = await Self.generateCustomIconPreview(
+                trimmedImage: trimmed,
+                originalSize: originalSize,
+                scale: scale,
+                opacity: opacity
+            )
+            
+            guard !Task.isCancelled else { return }
+            
+            await MainActor.run {
+                self.cachedOriginalImage = nsImage
+                self.cachedOriginalImagePath = path
+                self.cachedTrimmedImage = (path, trimmed, originalSize)
+                self.customIconPreviewImage = previewImage
+            }
+        }
+    }
+    
+    /// スライダー変更時にPickerアイコンプレビューだけを再生成する
+    private func refreshCustomIconPreview() {
+        guard let cached = cachedTrimmedImage else { return }
+        
+        let trimmed = cached.image
+        let originalSize = cached.originalSize
+        let scale = eventManager.customIconScale
+        let opacity = eventManager.customIconOpacity
+        
+        Task.detached(priority: .userInitiated) {
+            let previewImage = await Self.generateCustomIconPreview(
+                trimmedImage: trimmed,
+                originalSize: originalSize,
+                scale: scale,
+                opacity: opacity
+            )
+            
+            guard !Task.isCancelled else { return }
+            
+            await MainActor.run {
+                self.customIconPreviewImage = previewImage
+            }
+        }
+    }
+    
+    /// バックグラウンドスレッドで16x16のPickerプレビューアイコンを生成する
+    @MainActor
+    private static func generateCustomIconPreview(
+        trimmedImage: NSImage,
+        originalSize: NSSize,
+        scale: Double,
+        opacity: Double
+    ) -> Image {
+        let fitScale = min(1.0, 80.0 / max(1, originalSize.width), 80.0 / max(1, originalSize.height))
+        let contentDisplaySizeIn80 = max(trimmedImage.size.width, trimmedImage.size.height) * fitScale * scale
+        let normalizedScale = contentDisplaySizeIn80 / 80.0
+        
+        let view = AnyView(
+            SwiftUI.Image(nsImage: trimmedImage)
+                .resizable()
+                .scaledToFit()
+                .frame(width: 16, height: 16)
+                .scaleEffect(max(1.0, normalizedScale))
+                .opacity(opacity)
+                .clipped()
+        )
+        
+        let hostingView = NSHostingView(rootView: view)
+        hostingView.setFrameSize(CGSize(width: 16, height: 16))
+        let bitmap = hostingView.bitmapImageRepForCachingDisplay(in: NSRect(x: 0, y: 0, width: 16, height: 16))!
+        hostingView.cacheDisplay(in: NSRect(x: 0, y: 0, width: 16, height: 16), to: bitmap)
+        return Image(nsImage: NSImage(cgImage: bitmap.cgImage!, size: CGSize(width: 16, height: 16)))
+    }
+
     private func selectCustomIcon() {
         let panel = NSOpenPanel()
         panel.allowsMultipleSelection = false
@@ -1181,7 +1300,7 @@ struct SettingsView: View {
 
 extension NSImage {
     /// 画像の透明な余白を検出し、不透明な領域（アルファ値 > 0）だけにトリミングした新しい画像を返します。
-    func trimmedToOpaqueContent() -> NSImage {
+    nonisolated func trimmedToOpaqueContent() -> NSImage {
         guard let tiffData = self.tiffRepresentation,
               let bitmapRep = NSBitmapImageRep(data: tiffData) else { return self }
         
