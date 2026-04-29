@@ -229,6 +229,7 @@ struct SettingsView: View {
                         .scaledToFit() // 全体が収まるようにフィットさせる
                         .frame(width: 16, height: 16)
                         .scaleEffect(max(1.0, normalizedScale)) // 1.0未満にはしない（＝余計な余白を作らない）
+                        .opacity(eventManager.customIconOpacity) // 不透明度を反映
                         .clipped()
                 )
             } else {
@@ -959,6 +960,7 @@ struct SettingsView: View {
                             .scaledToFit()
                             .frame(width: displayWidth, height: displayHeight)
                             .scaleEffect(eventManager.customIconScale)
+                            .opacity(eventManager.customIconOpacity)
                             .frame(width: 80, height: 80)
                             .clipped()
                             .offset(x: eventManager.customIconXOffset, y: eventManager.customIconYOffset)
@@ -1046,6 +1048,19 @@ struct SettingsView: View {
                 
                 HStack(spacing: 8) {
                     Slider(
+                        value: $eventManager.customIconOpacity,
+                        in: 0.1...1.0,
+                        step: 0.01,
+                        label: { Text("不透明度") }
+                    )
+                    Text(eventManager.customIconOpacity, format: .percent.precision(.fractionLength(0)))
+                        .monospacedDigit()
+                        .foregroundStyle(.secondary)
+                        .frame(width: 50, alignment: .trailing)
+                }
+                
+                HStack(spacing: 8) {
+                    Slider(
                         value: $eventManager.customIconXOffset,
                         in: -40...40,
                         step: 1,
@@ -1080,10 +1095,11 @@ struct SettingsView: View {
                             eventManager.customIconScale = 1.0
                             eventManager.customIconXOffset = 0
                             eventManager.customIconYOffset = 0
+                            eventManager.customIconOpacity = 1.0
                         }
                         Button("キャンセル", role: .cancel) { }
                     } message: {
-                        Text("大きさ、Xオフセット、Yオフセットを既定値に戻してもよろしいですか？")
+                        Text("大きさ、不透明度、Xオフセット、Yオフセットを既定値に戻してもよろしいですか？")
                     }
                 }
             }

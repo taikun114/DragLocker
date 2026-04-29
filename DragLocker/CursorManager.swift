@@ -358,6 +358,7 @@ struct CursorView: View {
                         .scaledToFit()
                         .frame(width: displayWidth, height: displayHeight)
                         .scaleEffect(eventManager.customIconScale)
+                        .opacity(eventManager.customIconOpacity) // 不透明度を適用
                         .frame(width: 80, height: 80, alignment: .center)
                         .clipped()
                 } else {

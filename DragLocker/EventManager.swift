@@ -302,6 +302,15 @@ class EventManager: NSObject, ObservableObject {
         }
     }
 
+    @Published var customIconOpacity: Double = 1.0 {
+        didSet {
+            UserDefaults.standard.set(customIconOpacity, forKey: "customIconOpacity")
+            DispatchQueue.main.async {
+                CursorManager.shared.updateCursorStyle()
+            }
+        }
+    }
+
     @Published var isIconEnabled: Bool = false {
         didSet {
             UserDefaults.standard.set(isIconEnabled, forKey: "isIconEnabled")
@@ -465,6 +474,11 @@ class EventManager: NSObject, ObservableObject {
         }
         if let savedYOffset = UserDefaults.standard.object(forKey: "customIconYOffset") as? Double {
             self.customIconYOffset = savedYOffset
+        }
+        if let savedOpacity = UserDefaults.standard.object(forKey: "customIconOpacity") as? Double {
+            self.customIconOpacity = savedOpacity
+        } else {
+            self.customIconOpacity = 1.0
         }
 
         self.isIconEnabled = UserDefaults.standard.bool(forKey: "isIconEnabled")

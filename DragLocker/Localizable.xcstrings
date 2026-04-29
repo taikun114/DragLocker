@@ -2675,6 +2675,22 @@
         }
       }
     },
+    "不透明度" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Opacity"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "不透明度"
+          }
+        }
+      }
+    },
     "両方" : {
       "comment" : "ドラッグロックの開始条件：時間と距離の両方を有効にする",
       "localizations" : {
@@ -3021,18 +3037,18 @@
         }
       }
     },
-    "大きさ、Xオフセット、Yオフセットを既定値に戻してもよろしいですか？" : {
+    "大きさ、不透明度、Xオフセット、Yオフセットを既定値に戻してもよろしいですか？" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Are you sure you want to reset the size, X offset, and Y offset to their default values?"
+            "value" : "Are you sure you want to reset the size, opacity, X offset, and Y offset to their default values?"
           }
         },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "大きさ、Xオフセット、Yオフセットを既定値に戻してもよろしいですか？"
+            "value" : "大きさ、不透明度、Xオフセット、Yオフセットを既定値に戻してもよろしいですか？"
           }
         }
       }
