@@ -628,7 +628,7 @@ struct SettingsView: View {
                             .foregroundStyle(.secondary)
                     }
                     
-                    Picker(selection: $eventManager.pointerIconStyle) {
+                    Picker(selection: $eventManager.pointerIconStyle.animation(.spring(response: 0.3, dampingFraction: 0.8))) {
                         Section("シングルインジケーター") {
                             Label { Text("南京錠") } icon: { previewIcon(for: .padlock) }.tag(IconStyle.padlock)
                             Label { Text("ドット") } icon: { previewIcon(for: .dot) }.tag(IconStyle.dot)
@@ -658,6 +658,7 @@ struct SettingsView: View {
                     
                     if eventManager.pointerIconStyle == .custom {
                         customIconSettingsView
+                            .transition(.opacity.combined(with: .move(edge: .top)))
                     }
 
                     Picker(selection: $eventManager.iconAnimation) {
@@ -689,7 +690,7 @@ struct SettingsView: View {
                     }
                     
                     HStack(alignment: .top) {
-                        Picker(selection: $eventManager.soundStyle) {
+                        Picker(selection: $eventManager.soundStyle.animation(.spring(response: 0.3, dampingFraction: 0.8))) {
                             ForEach(SoundStyle.allCases.filter { $0 != .custom }, id: \.self) { style in
                                 Text(style.localizedName)
                                     .tag(style)
@@ -767,6 +768,7 @@ struct SettingsView: View {
                                 .font(.subheadline)
                                 .foregroundStyle(.secondary)
                         }
+                        .transition(.opacity.combined(with: .move(edge: .top)))
                     }
                     
                     VStack(alignment: .leading) {
