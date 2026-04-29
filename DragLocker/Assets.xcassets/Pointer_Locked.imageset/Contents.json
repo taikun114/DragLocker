@@ -1,23 +1,16 @@
 {
   "images" : [
     {
-      "filename" : "Pointer_Locked.png",
-      "idiom" : "universal",
-      "scale" : "1x"
-    },
-    {
-      "filename" : "Pointer_Locked@2x.png",
-      "idiom" : "universal",
-      "scale" : "2x"
-    },
-    {
-      "filename" : "Pointer_Locked@3x.png",
-      "idiom" : "universal",
-      "scale" : "3x"
+      "filename" : "Pointer_Locked.svg",
+      "idiom" : "universal"
     }
   ],
   "info" : {
     "author" : "xcode",
     "version" : 1
+  },
+  "properties" : {
+    "preserves-vector-representation" : true,
+    "template-rendering-intent" : "original"
   }
 }

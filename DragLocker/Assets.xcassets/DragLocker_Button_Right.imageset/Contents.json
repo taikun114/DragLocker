@@ -1,9 +1,8 @@
 {
   "images" : [
     {
-      "filename" : "DragLocker_Button_Right_Light.png",
-      "idiom" : "universal",
-      "scale" : "1x"
+      "filename" : "DragLocker_Button_Right_Light.svg",
+      "idiom" : "universal"
     },
     {
       "appearances" : [
@@ -12,45 +11,16 @@
           "value" : "dark"
         }
       ],
-      "filename" : "DragLocker_Button_Right_Dark.png",
-      "idiom" : "universal",
-      "scale" : "1x"
-    },
-    {
-      "filename" : "DragLocker_Button_Right_Light@2x.png",
-      "idiom" : "universal",
-      "scale" : "2x"
-    },
-    {
-      "appearances" : [
-        {
-          "appearance" : "luminosity",
-          "value" : "dark"
-        }
-      ],
-      "filename" : "DragLocker_Button_Right_Dark@2x.png",
-      "idiom" : "universal",
-      "scale" : "2x"
-    },
-    {
-      "filename" : "DragLocker_Button_Right_Light@3x.png",
-      "idiom" : "universal",
-      "scale" : "3x"
-    },
-    {
-      "appearances" : [
-        {
-          "appearance" : "luminosity",
-          "value" : "dark"
-        }
-      ],
-      "filename" : "DragLocker_Button_Right_Dark@3x.png",
-      "idiom" : "universal",
-      "scale" : "3x"
+      "filename" : "DragLocker_Button_Right_Dark.svg",
+      "idiom" : "universal"
     }
   ],
   "info" : {
     "author" : "xcode",
     "version" : 1
+  },
+  "properties" : {
+    "preserves-vector-representation" : true,
+    "template-rendering-intent" : "original"
   }
 }
