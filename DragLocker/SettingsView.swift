@@ -663,7 +663,7 @@ struct SettingsView: View {
                     Picker(selection: $eventManager.iconAnimation) {
                         Text(IconAnimation.default.localizedName).tag(IconAnimation.default)
                         Divider()
-                        ForEach([IconAnimation.none, .fade, .pop, .popPlus, .focus, .focusPlus], id: \.self) { animation in
+                        ForEach([IconAnimation.none, .fade, .scale, .pop, .popPlus, .focus, .focusPlus], id: \.self) { animation in
                             Text(animation.localizedName).tag(animation)
                         }
                     } label: {

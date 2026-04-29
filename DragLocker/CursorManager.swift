@@ -401,7 +401,7 @@ struct CursorView: View {
             return (style == .focus) ? 1.2 : 1.0
         case .none, .fade:
             return 1.0
-        case .pop, .popPlus:
+        case .pop, .popPlus, .scale:
             return 0.0
         case .focus:
             return 1.2
@@ -413,7 +413,7 @@ struct CursorView: View {
     /// アニメーション設定に基づいたAnimationオブジェクトを返します
     private func currentAnimation(animationType: IconAnimation) -> Animation? {
         switch animationType {
-        case .default, .fade, .focus, .focusPlus:
+        case .default, .fade, .scale, .focus, .focusPlus:
             return .easeOut(duration: CursorManager.animationDuration)
         case .none:
             return nil

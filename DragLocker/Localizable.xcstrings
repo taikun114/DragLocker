@@ -1515,6 +1515,23 @@
         }
       }
     },
+    "スケール" : {
+      "comment" : "アイコンアニメーション：拡大縮小しながら表示・非表示（0.1秒）",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Scale"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "スケール"
+          }
+        }
+      }
+    },
     "スターをつける" : {
       "localizations" : {
         "en" : {
