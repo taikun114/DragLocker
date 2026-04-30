@@ -109,6 +109,46 @@ enum IconStyle: String, CaseIterable, Sendable {
         case .custom: return LocalizedStringResource("カスタム", comment: "ポインタ付近に表示するアイコンの種類：カスタム画像")
         }
     }
+
+    var defaultXOffset: Double {
+        switch self {
+        case .padlock: return 12.0
+        case .dot: return 12.0
+        case .largeRing: return -25.0
+        case .focus: return -25.0
+        case .trafficLight: return 12.0
+        case .smallTrafficLight: return 12.0
+        case .trafficLightVertical: return 14.0
+        case .smallTrafficLightVertical: return 14.0
+        case .textHorizontal: return 12.0
+        case .textVertical: return 13.0
+        case .custom: return 0.0
+        }
+    }
+    
+    var defaultYOffset: Double {
+        switch self {
+        case .padlock: return -7.0
+        case .dot: return -4.0
+        case .largeRing: return -24.0
+        case .focus: return -24.0
+        case .trafficLight: return -6.5
+        case .smallTrafficLight: return -4.5
+        case .trafficLightVertical: return -17.5
+        case .smallTrafficLightVertical: return -12.0
+        case .textHorizontal: return -8.0
+        case .textVertical: return -14.0
+        case .custom: return 0.0
+        }
+    }
+    
+    var defaultScale: Double {
+        return 1.0
+    }
+    
+    var defaultOpacity: Double {
+        return 1.0
+    }
 }
 
 enum LockType: String, CaseIterable, Sendable {
@@ -203,6 +243,9 @@ class EventManager: NSObject, ObservableObject {
 
     private var eventTap: CFMachPort?
     private var runLoopSource: CFRunLoopSource?
+
+    private var iconSettings: [String: Double] = [:]
+    private var isInitializing = false
 
     private var buttonStates: [MouseButton: EventManagerState] = [
         .left: .idle,
@@ -324,6 +367,7 @@ class EventManager: NSObject, ObservableObject {
     @Published var customIconScale: Double = 1.0 {
         didSet {
             UserDefaults.standard.set(customIconScale, forKey: "customIconScale")
+            saveCurrentIconSettings()
             DispatchQueue.main.async {
                 CursorManager.shared.updateCursorStyle()
             }
@@ -333,6 +377,7 @@ class EventManager: NSObject, ObservableObject {
     @Published var customIconXOffset: Double = 0.0 {
         didSet {
             UserDefaults.standard.set(customIconXOffset, forKey: "customIconXOffset")
+            saveCurrentIconSettings()
             DispatchQueue.main.async {
                 CursorManager.shared.updateCursorStyle()
             }
@@ -342,6 +387,7 @@ class EventManager: NSObject, ObservableObject {
     @Published var customIconYOffset: Double = 0.0 {
         didSet {
             UserDefaults.standard.set(customIconYOffset, forKey: "customIconYOffset")
+            saveCurrentIconSettings()
             DispatchQueue.main.async {
                 CursorManager.shared.updateCursorStyle()
             }
@@ -351,6 +397,7 @@ class EventManager: NSObject, ObservableObject {
     @Published var customIconOpacity: Double = 1.0 {
         didSet {
             UserDefaults.standard.set(customIconOpacity, forKey: "customIconOpacity")
+            saveCurrentIconSettings()
             DispatchQueue.main.async {
                 CursorManager.shared.updateCursorStyle()
             }
@@ -379,8 +426,13 @@ class EventManager: NSObject, ObservableObject {
     }
 
     @Published var pointerIconStyle: IconStyle = .padlock {
+        willSet {
+            saveCurrentIconSettings()
+        }
         didSet {
             UserDefaults.standard.set(pointerIconStyle.rawValue, forKey: "pointerIconStyle")
+            // スタイル変更時にロード（初期化中以外かつカスタム以外ならリセット）
+            loadIconSettings(for: pointerIconStyle, resetToDefaults: !isInitializing && pointerIconStyle != .custom)
             DispatchQueue.main.async {
                 CursorManager.shared.updateCursorStyle()
             }
@@ -543,14 +595,25 @@ class EventManager: NSObject, ObservableObject {
             self.iconAnimation = .default
         }
 
+        self.isLaunchAtLoginEnabled = SMAppService.mainApp.status == .enabled
+
+        // 各アイコンの設定をロード
+        if let savedIconSettings = UserDefaults.standard.dictionary(forKey: "allIconSettings") as? [String: Double] {
+            self.iconSettings = savedIconSettings
+        }
+        
+        self.isNotificationEnabled = UserDefaults.standard.bool(forKey: "isNotificationEnabled")
+
+        isInitializing = true
+        super.init()
+
         if let savedStyle = UserDefaults.standard.string(forKey: "pointerIconStyle"), let style = IconStyle(rawValue: savedStyle) {
             self.pointerIconStyle = style
         }
-        self.isLaunchAtLoginEnabled = SMAppService.mainApp.status == .enabled
-
-        self.isNotificationEnabled = UserDefaults.standard.bool(forKey: "isNotificationEnabled")
-
-        super.init()
+        
+        // 現在のスタイルの設定を反映（初期ロード時はリセットしない）
+        loadIconSettings(for: self.pointerIconStyle, resetToDefaults: false)
+        isInitializing = false
 
         // 通知センターの設定
         UNUserNotificationCenter.current().delegate = self
@@ -1392,6 +1455,67 @@ class EventManager: NSObject, ObservableObject {
                 }
             }
         }
+    }
+
+    private var isUpdatingSettings = false
+
+    private func saveCurrentIconSettings() {
+        // ロード中や初期化中は保存しない（意図しない上書き防止）
+        guard !isUpdatingSettings && !isInitializing else { return }
+        
+        let style = pointerIconStyle.rawValue
+        
+        // すべてのアイコンの設定を保存する（再起動時の永続化のため）
+        iconSettings["\(style)_scale"] = customIconScale
+        iconSettings["\(style)_opacity"] = customIconOpacity
+        iconSettings["\(style)_xOffset"] = customIconXOffset
+        iconSettings["\(style)_yOffset"] = customIconYOffset
+        
+        UserDefaults.standard.set(iconSettings, forKey: "allIconSettings")
+    }
+    
+    private func loadIconSettings(for style: IconStyle, resetToDefaults: Bool) {
+        isUpdatingSettings = true
+        defer { isUpdatingSettings = false }
+        
+        let styleStr = style.rawValue
+        
+        if resetToDefaults {
+            // デフォルト値を適用
+            if customIconScale != style.defaultScale { customIconScale = style.defaultScale }
+            if customIconOpacity != style.defaultOpacity { customIconOpacity = style.defaultOpacity }
+            if customIconXOffset != style.defaultXOffset { customIconXOffset = style.defaultXOffset }
+            if customIconYOffset != style.defaultYOffset { customIconYOffset = style.defaultYOffset }
+        } else {
+            // 保存された値をロード、なければデフォルト
+            let newScale = iconSettings["\(styleStr)_scale"] ?? style.defaultScale
+            if customIconScale != newScale { customIconScale = newScale }
+            
+            let newOpacity = iconSettings["\(styleStr)_opacity"] ?? style.defaultOpacity
+            if customIconOpacity != newOpacity { customIconOpacity = newOpacity }
+            
+            let newX = iconSettings["\(styleStr)_xOffset"] ?? style.defaultXOffset
+            if customIconXOffset != newX { customIconXOffset = newX }
+            
+            let newY = iconSettings["\(styleStr)_yOffset"] ?? style.defaultYOffset
+            if customIconYOffset != newY { customIconYOffset = newY }
+        }
+        
+        isUpdatingSettings = false
+        saveCurrentIconSettings()
+    }
+
+    func resetIconSettings() {
+        isUpdatingSettings = true
+        defer { 
+            isUpdatingSettings = false 
+            saveCurrentIconSettings()
+        }
+        
+        customIconScale = pointerIconStyle.defaultScale
+        customIconOpacity = pointerIconStyle.defaultOpacity
+        customIconXOffset = pointerIconStyle.defaultXOffset
+        customIconYOffset = pointerIconStyle.defaultYOffset
     }
 }
 

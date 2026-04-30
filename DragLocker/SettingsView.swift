@@ -659,10 +659,8 @@ struct SettingsView: View {
                     .pickerStyle(.menu)
                     .disabled(!eventManager.isIconEnabled)
                     
-                    if eventManager.pointerIconStyle == .custom {
-                        customIconSettingsView
-                            .transition(.opacity.combined(with: .move(edge: .top)))
-                    }
+                    customIconSettingsView
+                        .transition(.opacity.combined(with: .move(edge: .top)))
 
                     Picker(selection: $eventManager.iconAnimation) {
                         Text(IconAnimation.default.localizedName).tag(IconAnimation.default)
@@ -979,7 +977,7 @@ struct SettingsView: View {
     @ViewBuilder
     private var customIconSettingsView: some View {
         VStack(alignment: .leading, spacing: 16) {
-            HStack(alignment: .top, spacing: 16) {
+            HStack(alignment: .top, spacing: 12) {
                 // 左側：プレビュー画像エリア
                 ZStack {
                     let isOld = ProcessInfo.processInfo.operatingSystemVersion.majorVersion < 26
@@ -987,22 +985,34 @@ struct SettingsView: View {
                     let cursors = ["Cursor_Pointer\(suffix)", "Cursor_PointingHand\(suffix)", "Cursor_IbeamVertical\(suffix)"]
                     let currentCursorName = cursors[previewCursorPhase % cursors.count]
                     
-                    if let nsImage = cachedOriginalImage {
-                        // 80x80より大きい場合はフィットさせ、小さい場合は実寸をベースにする
-                        let fitScale = min(1.0, 80.0 / max(1, nsImage.size.width), 80.0 / max(1, nsImage.size.height))
-                        let displayWidth = nsImage.size.width * fitScale
-                        let displayHeight = nsImage.size.height * fitScale
-                        
-                        Image(nsImage: nsImage)
-                            .resizable()
-                            .scaledToFit()
-                            .frame(width: displayWidth, height: displayHeight)
-                            .scaleEffect(eventManager.customIconScale)
-                            .opacity(eventManager.customIconOpacity)
-                            .frame(width: 80, height: 80)
-                            .clipped()
-                            .offset(x: eventManager.customIconXOffset, y: eventManager.customIconYOffset)
+                    Group {
+                        if eventManager.pointerIconStyle == .custom {
+                            if let nsImage = cachedOriginalImage {
+                                let fitScale = min(1.0, 80.0 / max(1, nsImage.size.width), 80.0 / max(1, nsImage.size.height))
+                                let displayWidth = nsImage.size.width * fitScale
+                                let displayHeight = nsImage.size.height * fitScale
+                                
+                                Image(nsImage: nsImage)
+                                    .resizable()
+                                    .scaledToFit()
+                                    .frame(width: displayWidth, height: displayHeight)
+                                    .frame(width: 80, height: 80, alignment: .center)
+                                    .scaleEffect(eventManager.customIconScale)
+                                    .opacity(eventManager.customIconOpacity)
+                                    .clipped()
+                            }
+                        } else {
+                            iconPreviewArea
+                                .scaleEffect(eventManager.customIconScale)
+                                .opacity(eventManager.customIconOpacity)
+                                .frame(width: 80, height: 80, alignment: .bottomLeading)
+                                .clipped()
+                        }
                     }
+                    .offset(
+                        x: eventManager.customIconXOffset + (eventManager.pointerIconStyle == .custom ? 0 : 40),
+                        y: (eventManager.pointerIconStyle == .custom ? eventManager.customIconYOffset : -(eventManager.customIconYOffset + 40))
+                    )
                     
                     ForEach(cursors, id: \.self) { cursor in
                         Image(cursor)
@@ -1031,12 +1041,13 @@ struct SettingsView: View {
 
                 // 右側：画像選択・削除ボタンと説明テキスト
                 VStack(alignment: .leading, spacing: 0) {
-                    Text("カスタム画像")
+                    Text(eventManager.pointerIconStyle == .custom ? "カスタム画像" : "アイコンプレビュー")
+                        .foregroundStyle(eventManager.isIconEnabled ? .primary : .secondary)
                     
-                    let displayName = eventManager.customIconName ?? String(localized: "ファイルが選択されていません")
+                    let displayName = eventManager.pointerIconStyle == .custom ? (eventManager.customIconName ?? String(localized: "ファイルが選択されていません")) : String(localized: eventManager.pointerIconStyle.localizedName)
                     Text(displayName)
                         .font(.subheadline)
-                        .foregroundStyle(.secondary)
+                        .foregroundStyle(eventManager.isIconEnabled ? .secondary : .tertiary)
                         .lineLimit(1)
                         .truncationMode(.middle)
                         .help(displayName)
@@ -1045,14 +1056,16 @@ struct SettingsView: View {
                         Button("選択...") {
                             selectCustomIcon()
                         }
+                        .disabled(eventManager.pointerIconStyle != .custom)
                         
                         Button("削除...", role: .destructive) {
                             iconNameToDelete = eventManager.customIconName ?? ""
                             showingDeleteIconConfirmation = true
                         }
-                        .disabled(eventManager.customIconPath == nil)
+                        .disabled(eventManager.pointerIconStyle != .custom || eventManager.customIconPath == nil || !eventManager.isIconEnabled)
                     }
                     .padding(.vertical, 16)
+                    .disabled(!eventManager.isIconEnabled)
                     .alert("カスタム画像を削除", isPresented: $showingDeleteIconConfirmation) {
                         Button("削除", role: .destructive) {
                             eventManager.deleteCustomIcon()
@@ -1064,7 +1077,7 @@ struct SettingsView: View {
                     
                     Text("80 × 80（Retinaディスプレイでは160 × 160）ピクセル以下の透過画像を使用することを推奨します。\n大きな画像は表示エリア（80 × 80）に収まるように縮小されます。")
                         .font(.subheadline)
-                        .foregroundStyle(.secondary)
+                        .foregroundStyle(eventManager.pointerIconStyle == .custom ? .secondary : .tertiary)
                         .fixedSize(horizontal: false, vertical: true)
                 }
             }
@@ -1076,11 +1089,11 @@ struct SettingsView: View {
                         value: $eventManager.customIconScale,
                         in: 0.01...2.0,
                         step: 0.01,
-                        label: { Text("大きさ") }
+                        label: { Text("大きさ").foregroundStyle(eventManager.isIconEnabled ? .primary : .secondary) }
                     )
                     Text(eventManager.customIconScale, format: .percent.precision(.fractionLength(0)))
                         .monospacedDigit()
-                        .foregroundStyle(.secondary)
+                        .foregroundStyle(eventManager.isIconEnabled ? .secondary : .tertiary)
                         .frame(width: 50, alignment: .trailing)
                 }
                 
@@ -1089,11 +1102,11 @@ struct SettingsView: View {
                         value: $eventManager.customIconOpacity,
                         in: 0.1...1.0,
                         step: 0.01,
-                        label: { Text("不透明度") }
+                        label: { Text("不透明度").foregroundStyle(eventManager.isIconEnabled ? .primary : .secondary) }
                     )
                     Text(eventManager.customIconOpacity, format: .percent.precision(.fractionLength(0)))
                         .monospacedDigit()
-                        .foregroundStyle(.secondary)
+                        .foregroundStyle(eventManager.isIconEnabled ? .secondary : .tertiary)
                         .frame(width: 50, alignment: .trailing)
                 }
                 
@@ -1102,11 +1115,11 @@ struct SettingsView: View {
                         value: $eventManager.customIconXOffset,
                         in: -40...40,
                         step: 1,
-                        label: { Text("Xオフセット") }
+                        label: { Text("Xオフセット").foregroundStyle(eventManager.isIconEnabled ? .primary : .secondary) }
                     )
                     Text(Int(eventManager.customIconXOffset), format: .number)
                         .monospacedDigit()
-                        .foregroundStyle(.secondary)
+                        .foregroundStyle(eventManager.isIconEnabled ? .secondary : .tertiary)
                         .frame(width: 50, alignment: .trailing)
                 }
                 
@@ -1115,25 +1128,25 @@ struct SettingsView: View {
                         value: $eventManager.customIconYOffset,
                         in: -40...40,
                         step: 1,
-                        label: { Text("Yオフセット") }
+                        label: { Text("Yオフセット").foregroundStyle(eventManager.isIconEnabled ? .primary : .secondary) }
                     )
                     Text(Int(eventManager.customIconYOffset), format: .number)
                         .monospacedDigit()
-                        .foregroundStyle(.secondary)
+                        .foregroundStyle(eventManager.isIconEnabled ? .secondary : .tertiary)
                         .frame(width: 50, alignment: .trailing)
                 }
+            }
+            .disabled(!eventManager.isIconEnabled)
                 
                 HStack {
                     Spacer()
                     Button("リセット...") {
                         showingResetIconSettingsConfirmation = true
                     }
+                    .disabled(!eventManager.isIconEnabled)
                     .alert("設定をリセットしますか？", isPresented: $showingResetIconSettingsConfirmation) {
                         Button("リセット", role: .destructive) {
-                            eventManager.customIconScale = 1.0
-                            eventManager.customIconXOffset = 0
-                            eventManager.customIconYOffset = 0
-                            eventManager.customIconOpacity = 1.0
+                            eventManager.resetIconSettings()
                         }
                         Button("キャンセル", role: .cancel) { }
                     } message: {
@@ -1142,7 +1155,6 @@ struct SettingsView: View {
                 }
             }
         }
-    }
 
     /// バックグラウンドでカスタムアイコン画像を読み込み、キャッシュを更新する
     private func preloadCustomIconImages() {
@@ -1243,6 +1255,93 @@ struct SettingsView: View {
         return Image(nsImage: NSImage(cgImage: bitmap.cgImage!, size: CGSize(width: 16, height: 16)))
     }
 
+    @ViewBuilder
+    private var iconPreviewArea: some View {
+        let style = eventManager.pointerIconStyle
+        
+        ZStack(alignment: .center) {
+            if style == .padlock {
+                Image("Pointer_Locked")
+            } else if style == .dot {
+                ZStack(alignment: .center) {
+                    Circle().fill(Color.white).frame(width: 8, height: 8)
+                    Circle().fill(Color.black).frame(width: 6, height: 6)
+                }
+            } else if style == .largeRing {
+                Circle()
+                    .stroke(Color.white, lineWidth: 4)
+                    .frame(width: 40, height: 40)
+                    .overlay(
+                        Circle()
+                            .stroke(Color.black, lineWidth: 2)
+                            .frame(width: 40, height: 40)
+                    )
+                    .padding(4) // ストロークのはみ出しをウィンドウ内に収めるための余白
+            } else if style == .focus {
+                ZStack {
+                    FocusCorner(length: 12, thickness: 4, innerThickness: 2, alignment: .topLeading)
+                    FocusCorner(length: 12, thickness: 4, innerThickness: 2, alignment: .topTrailing)
+                    FocusCorner(length: 12, thickness: 4, innerThickness: 2, alignment: .bottomLeading)
+                    FocusCorner(length: 12, thickness: 4, innerThickness: 2, alignment: .bottomTrailing)
+                }
+                .frame(width: 40, height: 40)
+                .padding(4) // ストロークのはみ出しをウィンドウ内に収めるための余白
+            } else if style == .trafficLight {
+                HStack(spacing: 3) {
+                    Circle().fill(Color.green).frame(width: 7, height: 7)
+                    Circle().fill(Color.yellow).frame(width: 7, height: 7)
+                    Circle().fill(Color.red).frame(width: 7, height: 7)
+                }
+                .padding(.horizontal, 4).padding(.vertical, 3)
+                .background(Capsule().fill(Color.black).overlay(Capsule().stroke(Color.white, lineWidth: 1.0)))
+            } else if style == .smallTrafficLight {
+                HStack(spacing: 2) {
+                    Circle().fill(Color.green).frame(width: 5, height: 5)
+                    Circle().fill(Color.yellow).frame(width: 5, height: 5)
+                    Circle().fill(Color.red).frame(width: 5, height: 5)
+                }
+                .padding(.horizontal, 2.5).padding(.vertical, 2)
+                .background(Capsule().fill(Color.black).overlay(Capsule().stroke(Color.white, lineWidth: 1.0)))
+            } else if style == .trafficLightVertical {
+                VStack(spacing: 3) {
+                    Circle().fill(Color.green).frame(width: 7, height: 7)
+                    Circle().fill(Color.yellow).frame(width: 7, height: 7)
+                    Circle().fill(Color.red).frame(width: 7, height: 7)
+                }
+                .padding(.horizontal, 3).padding(.vertical, 4)
+                .background(Capsule().fill(Color.black).overlay(Capsule().stroke(Color.white, lineWidth: 1.0)))
+            } else if style == .smallTrafficLightVertical {
+                VStack(spacing: 2) {
+                    Circle().fill(Color.green).frame(width: 5, height: 5)
+                    Circle().fill(Color.yellow).frame(width: 5, height: 5)
+                    Circle().fill(Color.red).frame(width: 5, height: 5)
+                }
+                .padding(.horizontal, 2).padding(.vertical, 2.5)
+                .background(Capsule().fill(Color.black).overlay(Capsule().stroke(Color.white, lineWidth: 1.0)))
+            } else if style == .textHorizontal {
+                HStack(spacing: 1) {
+                    Text(verbatim: "L").opacity(1.0)
+                    Text(verbatim: "M").opacity(1.0).padding(.leading, -1.5)
+                    Text(verbatim: "R").opacity(1.0)
+                }
+                .font(.system(size: 11, weight: .bold, design: .monospaced))
+                .foregroundColor(.white)
+                .padding(.horizontal, 4).padding(.vertical, 2)
+                .background(Capsule().fill(Color.black).overlay(Capsule().stroke(Color.white, lineWidth: 1.0)))
+            } else if style == .textVertical {
+                VStack(spacing: -2.8) {
+                    Text(verbatim: "L").opacity(1.0)
+                    Text(verbatim: "M").opacity(1.0)
+                    Text(verbatim: "R").opacity(1.0)
+                }
+                .font(.system(size: 8, weight: .bold, design: .monospaced))
+                .foregroundColor(.white)
+                .padding(.horizontal, 3).padding(.vertical, 3)
+                .background(Capsule().fill(Color.black).overlay(Capsule().stroke(Color.white, lineWidth: 1.0)))
+            }
+        }
+    }
+
     private func selectCustomIcon() {
         let panel = NSOpenPanel()
         panel.allowsMultipleSelection = false
@@ -1277,25 +1376,25 @@ struct SettingsView: View {
 #Preview("一般") {
     SettingsView(initialTab: .general, shouldResetOnAppear: false)
         .environmentObject(EventManager.shared)
-        .frame(width: 450, height: 350)
+        .frame(width: 450, height: 450)
 }
 
 #Preview("カスタマイズ") {
     SettingsView(initialTab: .customization, shouldResetOnAppear: false)
         .environmentObject(EventManager.shared)
-        .frame(width: 450, height: 350)
+        .frame(width: 450, height: 450)
 }
 
 #Preview("動作") {
     SettingsView(initialTab: .behavior, shouldResetOnAppear: false)
         .environmentObject(EventManager.shared)
-        .frame(width: 450, height: 350)
+        .frame(width: 450, height: 450)
 }
 
 #Preview("情報") {
     SettingsView(initialTab: .info, shouldResetOnAppear: false)
         .environmentObject(EventManager.shared)
-        .frame(width: 450, height: 350)
+        .frame(width: 450, height: 450)
 }
 
 extension NSImage {

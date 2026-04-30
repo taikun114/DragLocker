@@ -772,6 +772,22 @@
         }
       }
     },
+    "アイコンプレビュー" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Icon Preview"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "アイコンプレビュー"
+          }
+        }
+      }
+    },
     "アイコンをポインタ付近に表示" : {
       "comment" : "アイコン表示機能の有効/無効切り替えラベル",
       "localizations" : {

@@ -109,38 +109,10 @@ class CursorManager {
         let style = EventManager.shared.pointerIconStyle
         let xOffset: Double
         let yOffset: Double
-        
         switch style {
-        case .padlock:
-            xOffset = 12.0
-            yOffset = -7.0
-        case .dot:
-            xOffset = 12.0
-            yOffset = -4.0
-        case .largeRing:
-            xOffset = -24.0
-            yOffset = -24.0
-        case .focus:
-            xOffset = -24.0
-            yOffset = -24.0
-        case .trafficLight:
-            xOffset = 12.0
-            yOffset = -6.5 // 高さ(13)の半分
-        case .smallTrafficLight:
-            xOffset = 12.0
-            yOffset = -4.5 // 高さ(9)の半分
-        case .trafficLightVertical:
-            xOffset = 14.0
-            yOffset = -17.5 // 高さ(35)の半分
-        case .smallTrafficLightVertical:
-            xOffset = 14.0
-            yOffset = -12.0 // 高さ(24)の半分
-        case .textHorizontal:
-            xOffset = 12.0
-            yOffset = -8.0 // -5.0 と -10.0 の間をとって調整
-        case .textVertical:
-            xOffset = 13.0
-            yOffset = -14.0 // 以前よりポインタに近づける
+        case .padlock, .dot, .largeRing, .focus, .trafficLight, .smallTrafficLight, .trafficLightVertical, .smallTrafficLightVertical, .textHorizontal, .textVertical:
+            xOffset = EventManager.shared.customIconXOffset
+            yOffset = EventManager.shared.customIconYOffset
         case .custom:
             xOffset = -40.0 + EventManager.shared.customIconXOffset
             yOffset = -40.0 - EventManager.shared.customIconYOffset
@@ -361,8 +333,6 @@ struct CursorView: View {
                         .resizable()
                         .scaledToFit()
                         .frame(width: displayWidth, height: displayHeight)
-                        .scaleEffect(eventManager.customIconScale)
-                        .opacity(eventManager.customIconOpacity) // 不透明度を適用
                         .frame(width: 80, height: 80, alignment: .center)
                         .clipped()
                 } else {
@@ -370,6 +340,8 @@ struct CursorView: View {
                 }
             }
         }
+        .scaleEffect(eventManager.customIconScale)
+        .opacity(eventManager.customIconOpacity)
         
         // アニメーション設定の適用
         // isVisible (ローカル状態) の変化に連動してアニメーションさせる
