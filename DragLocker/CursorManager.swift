@@ -31,6 +31,7 @@ class CursorManager {
         
         window.isOpaque = false
         window.backgroundColor = .clear
+        window.hasShadow = false
         window.level = .screenSaver
         window.ignoresMouseEvents = true
         window.collectionBehavior = [.canJoinAllSpaces, .stationary, .fullScreenAuxiliary]
@@ -117,6 +118,11 @@ class CursorManager {
             x: (mouseLocation.x + xOffset).rounded(),
             y: (mouseLocation.y + yOffset).rounded()
         )
+        
+        // 位置が変わっていない場合は何もしない（CPU負荷軽減）
+        if window.frame.origin == newOrigin {
+            return
+        }
         
         window.setFrameOrigin(newOrigin)
     }

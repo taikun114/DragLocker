@@ -1273,11 +1273,8 @@ class EventManager: NSObject, ObservableObject {
                 }
             }
 
-            // いずれかのボタンがロック中なら、カスタムカーソルの位置を更新
+            // いずれかのボタンがロック中なら、mouseMoved（物理ボタンが押されていない状態での移動）をドラッグに変換
             if isLocked {
-                CursorManager.shared.updatePosition()
-
-                // mouseMoved（物理ボタンが押されていない状態での移動）をドラッグに変換
                 if type == .mouseMoved {
                     // 現在ロック中のボタンのうち、最初に見つかったもののドラッグタイプを使用
                     if let lockedButton = MouseButton.allCases.first(where: { buttonStates[$0] == .locked }) {
