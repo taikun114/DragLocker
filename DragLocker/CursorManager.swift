@@ -105,19 +105,13 @@ class CursorManager {
         // 指定がない場合は現在のマウス位置を取得
         let mouseLocation = location ?? NSEvent.mouseLocation
         
-        let scale = EventManager.shared.customIconScale
-        let halfSize = 40.0 * scale
+        // ウィンドウサイズは80x80で固定（位置ズレ防止）
         
-        // ウィンドウサイズをスケールに合わせて更新（はみ出し防止）
-        if window.contentView?.frame.width != 80.0 * scale {
-            window.setContentSize(NSSize(width: 80.0 * scale, height: 80.0 * scale))
-        }
-        
-        // 全てのスタイルでウィンドウの中心をカーソル先端に合わせる
+        // 全てのスタイルでウィンドウの中心（40.0, 40.0）をカーソル先端に合わせる
         // xOffset: 正の値で右へ移動
         // yOffset: 正の値で下へ移動（macOSの座標系ではY減少）
-        let xOffset = -halfSize + EventManager.shared.customIconXOffset
-        let yOffset = -halfSize - EventManager.shared.customIconYOffset
+        let xOffset = -40.0 + EventManager.shared.customIconXOffset
+        let yOffset = -40.0 - EventManager.shared.customIconYOffset
         
         let newOrigin = NSPoint(
             x: (mouseLocation.x + xOffset).rounded(),

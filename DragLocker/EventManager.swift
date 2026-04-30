@@ -352,9 +352,6 @@ class EventManager: NSObject, ObservableObject {
     @Published var customIconPath: String? {
         didSet {
             UserDefaults.standard.set(customIconPath, forKey: "customIconPath")
-            DispatchQueue.main.async {
-                CursorManager.shared.updateCursorStyle()
-            }
         }
     }
     
@@ -368,9 +365,6 @@ class EventManager: NSObject, ObservableObject {
         didSet {
             UserDefaults.standard.set(customIconScale, forKey: "customIconScale")
             saveCurrentIconSettings()
-            DispatchQueue.main.async {
-                CursorManager.shared.updateCursorStyle()
-            }
         }
     }
 
@@ -378,9 +372,6 @@ class EventManager: NSObject, ObservableObject {
         didSet {
             UserDefaults.standard.set(customIconXOffset, forKey: "customIconXOffset")
             saveCurrentIconSettings()
-            DispatchQueue.main.async {
-                CursorManager.shared.updateCursorStyle()
-            }
         }
     }
 
@@ -388,9 +379,6 @@ class EventManager: NSObject, ObservableObject {
         didSet {
             UserDefaults.standard.set(customIconYOffset, forKey: "customIconYOffset")
             saveCurrentIconSettings()
-            DispatchQueue.main.async {
-                CursorManager.shared.updateCursorStyle()
-            }
         }
     }
 
@@ -398,18 +386,12 @@ class EventManager: NSObject, ObservableObject {
         didSet {
             UserDefaults.standard.set(customIconOpacity, forKey: "customIconOpacity")
             saveCurrentIconSettings()
-            DispatchQueue.main.async {
-                CursorManager.shared.updateCursorStyle()
-            }
         }
     }
 
     @Published var iconAnimation: IconAnimation = .default {
         didSet {
             UserDefaults.standard.set(iconAnimation.rawValue, forKey: "iconAnimation")
-            DispatchQueue.main.async {
-                CursorManager.shared.updateCursorStyle()
-            }
         }
     }
 
@@ -433,9 +415,6 @@ class EventManager: NSObject, ObservableObject {
             UserDefaults.standard.set(pointerIconStyle.rawValue, forKey: "pointerIconStyle")
             // スタイル変更時にロード（初期化中以外かつカスタム以外ならリセット）
             loadIconSettings(for: pointerIconStyle, resetToDefaults: !isInitializing && pointerIconStyle != .custom)
-            DispatchQueue.main.async {
-                CursorManager.shared.updateCursorStyle()
-            }
         }
     }
 
