@@ -321,9 +321,9 @@ struct CursorView: View {
                         )
                 )
             } else if style == .custom {
-                if let path = eventManager.customIconPath,
-                   let image = NSImage(contentsOfFile: path) {
-                    // 80x80より大きい場合はフィットさせ、小さい場合は実寸をベースにする
+                if let image = eventManager.cachedCustomIconImage {
+                    // キャッシュは既にトリミング・リサイズ済み
+                    // 80x80のコンテナに合わせて表示サイズを決定する
                     let fitScale = min(1.0, 80.0 / max(1, image.size.width), 80.0 / max(1, image.size.height))
                     let displayWidth = image.size.width * fitScale * scale
                     let displayHeight = image.size.height * fitScale * scale
@@ -332,7 +332,6 @@ struct CursorView: View {
                         .resizable()
                         .scaledToFit()
                         .frame(width: displayWidth, height: displayHeight)
-                        .clipped()
                 } else {
                     Color.clear
                 }

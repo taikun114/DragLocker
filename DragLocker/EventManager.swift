@@ -352,6 +352,7 @@ class EventManager: NSObject, ObservableObject {
     @Published var customIconPath: String? {
         didSet {
             UserDefaults.standard.set(customIconPath, forKey: "customIconPath")
+            refreshCustomIconCache()
         }
     }
     
@@ -484,6 +485,10 @@ class EventManager: NSObject, ObservableObject {
     private var lastAppExecutableName: String?
     private var lastAppExecutablePath: String?
     private var lastAppIsOverlay: Bool = false
+    
+    // カスタムアイコンのメモリ節約用キャッシュ
+    @Published var cachedCustomIconImage: NSImage? = nil
+    private var iconCacheTask: Task<Void, Never>? = nil
 
     // ウィンドウリストのキャッシュ（高頻度な呼び出しによるメモリ負荷を軽減）
     private var lastWindowList: [[String: Any]]?
@@ -601,6 +606,9 @@ class EventManager: NSObject, ObservableObject {
 
         // 現在のサウンドをメモリにプリロードして遅延をなくす
         SoundManager.shared.loadSound(style: self.soundStyle)
+
+        // 起動時にカスタムアイコンのキャッシュを作成
+        refreshCustomIconCache()
 
         if UserDefaults.standard.object(forKey: "isEnabled") == nil {
             self.isEnabled = true
@@ -1496,6 +1504,57 @@ class EventManager: NSObject, ObservableObject {
         customIconXOffset = pointerIconStyle.defaultXOffset
         customIconYOffset = pointerIconStyle.defaultYOffset
     }
+
+    /// カスタムアイコンのキャッシュ（リサイズ・トリミング済み）を更新
+    func refreshCustomIconCache() {
+        iconCacheTask?.cancel()
+        
+        guard let path = customIconPath else {
+            cachedCustomIconImage = nil
+            return
+        }
+        
+        iconCacheTask = Task.detached(priority: .utility) { [weak self] in
+            guard let self = self else { return }
+            
+            // ディスクから読み込み
+            guard let originalImage = NSImage(contentsOfFile: path) else {
+                await MainActor.run { self.cachedCustomIconImage = nil }
+                return
+            }
+            
+            // 余白をトリミング
+            let trimmed = originalImage.trimmedToOpaqueContent()
+            
+            // 常駐メモリ節約のため、表示に必要な最大サイズ（320x320）にリサイズ
+            // 80x80 (標準) * 2.0 (最大スケール) * 2.0 (Retina) = 320
+            let maxDimension: CGFloat = 320
+            let targetSize: NSSize
+            let width = trimmed.size.width
+            let height = trimmed.size.height
+            
+            if width > maxDimension || height > maxDimension {
+                let ratio = min(maxDimension / width, maxDimension / height)
+                targetSize = NSSize(width: width * ratio, height: height * ratio)
+            } else {
+                targetSize = trimmed.size
+            }
+            
+            let resized = NSImage(size: targetSize)
+            resized.lockFocus()
+            trimmed.draw(in: NSRect(origin: .zero, size: targetSize),
+                        from: NSRect(origin: .zero, size: trimmed.size),
+                        operation: .copy,
+                        fraction: 1.0)
+            resized.unlockFocus()
+            
+            guard !Task.isCancelled else { return }
+            
+            await MainActor.run {
+                self.cachedCustomIconImage = resized
+            }
+        }
+    }
 }
 
 extension EventManager: UNUserNotificationCenterDelegate {
@@ -1525,4 +1584,61 @@ func eventTapCallback(proxy: CGEventTapProxy, type: CGEventType, event: CGEvent,
     let manager = Unmanaged<EventManager>.fromOpaque(refcon).takeUnretainedValue()
     
     return manager.handleEvent(proxy: proxy, type: type, event: event)
+}
+
+// MARK: - NSImage Extensions
+extension NSImage {
+    /// 画像の不透明なコンテンツ部分のみを切り出す
+    nonisolated func trimmedToOpaqueContent() -> NSImage {
+        guard let cgImage = self.cgImage(forProposedRect: nil, context: nil, hints: nil) else {
+            return self
+        }
+        
+        let width = cgImage.width
+        let height = cgImage.height
+        
+        guard let colorSpace = CGColorSpace(name: CGColorSpace.sRGB),
+              let context = CGContext(data: nil,
+                                      width: width,
+                                      height: height,
+                                      bitsPerComponent: 8,
+                                      bytesPerRow: width * 4,
+                                      space: colorSpace,
+                                      bitmapInfo: CGImageAlphaInfo.premultipliedLast.rawValue) else {
+            return self
+        }
+        
+        context.draw(cgImage, in: CGRect(x: 0, y: 0, width: width, height: height))
+        
+        guard let data = context.data else { return self }
+        let pixelData = data.bindMemory(to: UInt8.self, capacity: width * height * 4)
+        
+        var minX = width
+        var minY = height
+        var maxX = 0
+        var maxY = 0
+        
+        for y in 0..<height {
+            for x in 0..<width {
+                let alpha = pixelData[(y * width + x) * 4 + 3]
+                if alpha > 0 {
+                    if x < minX { minX = x }
+                    if x > maxX { maxX = x }
+                    if y < minY { minY = y }
+                    if y > maxY { maxY = y }
+                }
+            }
+        }
+        
+        if maxX < minX || maxY < minY {
+            return self
+        }
+        
+        let trimRect = CGRect(x: minX, y: minY, width: maxX - minX + 1, height: maxY - minY + 1)
+        guard let trimmedCgImage = cgImage.cropping(to: trimRect) else {
+            return self
+        }
+        
+        return NSImage(cgImage: trimmedCgImage, size: NSSize(width: trimRect.width, height: trimRect.height))
+    }
 }
