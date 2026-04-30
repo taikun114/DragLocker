@@ -751,26 +751,24 @@ struct SettingsView: View {
                                 .font(.title3)
                         }
                         .buttonStyle(.plain)
-                        .foregroundStyle(.secondary)
+                        .foregroundStyle(eventManager.isSoundEnabled ? .secondary : .tertiary)
                         .disabled(!eventManager.isSoundEnabled)
                         .help("現在のサウンドをプレビュー再生します。")
                     }
                     
-                    if eventManager.soundStyle == .custom {
-                        VStack(alignment: .leading, spacing: 8) {
-                            HStack {
-                                customSoundView(title: String(localized: "サウンド 1"), index: 1)
-                                Divider()
-                                customSoundView(title: String(localized: "サウンド 2"), index: 2)
-                            }
-                            .fixedSize(horizontal: false, vertical: true)
-                            
-                            Text("各サウンドには、最大10秒までのオーディオファイルを設定することができ、片方だけが設定された場合はロック時と解除時に同じサウンドが使用されます。")
-                                .font(.subheadline)
-                                .foregroundStyle(.secondary)
+                    VStack(alignment: .leading, spacing: 8) {
+                        HStack {
+                            customSoundView(title: String(localized: "サウンド 1"), index: 1)
+                            Divider()
+                            customSoundView(title: String(localized: "サウンド 2"), index: 2)
                         }
-                        .transition(.opacity.combined(with: .move(edge: .top)))
+                        .fixedSize(horizontal: false, vertical: true)
+                        
+                        Text("各サウンドには、最大10秒までのオーディオファイルを設定することができ、片方だけが設定された場合はロック時と解除時に同じサウンドが使用されます。")
+                            .font(.subheadline)
+                            .foregroundStyle(eventManager.isSoundEnabled ? .secondary : .tertiary)
                     }
+                    .transition(.opacity.combined(with: .move(edge: .top)))
                     
                     VStack(alignment: .leading) {
                         HStack(alignment: .center, spacing: 8) {
@@ -895,32 +893,56 @@ struct SettingsView: View {
         }
     }
     
-    @ViewBuilder
     private func customSoundView(title: String, index: Int) -> some View {
+        let isCustom = eventManager.soundStyle == .custom
+        let isEnabled = eventManager.isSoundEnabled
+        
         let fileName = index == 1 ? eventManager.customSound1Name : eventManager.customSound2Name
         
-        VStack(alignment: .leading, spacing: 0) {
+        // 表示名の決定
+        let displayName: String
+        if isCustom {
+            displayName = fileName.map { ($0 as NSString).deletingPathExtension } ?? String(localized: "ファイルが選択されていません")
+        } else if eventManager.soundStyle == .system {
+            displayName = String(localized: "システム")
+        } else {
+            let styleName = String(localized: eventManager.soundStyle.localizedName)
+            let suffix = index == 1 ? String(localized: " 上") : String(localized: " 下")
+            displayName = styleName + suffix
+        }
+        
+        return VStack(alignment: .leading, spacing: 0) {
             HStack {
                 Text(title)
+                    .foregroundStyle(isEnabled ? .primary : .secondary)
                 
                 Spacer()
                 
                 Button {
-                    SoundManager.shared.playByKey(key: "custom_\(index)", volume: eventManager.soundVolume)
+                    if isCustom {
+                        SoundManager.shared.playByKey(key: "custom_\(index)", volume: eventManager.soundVolume)
+                    } else {
+                        // 標準スタイルの個別プレビュー（上・下を独立して試聴）
+                        SoundManager.shared.play(
+                            style: eventManager.soundStyle,
+                            volume: eventManager.soundVolume,
+                            isLocked: index == 1,
+                            isInverted: false // 個別プレビューでは反転設定を無視して本来の音を確認できるようにする
+                        )
+                    }
                 } label: {
                     Image(systemName: "play.circle")
                         .font(.title3)
                 }
                 .buttonStyle(.plain)
-                .foregroundStyle(.secondary)
-                .disabled(fileName == nil)
+                .foregroundStyle(isEnabled ? .secondary : .tertiary)
+                .disabled(!isEnabled || (isCustom && fileName == nil) || eventManager.soundStyle == .system)
                 .help(Text("\(title)をプレビュー再生します。"))
             }
             
-            let displayName = fileName.map { ($0 as NSString).deletingPathExtension } ?? String(localized: "ファイルが選択されていません")
             Text(displayName)
                 .font(.subheadline)
-                .foregroundStyle(.secondary)
+                .foregroundStyle(isEnabled ? .secondary : .tertiary)
                 .lineLimit(1)
                 .truncationMode(.middle)
                 .padding(.bottom, 16)
@@ -930,6 +952,7 @@ struct SettingsView: View {
                 Button("選択...") {
                     selectAudioFile(index: index)
                 }
+                .disabled(!isEnabled || !isCustom)
                 .help("Finderからオーディオファイルを選択します。")
                 
                 Button("削除...", role: .destructive) {
@@ -937,7 +960,7 @@ struct SettingsView: View {
                     soundNameToDelete = displayName
                     showingDeleteSoundConfirmation = true
                 }
-                .disabled(fileName == nil)
+                .disabled(!isEnabled || !isCustom || fileName == nil)
                 .help("設定されたカスタムオーディオを削除します。")
             }
         }
@@ -1074,7 +1097,7 @@ struct SettingsView: View {
                     
                     Text("80 × 80（Retinaディスプレイでは160 × 160）ピクセル以下の透過画像を使用することを推奨します。\n大きな画像は表示エリア（80 × 80）に収まるように縮小されます。")
                         .font(.subheadline)
-                        .foregroundStyle(eventManager.pointerIconStyle == .custom ? .secondary : .tertiary)
+                        .foregroundStyle((eventManager.isIconEnabled && eventManager.pointerIconStyle == .custom) ? .secondary : .tertiary)
                         .fixedSize(horizontal: false, vertical: true)
                 }
             }
@@ -1375,30 +1398,6 @@ struct SettingsView: View {
     }
 }
 
-#Preview("一般") {
-    SettingsView(initialTab: .general, shouldResetOnAppear: false)
-        .environmentObject(EventManager.shared)
-        .frame(width: 450, height: 450)
-}
-
-#Preview("カスタマイズ") {
-    SettingsView(initialTab: .customization, shouldResetOnAppear: false)
-        .environmentObject(EventManager.shared)
-        .frame(width: 450, height: 450)
-}
-
-#Preview("動作") {
-    SettingsView(initialTab: .behavior, shouldResetOnAppear: false)
-        .environmentObject(EventManager.shared)
-        .frame(width: 450, height: 450)
-}
-
-#Preview("情報") {
-    SettingsView(initialTab: .info, shouldResetOnAppear: false)
-        .environmentObject(EventManager.shared)
-        .frame(width: 450, height: 450)
-}
-
 extension NSImage {
     /// 画像の透明な余白を検出し、不透明な領域（アルファ値 > 0）だけにトリミングした新しい画像を返します。
     nonisolated func trimmedToOpaqueContent() -> NSImage {
@@ -1454,4 +1453,28 @@ extension NSImage {
         
         return trimmed
     }
+}
+
+#Preview("一般") {
+    SettingsView(initialTab: .general, shouldResetOnAppear: false)
+        .environmentObject(EventManager.shared)
+        .frame(width: 450, height: 450)
+}
+
+#Preview("カスタマイズ") {
+    SettingsView(initialTab: .customization, shouldResetOnAppear: false)
+        .environmentObject(EventManager.shared)
+        .frame(width: 450, height: 450)
+}
+
+#Preview("動作") {
+    SettingsView(initialTab: .behavior, shouldResetOnAppear: false)
+        .environmentObject(EventManager.shared)
+        .frame(width: 450, height: 450)
+}
+
+#Preview("情報") {
+    SettingsView(initialTab: .info, shouldResetOnAppear: false)
+        .environmentObject(EventManager.shared)
+        .frame(width: 450, height: 450)
 }
