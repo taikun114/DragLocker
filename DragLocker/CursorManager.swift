@@ -105,18 +105,19 @@ class CursorManager {
         // 指定がない場合は現在のマウス位置を取得
         let mouseLocation = location ?? NSEvent.mouseLocation
         
-        // スタイルごとの位置調整
-        let style = EventManager.shared.pointerIconStyle
-        let xOffset: Double
-        let yOffset: Double
-        switch style {
-        case .padlock, .dot, .largeRing, .focus, .trafficLight, .smallTrafficLight, .trafficLightVertical, .smallTrafficLightVertical, .textHorizontal, .textVertical:
-            xOffset = EventManager.shared.customIconXOffset
-            yOffset = EventManager.shared.customIconYOffset
-        case .custom:
-            xOffset = -40.0 + EventManager.shared.customIconXOffset
-            yOffset = -40.0 - EventManager.shared.customIconYOffset
+        let scale = EventManager.shared.customIconScale
+        let halfSize = 40.0 * scale
+        
+        // ウィンドウサイズをスケールに合わせて更新（はみ出し防止）
+        if window.contentView?.frame.width != 80.0 * scale {
+            window.setContentSize(NSSize(width: 80.0 * scale, height: 80.0 * scale))
         }
+        
+        // 全てのスタイルでウィンドウの中心をカーソル先端に合わせる
+        // xOffset: 正の値で右へ移動
+        // yOffset: 正の値で下へ移動（macOSの座標系ではY減少）
+        let xOffset = -halfSize + EventManager.shared.customIconXOffset
+        let yOffset = -halfSize - EventManager.shared.customIconYOffset
         
         let newOrigin = NSPoint(
             x: (mouseLocation.x + xOffset).rounded(),
@@ -137,171 +138,175 @@ struct CursorView: View {
     var body: some View {
         let style = eventManager.pointerIconStyle
         let isLocked = !lockState.lockedButtons.isEmpty
+        let scale = eventManager.customIconScale
         
         ZStack(alignment: .center) {
             if style == .padlock {
                 Image("Pointer_Locked")
+                    .resizable()
+                    .scaledToFit()
+                    .frame(width: 10 * scale, height: 16 * scale)
             } else if style == .dot {
                 ZStack(alignment: .center) {
-                    Circle().fill(Color.white).frame(width: 8, height: 8)
-                    Circle().fill(Color.black).frame(width: 6, height: 6)
+                    Circle().fill(Color.white).frame(width: 8 * scale, height: 8 * scale)
+                    Circle().fill(Color.black).frame(width: 6 * scale, height: 6 * scale)
                 }
             } else if style == .largeRing {
                 Circle()
-                    .stroke(Color.white, lineWidth: 4)
-                    .frame(width: 40, height: 40)
+                    .stroke(Color.white, lineWidth: 4 * scale)
+                    .frame(width: 40 * scale, height: 40 * scale)
                     .overlay(
                         Circle()
-                            .stroke(Color.black, lineWidth: 2)
-                            .frame(width: 40, height: 40)
+                            .stroke(Color.black, lineWidth: 2 * scale)
+                            .frame(width: 40 * scale, height: 40 * scale)
                     )
-                    .padding(4)
+                    .padding(4 * scale)
             } else if style == .focus {
                 // ピクセルパーフェクトなフォーカスアイコン (48x48)
                 ZStack {
                     // 左上
-                    FocusCorner(length: 12, thickness: 4, innerThickness: 2, alignment: .topLeading)
+                    FocusCorner(length: 12 * scale, thickness: 4 * scale, innerThickness: 2 * scale, alignment: .topLeading, containerSize: 40 * scale)
                     // 右上
-                    FocusCorner(length: 12, thickness: 4, innerThickness: 2, alignment: .topTrailing)
+                    FocusCorner(length: 12 * scale, thickness: 4 * scale, innerThickness: 2 * scale, alignment: .topTrailing, containerSize: 40 * scale)
                     // 左下
-                    FocusCorner(length: 12, thickness: 4, innerThickness: 2, alignment: .bottomLeading)
+                    FocusCorner(length: 12 * scale, thickness: 4 * scale, innerThickness: 2 * scale, alignment: .bottomLeading, containerSize: 40 * scale)
                     // 右下
-                    FocusCorner(length: 12, thickness: 4, innerThickness: 2, alignment: .bottomTrailing)
+                    FocusCorner(length: 12 * scale, thickness: 4 * scale, innerThickness: 2 * scale, alignment: .bottomTrailing, containerSize: 40 * scale)
                 }
-                .frame(width: 40, height: 40)
-                .padding(4)
+                .frame(width: 40 * scale, height: 40 * scale)
+                .padding(4 * scale)
             } else if style == .trafficLight {
-                HStack(spacing: 3) {
+                HStack(spacing: 3 * scale) {
                     // 左クリック (緑)
                     Circle()
                         .fill(lockState.lockedButtons.contains(.left) ? Color.green : Color.gray)
-                        .frame(width: 7, height: 7)
+                        .frame(width: 7 * scale, height: 7 * scale)
                     
                     // 中クリック (黄)
                     Circle()
                         .fill(lockState.lockedButtons.contains(.middle) ? Color.yellow : Color.gray)
-                        .frame(width: 7, height: 7)
+                        .frame(width: 7 * scale, height: 7 * scale)
                     
                     // 右クリック (赤)
                     Circle()
                         .fill(lockState.lockedButtons.contains(.right) ? Color.red : Color.gray)
-                        .frame(width: 7, height: 7)
+                        .frame(width: 7 * scale, height: 7 * scale)
                 }
-                .padding(.horizontal, 4)
-                .padding(.vertical, 3)
+                .padding(.horizontal, 4 * scale)
+                .padding(.vertical, 3 * scale)
                 .background(
                     Capsule()
                         .fill(Color.black)
                         .overlay(
                             Capsule()
-                                .stroke(Color.white, lineWidth: 1.0)
+                                .stroke(Color.white, lineWidth: 1.0 * scale)
                         )
                 )
             } else if style == .smallTrafficLight {
-                HStack(spacing: 2) {
+                HStack(spacing: 2 * scale) {
                     // 左クリック (緑)
                     Circle()
                         .fill(lockState.lockedButtons.contains(.left) ? Color.green : Color.gray)
-                        .frame(width: 5, height: 5)
+                        .frame(width: 5 * scale, height: 5 * scale)
                     
                     // 中クリック (黄)
                     Circle()
                         .fill(lockState.lockedButtons.contains(.middle) ? Color.yellow : Color.gray)
-                        .frame(width: 5, height: 5)
+                        .frame(width: 5 * scale, height: 5 * scale)
                     
                     // 右クリック (赤)
                     Circle()
                         .fill(lockState.lockedButtons.contains(.right) ? Color.red : Color.gray)
-                        .frame(width: 5, height: 5)
+                        .frame(width: 5 * scale, height: 5 * scale)
                 }
-                .padding(.horizontal, 2.5)
-                .padding(.vertical, 2)
+                .padding(.horizontal, 2 * scale)
+                .padding(.vertical, 1.5 * scale)
                 .background(
                     Capsule()
                         .fill(Color.black)
                         .overlay(
                             Capsule()
-                                .stroke(Color.white, lineWidth: 1.0)
+                                .stroke(Color.white, lineWidth: 1.0 * scale)
                         )
                 )
             } else if style == .trafficLightVertical {
-                VStack(spacing: 3) {
+                VStack(spacing: 3 * scale) {
                     // 左クリック (緑)
                     Circle()
                         .fill(lockState.lockedButtons.contains(.left) ? Color.green : Color.gray)
-                        .frame(width: 7, height: 7)
+                        .frame(width: 7 * scale, height: 7 * scale)
                     
                     // 中クリック (黄)
                     Circle()
                         .fill(lockState.lockedButtons.contains(.middle) ? Color.yellow : Color.gray)
-                        .frame(width: 7, height: 7)
+                        .frame(width: 7 * scale, height: 7 * scale)
                     
                     // 右クリック (赤)
                     Circle()
                         .fill(lockState.lockedButtons.contains(.right) ? Color.red : Color.gray)
-                        .frame(width: 7, height: 7)
+                        .frame(width: 7 * scale, height: 7 * scale)
                 }
-                .padding(.horizontal, 3)
-                .padding(.vertical, 4)
+                .padding(.horizontal, 3 * scale)
+                .padding(.vertical, 4 * scale)
                 .background(
                     Capsule()
                         .fill(Color.black)
                         .overlay(
                             Capsule()
-                                .stroke(Color.white, lineWidth: 1.0)
+                                .stroke(Color.white, lineWidth: 1.0 * scale)
                         )
                 )
             } else if style == .smallTrafficLightVertical {
-                VStack(spacing: 2) {
+                VStack(spacing: 2 * scale) {
                     // 左クリック (緑)
                     Circle()
                         .fill(lockState.lockedButtons.contains(.left) ? Color.green : Color.gray)
-                        .frame(width: 5, height: 5)
+                        .frame(width: 5 * scale, height: 5 * scale)
                     
                     // 中クリック (黄)
                     Circle()
                         .fill(lockState.lockedButtons.contains(.middle) ? Color.yellow : Color.gray)
-                        .frame(width: 5, height: 5)
+                        .frame(width: 5 * scale, height: 5 * scale)
                     
                     // 右クリック (赤)
                     Circle()
                         .fill(lockState.lockedButtons.contains(.right) ? Color.red : Color.gray)
-                        .frame(width: 5, height: 5)
+                        .frame(width: 5 * scale, height: 5 * scale)
                 }
-                .padding(.horizontal, 2)
-                .padding(.vertical, 2.5)
+                .padding(.horizontal, 2 * scale)
+                .padding(.vertical, 2.5 * scale)
                 .background(
                     Capsule()
                         .fill(Color.black)
                         .overlay(
                             Capsule()
-                                .stroke(Color.white, lineWidth: 1.0)
+                                .stroke(Color.white, lineWidth: 1.0 * scale)
                         )
                 )
             } else if style == .textHorizontal {
-                HStack(spacing: 1) {
+                HStack(spacing: 1 * scale) {
                     Text(verbatim: "L")
                         .opacity(lockState.lockedButtons.contains(.left) ? 1.0 : 0.5)
                     Text(verbatim: "M")
                         .opacity(lockState.lockedButtons.contains(.middle) ? 1.0 : 0.5)
-                        .padding(.leading, -1.5) // Lの右上の余白を埋めるために少し詰める
+                        .padding(.leading, -1.5 * scale) // Lの右上の余白を埋めるために少し詰める
                     Text(verbatim: "R")
                         .opacity(lockState.lockedButtons.contains(.right) ? 1.0 : 0.5)
                 }
-                .font(.system(size: 11, weight: .bold, design: .monospaced))
+                .font(.system(size: 11 * scale, weight: .bold, design: .monospaced))
                 .foregroundColor(.white)
-                .padding(.horizontal, 4)
-                .padding(.vertical, 2)
+                .padding(.horizontal, 4 * scale)
+                .padding(.vertical, 2 * scale)
                 .background(
                     Capsule()
                         .fill(Color.black)
                         .overlay(
                             Capsule()
-                                .stroke(Color.white, lineWidth: 1.0)
+                                .stroke(Color.white, lineWidth: 1.0 * scale)
                         )
                 )
             } else if style == .textVertical {
-                VStack(spacing: -2.8) { // 極限まで詰める
+                VStack(spacing: -2.8 * scale) { // 極限まで詰める
                     Text(verbatim: "L")
                         .opacity(lockState.lockedButtons.contains(.left) ? 1.0 : 0.5)
                     Text(verbatim: "M")
@@ -309,16 +314,16 @@ struct CursorView: View {
                     Text(verbatim: "R")
                         .opacity(lockState.lockedButtons.contains(.right) ? 1.0 : 0.5)
                 }
-                .font(.system(size: 8, weight: .bold, design: .monospaced))
+                .font(.system(size: 8 * scale, weight: .bold, design: .monospaced))
                 .foregroundColor(.white)
-                .padding(.horizontal, 3)
-                .padding(.vertical, 3)
+                .padding(.horizontal, 3 * scale)
+                .padding(.vertical, 3 * scale)
                 .background(
                     Capsule()
                         .fill(Color.black)
                         .overlay(
                             Capsule()
-                                .stroke(Color.white, lineWidth: 1.0)
+                                .stroke(Color.white, lineWidth: 1.0 * scale)
                         )
                 )
             } else if style == .custom {
@@ -326,21 +331,21 @@ struct CursorView: View {
                    let image = NSImage(contentsOfFile: path) {
                     // 80x80より大きい場合はフィットさせ、小さい場合は実寸をベースにする
                     let fitScale = min(1.0, 80.0 / max(1, image.size.width), 80.0 / max(1, image.size.height))
-                    let displayWidth = image.size.width * fitScale
-                    let displayHeight = image.size.height * fitScale
+                    let displayWidth = image.size.width * fitScale * scale
+                    let displayHeight = image.size.height * fitScale * scale
                     
                     Image(nsImage: image)
                         .resizable()
                         .scaledToFit()
                         .frame(width: displayWidth, height: displayHeight)
-                        .frame(width: 80, height: 80, alignment: .center)
                         .clipped()
                 } else {
-                    Color.clear.frame(width: 80, height: 80)
+                    Color.clear
                 }
             }
         }
-        .scaleEffect(eventManager.customIconScale)
+        .frame(width: 80, height: 80, alignment: .center) // 全てのスタイルを80x80の中心に固定して配置
+        .clipped()
         .opacity(eventManager.customIconOpacity)
         
         // アニメーション設定の適用
@@ -349,7 +354,7 @@ struct CursorView: View {
         .scaleEffect(currentScale(animationType: eventManager.iconAnimation, isLocked: isVisible, style: style))
         .animation(currentAnimation(animationType: eventManager.iconAnimation), value: isVisible)
         .fixedSize()
-        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottomLeading)
+        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .center)
         .onAppear {
             // ウィンドウが表示されたタイミングで状態を同期し、アニメーションを開始させる
             // 確実を期すため、次のメインループで実行

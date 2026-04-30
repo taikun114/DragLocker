@@ -112,32 +112,32 @@ enum IconStyle: String, CaseIterable, Sendable {
 
     var defaultXOffset: Double {
         switch self {
-        case .padlock: return 12.0
-        case .dot: return 12.0
-        case .largeRing: return -25.0
-        case .focus: return -25.0
-        case .trafficLight: return 12.0
-        case .smallTrafficLight: return 12.0
-        case .trafficLightVertical: return 14.0
-        case .smallTrafficLightVertical: return 14.0
-        case .textHorizontal: return 12.0
-        case .textVertical: return 13.0
+        case .padlock: return 18.0
+        case .dot: return 14.0
+        case .largeRing: return -1.0
+        case .focus: return -1.0
+        case .trafficLight: return 30.0
+        case .smallTrafficLight: return 24.0
+        case .trafficLightVertical: return 22.0
+        case .smallTrafficLightVertical: return 20.0
+        case .textHorizontal: return 30.0
+        case .textVertical: return 20.0
         case .custom: return 0.0
         }
     }
     
     var defaultYOffset: Double {
         switch self {
-        case .padlock: return -7.0
-        case .dot: return -4.0
-        case .largeRing: return -24.0
-        case .focus: return -24.0
-        case .trafficLight: return -6.5
-        case .smallTrafficLight: return -4.5
-        case .trafficLightVertical: return -17.5
-        case .smallTrafficLightVertical: return -12.0
-        case .textHorizontal: return -8.0
-        case .textVertical: return -14.0
+        case .padlock: return -1.0
+        case .dot: return 0.0
+        case .largeRing: return 0.0
+        case .focus: return 0.0
+        case .trafficLight: return 0.0
+        case .smallTrafficLight: return 0.0
+        case .trafficLightVertical: return 0.0
+        case .smallTrafficLightVertical: return 0.0
+        case .textHorizontal: return 0.0
+        case .textVertical: return 0.0
         case .custom: return 0.0
         }
     }
