@@ -395,41 +395,48 @@ struct SettingsView: View {
                         methodButton(imageName: "DragLocker_Method_Both", title: "両方", type: .both)
                     }
                     
-                    if eventManager.lockType == .time || eventManager.lockType == .both {
-                        VStack(alignment: .leading) {
-                            HStack(alignment: .center, spacing: 8) {
-                                Slider(value: $lockDelay, in: 0.2...3.0, step: 0.1) {
-                                    Text("ロックまでの時間")
-                                }
-                                Text("\(lockDelay, format: .number.precision(.fractionLength(1))) 秒")
-                                    .foregroundStyle(.secondary)
+                    // 時間設定
+                    let isTimeEnabled = eventManager.lockType == .time || eventManager.lockType == .both
+                    VStack(alignment: .leading) {
+                        HStack(alignment: .center, spacing: 8) {
+                            Slider(value: $lockDelay, in: 0.2...3.0, step: 0.1) {
+                                Text("ロックまでの時間")
+                                    .foregroundStyle(isTimeEnabled ? .primary : .secondary)
                             }
-                            Text("ドラッグロック開始までクリックし続ける時間を設定します。")
-                                .font(.subheadline)
-                                .foregroundStyle(.secondary)
+                            Text("\(lockDelay, format: .number.precision(.fractionLength(1))) 秒")
+                                .foregroundStyle(isTimeEnabled ? .secondary : .tertiary)
                         }
+                        Text("ドラッグロック開始までクリックし続ける時間を設定します。")
+                            .font(.subheadline)
+                            .foregroundStyle(isTimeEnabled ? .secondary : .tertiary)
                     }
+                    .disabled(!isTimeEnabled)
+                    .animation(nil, value: isTimeEnabled)
+                    
+                    // 距離設定
+                    let isDistanceEnabled = eventManager.lockType == .distance || eventManager.lockType == .both
+                    VStack(alignment: .leading) {
+                        HStack(alignment: .center, spacing: 8) {
+                            Slider(value: $eventManager.lockDistance, in: 10...500, step: 10) {
+                                Text("ロックまでの距離")
+                                    .foregroundStyle(isDistanceEnabled ? .primary : .secondary)
+                            }
+                            Text("\(eventManager.lockDistance, format: .number.precision(.fractionLength(0))) px")
+                                .foregroundStyle(isDistanceEnabled ? .secondary : .tertiary)
+                        }
+                        Text("ドラッグロック開始までドラッグし続ける距離を設定します。")
+                            .font(.subheadline)
+                            .foregroundStyle(isDistanceEnabled ? .secondary : .tertiary)
+                    }
+                    .disabled(!isDistanceEnabled)
+                    .animation(nil, value: isDistanceEnabled)
 
+                    // Escキー解除
                     Toggle(isOn: $eventManager.isUnlockAllWithEscEnabled) {
                         Text("Escキーですべてのロックを解除")
                         Text("ドラッグロック中にEscキーを押してすべてのボタンのロックを解除します。")
                             .font(.subheadline)
                             .foregroundStyle(.secondary)
-                    }
-                    
-                    if eventManager.lockType == .distance || eventManager.lockType == .both {
-                        VStack(alignment: .leading) {
-                            HStack(alignment: .center, spacing: 8) {
-                                Slider(value: $eventManager.lockDistance, in: 10...500, step: 10) {
-                                    Text("ロックまでの距離")
-                                }
-                                Text("\(eventManager.lockDistance, format: .number.precision(.fractionLength(0))) px")
-                                    .foregroundStyle(.secondary)
-                            }
-                            Text("ドラッグロック開始までドラッグし続ける距離を設定します。")
-                                .font(.subheadline)
-                                .foregroundStyle(.secondary)
-                        }
                     }
                 }
                 
@@ -660,7 +667,6 @@ struct SettingsView: View {
                     .disabled(!eventManager.isIconEnabled)
                     
                     customIconSettingsView
-                        .transition(.opacity.combined(with: .move(edge: .top)))
 
                     Picker(selection: $eventManager.iconAnimation) {
                         Text(IconAnimation.default.localizedName).tag(IconAnimation.default)
@@ -768,7 +774,6 @@ struct SettingsView: View {
                             .font(.subheadline)
                             .foregroundStyle(eventManager.isSoundEnabled ? .secondary : .tertiary)
                     }
-                    .transition(.opacity.combined(with: .move(edge: .top)))
                     
                     VStack(alignment: .leading) {
                         HStack(alignment: .center, spacing: 8) {
