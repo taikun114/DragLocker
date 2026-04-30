@@ -496,7 +496,7 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Star the GitHub repository"
+            "value" : "Star the GitHub Repository"
           }
         },
         "ja" : {
@@ -778,7 +778,7 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Show icon near pointer"
+            "value" : "Show Icon Near Pointer"
           }
         },
         "ja" : {
@@ -927,7 +927,7 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Remove app?"
+            "value" : "Remove App?"
           }
         },
         "ja" : {
@@ -1264,6 +1264,38 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "サウンド"
+          }
+        }
+      }
+    },
+    "サウンド 1" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sound 1"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "サウンド 1"
+          }
+        }
+      }
+    },
+    "サウンド 2" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sound 2"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "サウンド 2"
           }
         }
       }
@@ -2279,6 +2311,22 @@
         }
       }
     },
+    "ファイルが選択されていません" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No File Selected"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ファイルが選択されていません"
+          }
+        }
+      }
+    },
     "フィードバックのメール送信画面を開いてもよろしいですか？" : {
       "localizations" : {
         "en" : {
@@ -2980,7 +3028,7 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Send notification on toggle"
+            "value" : "Send Notification on Toggle"
           }
         },
         "ja" : {
@@ -3573,7 +3621,7 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Buy me a green tea"
+            "value" : "Buy Me a Green Tea"
           }
         },
         "ja" : {
@@ -3589,7 +3637,7 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Buy me a green tea"
+            "value" : "Buy Me a Green Tea"
           }
         },
         "ja" : {
@@ -3671,7 +3719,7 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Reset settings?"
+            "value" : "Reset Settings?"
           }
         },
         "ja" : {
@@ -3999,7 +4047,7 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Audio is too long"
+            "value" : "Audio Is Too Long"
           }
         },
         "ja" : {

@@ -761,9 +761,9 @@ struct SettingsView: View {
                     if eventManager.soundStyle == .custom {
                         VStack(alignment: .leading, spacing: 8) {
                             HStack {
-                                customSoundView(title: "サウンド 1", index: 1)
+                                customSoundView(title: String(localized: "サウンド 1"), index: 1)
                                 Divider()
-                                customSoundView(title: "サウンド 2", index: 2)
+                                customSoundView(title: String(localized: "サウンド 2"), index: 2)
                             }
                             .fixedSize(horizontal: false, vertical: true)
                             
@@ -916,10 +916,10 @@ struct SettingsView: View {
                 .buttonStyle(.plain)
                 .foregroundStyle(.secondary)
                 .disabled(fileName == nil)
-                .help("\(title)をプレビュー再生します。")
+                .help(Text("\(title)をプレビュー再生します。"))
             }
             
-            let displayName = fileName.map { ($0 as NSString).deletingPathExtension } ?? "ファイルが選択されていません"
+            let displayName = fileName.map { ($0 as NSString).deletingPathExtension } ?? String(localized: "ファイルが選択されていません")
             Text(displayName)
                 .font(.subheadline)
                 .foregroundStyle(.secondary)
@@ -1033,7 +1033,7 @@ struct SettingsView: View {
                 VStack(alignment: .leading, spacing: 0) {
                     Text("カスタム画像")
                     
-                    let displayName = eventManager.customIconName ?? "ファイルが選択されていません"
+                    let displayName = eventManager.customIconName ?? String(localized: "ファイルが選択されていません")
                     Text(displayName)
                         .font(.subheadline)
                         .foregroundStyle(.secondary)
