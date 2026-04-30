@@ -31,9 +31,9 @@ class CursorManager {
         
         window.isOpaque = false
         window.backgroundColor = .clear
-        window.level = NSWindow.Level(Int(CGWindowLevelForKey(.cursorWindow)))
+        window.level = .screenSaver
         window.ignoresMouseEvents = true
-        window.collectionBehavior = [.canJoinAllSpaces, .stationary]
+        window.collectionBehavior = [.canJoinAllSpaces, .stationary, .fullScreenAuxiliary]
         window.animationBehavior = .none
         
         self.cursorWindow = window
