@@ -518,15 +518,27 @@ struct OnboardingView: View {
 
             Spacer()
 
-            Image("DragLocker_MenuBar")
-                .resizable()
-                .aspectRatio(contentMode: .fit)
-                .frame(width: 256)
-                .clipShape(RoundedRectangle(cornerRadius: 8))
-                .overlay(
-                    RoundedRectangle(cornerRadius: 8)
-                        .stroke(Color.primary.opacity(0.1), lineWidth: 1)
-                )
+            if #available(macOS 26.0, *) {
+                Image("DragLocker_MenuBar")
+                    .resizable()
+                    .aspectRatio(contentMode: .fit)
+                    .frame(width: 256)
+                    .clipShape(RoundedRectangle(cornerRadius: 8))
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 8)
+                            .stroke(Color.primary.opacity(0.1), lineWidth: 1)
+                    )
+            } else {
+                Image("DragLocker_MenuBar_Old")
+                    .resizable()
+                    .aspectRatio(contentMode: .fit)
+                    .frame(width: 256)
+                    .clipShape(RoundedRectangle(cornerRadius: 8))
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 8)
+                            .stroke(Color.primary.opacity(0.1), lineWidth: 1)
+                    )
+            }
 
             Spacer()
 
