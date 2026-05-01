@@ -310,6 +310,9 @@ class EventManager: NSObject, ObservableObject {
     @Published var soundStyle: SoundStyle = .system {
         didSet {
             UserDefaults.standard.set(soundStyle.rawValue, forKey: "soundStyle")
+            if !isInitializing {
+                cleanupUnusedCustomFiles()
+            }
         }
     }
 
@@ -416,6 +419,10 @@ class EventManager: NSObject, ObservableObject {
             UserDefaults.standard.set(pointerIconStyle.rawValue, forKey: "pointerIconStyle")
             // スタイル変更時にロード（初期化中以外かつカスタム以外ならリセット）
             loadIconSettings(for: pointerIconStyle, resetToDefaults: !isInitializing && pointerIconStyle != .custom)
+            
+            if !isInitializing {
+                cleanupUnusedCustomFiles()
+            }
         }
     }
 
@@ -659,6 +666,9 @@ class EventManager: NSObject, ObservableObject {
             name: NSNotification.Name("com.apple.screenIsLocked"),
             object: nil
         )
+
+        // 未使用のカスタムファイルをクリーンアップ
+        cleanupUnusedCustomFiles()
     }
 
     @objc private func handleSystemEvent() {
@@ -1071,22 +1081,20 @@ class EventManager: NSObject, ObservableObject {
         let fileName = "\(originalNameWithoutExtension)_icon_\(UUID().uuidString).\(fileExtension)"
         let destinationURL = customIconsDirectory.appendingPathComponent(fileName)
         
-        deleteCustomIcon()
         try FileManager.default.copyItem(at: url, to: destinationURL)
         
         DispatchQueue.main.async {
             self.customIconPath = destinationURL.path
             self.customIconName = originalNameWithoutExtension
+            self.cleanupUnusedCustomFiles()
         }
     }
 
     func deleteCustomIcon() {
-        if let currentPath = customIconPath {
-            try? FileManager.default.removeItem(atPath: currentPath)
-            DispatchQueue.main.async {
-                self.customIconPath = nil
-                self.customIconName = nil
-            }
+        DispatchQueue.main.async {
+            self.customIconPath = nil
+            self.customIconName = nil
+            self.cleanupUnusedCustomFiles()
         }
     }
 
@@ -1108,9 +1116,6 @@ class EventManager: NSObject, ObservableObject {
         let fileName = "\(originalNameWithoutExtension)_sound_\(index)_\(UUID().uuidString).\(fileExtension)"
         let destinationURL = customSoundsDirectory.appendingPathComponent(fileName)
         
-        // 古いファイルを削除
-        deleteCustomSound(index: index)
-        
         // 新しいファイルをコピー
         try FileManager.default.copyItem(at: url, to: destinationURL)
         
@@ -1124,16 +1129,11 @@ class EventManager: NSObject, ObservableObject {
             }
             // プリロード
             SoundManager.shared.loadSound(style: .custom)
+            self.cleanupUnusedCustomFiles()
         }
     }
 
     func deleteCustomSound(index: Int) {
-        let fileName = index == 1 ? customSound1Path : customSound2Path
-        if let fileName = fileName {
-            let fileURL = customSoundsDirectory.appendingPathComponent(fileName)
-            try? FileManager.default.removeItem(at: fileURL)
-        }
-        
         DispatchQueue.main.async {
             if index == 1 {
                 self.customSound1Path = nil
@@ -1144,6 +1144,7 @@ class EventManager: NSObject, ObservableObject {
             }
             // プリロード情報を更新
             SoundManager.shared.loadSound(style: .custom)
+            self.cleanupUnusedCustomFiles()
         }
     }
 
@@ -1151,6 +1152,40 @@ class EventManager: NSObject, ObservableObject {
         let fileName = index == 1 ? customSound1Path : customSound2Path
         guard let fileName = fileName else { return nil }
         return customSoundsDirectory.appendingPathComponent(fileName)
+    }
+
+    /// 使用されていないカスタムアイコン画像とサウンドファイルを削除する
+    private func cleanupUnusedCustomFiles() {
+        let fileManager = FileManager.default
+        
+        // 1. アイコンのクリーンアップ
+        // パスが設定されている場合のみ、そのファイルを保持する
+        if let iconEntries = try? fileManager.contentsOfDirectory(at: customIconsDirectory, includingPropertiesForKeys: nil) {
+            for fileURL in iconEntries {
+                if let activePath = customIconPath {
+                    if fileURL.path != activePath {
+                        try? fileManager.removeItem(at: fileURL)
+                    }
+                } else {
+                    // パスが設定されていない場合はすべて削除
+                    try? fileManager.removeItem(at: fileURL)
+                }
+            }
+        }
+        
+        // 2. サウンドのクリーンアップ
+        // パスが設定されているファイルのみ保持する
+        var activeSounds = Set<String>()
+        if let s1 = customSound1Path { activeSounds.insert(s1) }
+        if let s2 = customSound2Path { activeSounds.insert(s2) }
+        
+        if let soundEntries = try? fileManager.contentsOfDirectory(at: customSoundsDirectory, includingPropertiesForKeys: nil) {
+            for fileURL in soundEntries {
+                if !activeSounds.contains(fileURL.lastPathComponent) {
+                    try? fileManager.removeItem(at: fileURL)
+                }
+            }
+        }
     }
 
     // イベント処理のエントリーポイント
