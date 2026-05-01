@@ -283,13 +283,13 @@ struct CustomizationSettingsTab: View {
                 .help(displayName)
             
             HStack {
-                Button("選択...") {
+                Button("選択…") {
                     selectAudioFile(index: index)
                 }
                 .disabled(!isEnabled || !isCustom)
                 .help("Finderからオーディオファイルを選択します。")
                 
-                Button("削除...", role: .destructive) {
+                Button("削除…", role: .destructive) {
                     soundIndexToDelete = index
                     soundNameToDelete = displayName
                     showingDeleteSoundConfirmation = true
@@ -596,12 +596,12 @@ struct CustomizationSettingsTab: View {
                         .help(displayName)
                     
                     HStack {
-                        Button("選択...") {
+                        Button("選択…") {
                             selectCustomIcon()
                         }
                         .disabled(eventManager.pointerIconStyle != .custom)
                         
-                        Button("削除...", role: .destructive) {
+                        Button("削除…", role: .destructive) {
                             iconNameToDelete = eventManager.customIconName ?? ""
                             showingDeleteIconConfirmation = true
                         }
@@ -683,7 +683,7 @@ struct CustomizationSettingsTab: View {
             
             HStack {
                 Spacer()
-                Button("リセット...") {
+                Button("リセット…") {
                     showingResetIconSettingsConfirmation = true
                 }
                 .disabled(!eventManager.isIconEnabled)

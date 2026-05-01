@@ -106,7 +106,7 @@ struct ManagedAppPickerPopover: View {
         } label: {
             HStack {
                 Image(systemName: "folder.fill")
-                Text("Finderで選択...")
+                Text("Finderで選択…")
                 Spacer()
             }
             .contentShape(Rectangle())

@@ -423,19 +423,19 @@
         }
       }
     },
-    "Finderで選択..." : {
+    "Finderで選択…" : {
       "comment" : "アプリ選択ダイアログを表示するボタンのラベル",
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Select in Finder..."
+            "value" : "Select in Finder…"
           }
         },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Finderで選択..."
+            "value" : "Finderで選択…"
           }
         }
       }
@@ -2723,18 +2723,18 @@
         }
       }
     },
-    "リセット..." : {
+    "リセット…" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Reset..."
+            "value" : "Reset…"
           }
         },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "リセット..."
+            "value" : "リセット…"
           }
         }
       }
@@ -3136,18 +3136,18 @@
         }
       }
     },
-    "削除..." : {
+    "削除…" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Delete..."
+            "value" : "Delete…"
           }
         },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "削除..."
+            "value" : "削除…"
           }
         }
       }
@@ -3713,19 +3713,19 @@
         }
       }
     },
-    "設定..." : {
+    "設定…" : {
       "comment" : "メニューバーの設定項目ラベル",
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Settings..."
+            "value" : "Settings…"
           }
         },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "設定..."
+            "value" : "設定…"
           }
         }
       }
@@ -3975,18 +3975,18 @@
         }
       }
     },
-    "選択..." : {
+    "選択…" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Select..."
+            "value" : "Select…"
           }
         },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "選択..."
+            "value" : "選択…"
           }
         }
       }

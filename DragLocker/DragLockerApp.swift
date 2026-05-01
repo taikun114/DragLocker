@@ -122,6 +122,7 @@ struct DragLockerApp: App {
     @NSApplicationDelegateAdaptor(AppDelegate.self) var appDelegate
     @StateObject private var eventManager = EventManager.shared
     @AppStorage("hasCompletedOnboarding") private var hasCompletedOnboarding = false
+    @State private var selectedSettingsTab: SettingsTab = .general
     
     var body: some Scene {
         MenuBarExtra {
@@ -151,7 +152,7 @@ struct DragLockerApp: App {
             
             // 設定画面を開くリンク
             SettingsLink {
-                Label("設定...", systemImage: "gear")
+                Label("設定…", systemImage: "gear")
             }
             .keyboardShortcut(",")
             .disabled(!hasCompletedOnboarding)
@@ -170,9 +171,34 @@ struct DragLockerApp: App {
         
         // 設定画面のWindow定義
         Settings {
-            SettingsView()
+            SettingsView(selectedTab: $selectedSettingsTab)
                 .environmentObject(eventManager)
                 .frame(width: 450, height: 450)
+        }
+        .commands {
+            AppCommands()
+        }
+    }
+}
+
+struct AppCommands: Commands {
+    @AppStorage("hasCompletedOnboarding") private var hasCompletedOnboarding = false
+
+    var body: some Commands {
+        CommandGroup(replacing: .appInfo) {
+            Button(action: {
+                AboutWindowController.show()
+            }) {
+                Label("DragLockerについて", systemImage: "info.circle")
+            }
+        }
+        
+        CommandGroup(replacing: .appSettings) {
+            SettingsLink {
+                Label("設定…", systemImage: "gear")
+            }
+            .keyboardShortcut(",")
+            .disabled(!hasCompletedOnboarding)
         }
     }
 }
@@ -225,5 +251,50 @@ extension KeyboardShortcuts.Shortcut {
         if (carbonFlags & 0x0400) != 0 { modifiers.insert(.capsLock) } // alphaLock / capsLock
         
         return modifiers
+    }
+}
+
+class AboutWindowController: NSObject, NSWindowDelegate {
+    private static var instance: AboutWindowController?
+    private var window: NSWindow?
+    
+    static func show() {
+        if let instance = instance {
+            instance.window?.makeKeyAndOrderFront(nil)
+            NSApp.activate(ignoringOtherApps: true)
+            return
+        }
+        
+        let controller = AboutWindowController()
+        instance = controller
+        controller.setupWindow()
+    }
+    
+    private func setupWindow() {
+        let aboutView = InfoView()
+            .frame(width: 450, height: 450)
+            .environmentObject(EventManager.shared)
+        
+        let window = NSWindow(
+            contentRect: NSRect(x: 0, y: 0, width: 450, height: 450),
+            styleMask: [.titled, .closable, .fullSizeContentView],
+            backing: .buffered,
+            defer: false
+        )
+        window.center()
+        window.title = "DragLockerについて"
+        window.isReleasedWhenClosed = false // クラッシュ防止のためfalse（ARCがメモリ解放を管理する）
+        window.isExcludedFromWindowsMenu = true
+        window.delegate = self
+        window.contentView = NSHostingView(rootView: aboutView)
+        
+        self.window = window
+        window.makeKeyAndOrderFront(nil)
+        NSApp.activate(ignoringOtherApps: true)
+    }
+    
+    func windowWillClose(_ notification: Notification) {
+        self.window = nil // ウインドウへの参照を解除
+        AboutWindowController.instance = nil // インスタンスを破棄してメモリを解放
     }
 }
