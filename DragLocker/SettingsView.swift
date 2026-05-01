@@ -32,14 +32,8 @@ struct SettingsView: View {
             // 設定画面を開くたびに「一般」タブにリセットする
             selectedTab = .general
             
-            // 設定画面表示時はDockアイコンを表示する
-            NSApp.setActivationPolicy(.regular)
             // アプリを前面に持ってくる
             NSApp.activate(ignoringOtherApps: true)
-        }
-        .onDisappear {
-            // 設定画面を閉じたらDockアイコンを非表示にする
-            NSApp.setActivationPolicy(.accessory)
         }
     }
 }

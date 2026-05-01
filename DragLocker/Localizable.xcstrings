@@ -292,6 +292,23 @@
         }
       }
     },
+    "DragLocker セットアップ" : {
+      "comment" : "オンボーディングウィンドウのタイトル",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "DragLocker Setup"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "DragLocker セットアップ"
+          }
+        }
+      }
+    },
     "DragLocker 設定" : {
       "comment" : "設定画面のタイトル",
       "localizations" : {
@@ -1014,6 +1031,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "オープンソースライセンス"
+          }
+        }
+      }
+    },
+    "オンボーディングを表示" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Show Onboarding"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "オンボーディングを表示"
           }
         }
       }

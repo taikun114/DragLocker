@@ -2,14 +2,77 @@ import SwiftUI
 import KeyboardShortcuts
 
 class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate {
+    static var shared: AppDelegate?
     var onboardingWindow: NSWindow?
+
+    override init() {
+        super.init()
+        AppDelegate.shared = self
+    }
 
     func applicationDidFinishLaunching(_ notification: Notification) {
         print("DEBUG: App launched, hasCompletedOnboarding = \(UserDefaults.standard.bool(forKey: "hasCompletedOnboarding"))")
         EventManager.shared.start()
 
+        // ウィンドウの開閉を監視してDockアイコンの表示/非表示を切り替える
+        NotificationCenter.default.addObserver(self, selector: #selector(windowStateChanged), name: NSWindow.willCloseNotification, object: nil)
+        NotificationCenter.default.addObserver(self, selector: #selector(windowStateChanged), name: NSWindow.didBecomeKeyNotification, object: nil)
+
         if !UserDefaults.standard.bool(forKey: "hasCompletedOnboarding") {
             setupOnboarding()
+        }
+    }
+    
+    @objc private func windowStateChanged(_ notification: Notification) {
+        // ウィンドウが閉じる直前やフォーカス取得直後などに実行
+        let closingWindow = (notification.name == NSWindow.willCloseNotification) ? (notification.object as? NSWindow) : nil
+        
+        // 即座に判定を行い、閉じようとしているウィンドウを除外してカウントする
+        self.updateActivationPolicy(excluding: closingWindow)
+        
+        // 念のため、少し遅延させてもう一度確認（SwiftUIのウィンドウ破棄タイミングへの対応）
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
+            self.updateActivationPolicy()
+        }
+    }
+
+    func updateActivationPolicy(excluding excludingWindow: NSWindow? = nil) {
+        // オンボーディング完了前なら常に .regular
+        guard UserDefaults.standard.bool(forKey: "hasCompletedOnboarding") else {
+            if NSApplication.shared.activationPolicy() != .regular {
+                NSApplication.shared.setActivationPolicy(.regular)
+            }
+            return
+        }
+
+        // 表示されている、操作可能なメインウィンドウがあるか確認
+        let interactiveWindows = NSApplication.shared.windows.filter { window in
+            // 閉じようとしているウィンドウは除外
+            if let excluding = excludingWindow, window == excluding { return false }
+            
+            // 表示されているか
+            guard window.isVisible else { return false }
+            
+            // 通常のレベル（.normal）か。MenuBarExtraのウィンドウなどはこれに含まれないことが多い
+            guard window.level == .normal else { return false }
+            
+            // 自身の管理しているオンボーディングウィンドウならカウント
+            if window == self.onboardingWindow { return true }
+            
+            // タイトルがあり、操作可能なものをカウント（設定画面、情報画面など）
+            return window.canBecomeKey && !window.title.isEmpty
+        }
+
+        if !interactiveWindows.isEmpty {
+            if NSApplication.shared.activationPolicy() != .regular {
+                print("DEBUG: Windows detected, setting policy to .regular")
+                NSApplication.shared.setActivationPolicy(.regular)
+            }
+        } else {
+            if NSApplication.shared.activationPolicy() != .accessory {
+                print("DEBUG: No windows detected, setting policy to .accessory")
+                NSApplication.shared.setActivationPolicy(.accessory)
+            }
         }
     }
 
@@ -18,7 +81,15 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate {
         CursorManager.shared.hideCustomCursor()
     }
 
-    private func setupOnboarding() {
+    func setupOnboarding() {
+        print("DEBUG: setupOnboarding() called")
+        if let window = onboardingWindow {
+            print("DEBUG: onboardingWindow already exists, bringing to front")
+            window.makeKeyAndOrderFront(nil)
+            NSApp.activate(ignoringOtherApps: true)
+            return
+        }
+        
         NSApplication.shared.setActivationPolicy(.regular)
         EventManager.shared.pauseForOnboarding()
 
@@ -39,6 +110,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate {
         window.setContentSize(NSSize(width: 300, height: 400))
         window.minSize = NSSize(width: 300, height: 400)
         window.maxSize = NSSize(width: 300, height: 400)
+        window.title = NSLocalizedString("DragLocker セットアップ", comment: "オンボーディングウィンドウのタイトル") // タイトルを設定（アクセシビリティおよび判定用）
         window.titlebarAppearsTransparent = true
         window.titleVisibility = .hidden
         
@@ -55,6 +127,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate {
         window.contentView = hostingView
         window.center()
         window.delegate = self
+        window.isReleasedWhenClosed = false // 手動でnilにするためfalseに設定
         window.makeKeyAndOrderFront(nil)
         NSApp.activate(ignoringOtherApps: true)
 
@@ -97,11 +170,8 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate {
             print("DEBUG: resumeFromOnboarding called, isEnabled = \(EventManager.shared.isEnabled)")
             #endif
 
-            // @AppStorageがMenuBarExtraを挿入する時間を確保してからDockアイコンを非表示にする
-            DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
-                print("DEBUG: Setting activation policy to .accessory")
-                NSApplication.shared.setActivationPolicy(.accessory)
-            }
+            // ウィンドウの状態に合わせてDockアイコンを更新
+            self?.updateActivationPolicy()
         }
     }
 
@@ -110,6 +180,9 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate {
     func windowWillClose(_ notification: Notification) {
         guard let window = notification.object as? NSWindow,
               window == onboardingWindow else { return }
+
+        print("DEBUG: onboardingWindow is closing")
+        onboardingWindow = nil
 
         if !UserDefaults.standard.bool(forKey: "hasCompletedOnboarding") {
             NSApplication.shared.terminate(nil)
@@ -200,6 +273,22 @@ struct AppCommands: Commands {
             .keyboardShortcut(",")
             .disabled(!hasCompletedOnboarding)
         }
+
+        #if DEBUG
+        CommandGroup(after: .windowList) {
+            Button("オンボーディングを表示") {
+                print("DEBUG: 'Show Onboarding' menu item clicked")
+                DispatchQueue.main.async {
+                    if let appDelegate = AppDelegate.shared {
+                        print("DEBUG: AppDelegate found via shared, calling setupOnboarding()")
+                        appDelegate.setupOnboarding()
+                    } else {
+                        print("DEBUG: AppDelegate.shared is nil")
+                    }
+                }
+            }
+        }
+        #endif
     }
 }
 
@@ -296,5 +385,10 @@ class AboutWindowController: NSObject, NSWindowDelegate {
     func windowWillClose(_ notification: Notification) {
         self.window = nil // ウインドウへの参照を解除
         AboutWindowController.instance = nil // インスタンスを破棄してメモリを解放
+        
+        // AppDelegateに通知してDockアイコンの状態を更新させる
+        DispatchQueue.main.async {
+            AppDelegate.shared?.updateActivationPolicy()
+        }
     }
 }
