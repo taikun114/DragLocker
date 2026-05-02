@@ -20,6 +20,7 @@ struct GeneralSettingsTab: View {
                         .font(.subheadline)
                         .foregroundStyle(.secondary)
                 }
+                .accessibilityHint("Macのログイン時にDragLockerを自動で起動します。")
                 
                 HStack(alignment: .top, spacing: 12) {
                     VStack(alignment: .leading, spacing: 2) {
@@ -61,8 +62,12 @@ struct GeneralSettingsTab: View {
                             Text("ロックまでの時間")
                                 .foregroundStyle(isTimeEnabled ? .primary : .secondary)
                         }
+                        .accessibilityValue("\(lockDelay, format: .number.precision(.fractionLength(1))) 秒")
+                        .accessibilityHint("ドラッグロック開始までクリックし続ける時間を設定します。")
                         Text("\(lockDelay, format: .number.precision(.fractionLength(1))) 秒")
+                            .monospacedDigit()
                             .foregroundStyle(isTimeEnabled ? .secondary : .tertiary)
+                            .frame(width: 50, alignment: .trailing)
                     }
                     Text("ドラッグロック開始までクリックし続ける時間を設定します。")
                         .font(.subheadline)
@@ -79,8 +84,12 @@ struct GeneralSettingsTab: View {
                             Text("ロックまでの距離")
                                 .foregroundStyle(isDistanceEnabled ? .primary : .secondary)
                         }
+                        .accessibilityValue("\(eventManager.lockDistance, format: .number.precision(.fractionLength(0))) px")
+                        .accessibilityHint("ドラッグロック開始までドラッグし続ける距離を設定します。")
                         Text("\(eventManager.lockDistance, format: .number.precision(.fractionLength(0))) px")
+                            .monospacedDigit()
                             .foregroundStyle(isDistanceEnabled ? .secondary : .tertiary)
+                            .frame(width: 50, alignment: .trailing)
                     }
                     Text("ドラッグロック開始までドラッグし続ける距離を設定します。")
                         .font(.subheadline)
@@ -96,6 +105,7 @@ struct GeneralSettingsTab: View {
                         .font(.subheadline)
                         .foregroundStyle(.secondary)
                 }
+                .accessibilityHint("ドラッグロック中にEscキーを押してすべてのボタンのロックを解除します。")
             }
             
             Section(header: Text("状態")) {
@@ -196,6 +206,7 @@ struct GeneralSettingsTab: View {
                         .font(.subheadline)
                         .foregroundStyle(.secondary)
                 }
+                .accessibilityHint("ドラッグロックの切り替え時にシステム通知を表示します。")
             }
             
             Section(header: Text("権限")) {
@@ -278,10 +289,6 @@ struct GeneralSettingsTab: View {
             }
         }
         .formStyle(.grouped)
-        .tabItem {
-            Label("一般", systemImage: "gear")
-        }
-        .tag(SettingsTab.general)
         .onChange(of: lockDelay) { _, newValue in
             eventManager.lockDelay = newValue
         }

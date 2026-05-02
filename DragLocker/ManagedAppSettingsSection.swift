@@ -346,6 +346,7 @@ struct ManagedAppSettingsSection: View {
                 .font(.subheadline)
                 .foregroundStyle(.secondary)
         }
+        .accessibilityHint(Text(appListDescription))
         .pickerStyle(.menu)
     }
 
@@ -482,6 +483,7 @@ struct ManagedAppSettingsSection: View {
                     .font(.subheadline)
                     .foregroundStyle(.secondary)
             }
+            .accessibilityHint("Launchpadやメニューバー、通知パネルなどのシステムオーバーレイ上でドラッグロックしないようにします。")
             listModePicker
             managedAppListView
         } header: {

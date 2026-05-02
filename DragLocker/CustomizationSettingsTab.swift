@@ -32,6 +32,7 @@ struct CustomizationSettingsTab: View {
                         .font(.subheadline)
                         .foregroundStyle(.secondary)
                 }
+                .accessibilityHint("ドラッグロックされている間、マウスポインタ付近にアイコンを表示します。")
                 
                 Picker(selection: $eventManager.pointerIconStyle.animation(.spring(response: 0.3, dampingFraction: 0.8))) {
                     Section("シングルインジケーター") {
@@ -57,6 +58,7 @@ struct CustomizationSettingsTab: View {
                         .font(.subheadline)
                         .foregroundStyle(eventManager.isIconEnabled ? .secondary : .tertiary)
                 }
+                .accessibilityHint("ドラッグロック中にマウスポインタ付近に表示されるアイコンのスタイルを選択します。")
                 .labelStyle(.titleAndIcon)
                 .pickerStyle(.menu)
                 .disabled(!eventManager.isIconEnabled)
@@ -76,6 +78,7 @@ struct CustomizationSettingsTab: View {
                         .font(.subheadline)
                         .foregroundStyle(eventManager.isIconEnabled ? .secondary : .tertiary)
                 }
+                .accessibilityHint("アイコン表示時と非表示時に適用されるアニメーションを選択します。")
                 .pickerStyle(.menu)
                 .disabled(!eventManager.isIconEnabled)
             }
@@ -90,6 +93,7 @@ struct CustomizationSettingsTab: View {
                         .font(.subheadline)
                         .foregroundStyle(.secondary)
                 }
+                .accessibilityHint("ドラッグロックされた時と解除されたときにサウンドを再生します。")
                 
                 HStack(alignment: .top) {
                     Picker(selection: $eventManager.soundStyle.animation(.spring(response: 0.3, dampingFraction: 0.8))) {
@@ -148,9 +152,10 @@ struct CustomizationSettingsTab: View {
                         SoundManager.shared.loadSound(style: eventManager.soundStyle)
                         SoundManager.shared.preview(style: eventManager.soundStyle, volume: eventManager.soundVolume, isInverted: eventManager.isSoundInverted)
                     } label: {
-                        Image(systemName: "play.circle")
+                        Label("サウンドをプレビュー", systemImage: "play.circle")
                             .font(.title3)
                     }
+                    .labelStyle(.iconOnly)
                     .buttonStyle(.plain)
                     .foregroundStyle(eventManager.isSoundEnabled ? .secondary : .tertiary)
                     .disabled(!eventManager.isSoundEnabled)
@@ -177,8 +182,12 @@ struct CustomizationSettingsTab: View {
                                 .foregroundStyle(eventManager.isSoundEnabled && eventManager.soundStyle != .system ? .primary : .secondary)
                         }
                         .disabled(!eventManager.isSoundEnabled || eventManager.soundStyle == .system)
+                        .accessibilityValue(Text(eventManager.soundVolume, format: .percent.precision(.fractionLength(0))))
+                        .accessibilityHint("カスタムサウンドの再生音量を調整します。")
                         Text(eventManager.soundVolume, format: .percent.precision(.fractionLength(0)))
+                            .monospacedDigit()
                             .foregroundStyle((!eventManager.isSoundEnabled || eventManager.soundStyle == .system) ? .tertiary : .secondary)
+                            .frame(width: 50, alignment: .trailing)
                     }
                     Text("カスタムサウンドの再生音量を調整します。")
                         .font(.subheadline)
@@ -193,17 +202,10 @@ struct CustomizationSettingsTab: View {
                         .foregroundStyle(eventManager.isSoundEnabled && eventManager.soundStyle != .system ? .secondary : .tertiary)
                 }
                 .disabled(!eventManager.isSoundEnabled || eventManager.soundStyle == .system)
+                .accessibilityHint("ドラッグロックされた時と解除された時に再生されるサウンドを入れ替えます。")
             }
         }
         .formStyle(.grouped)
-        .tabItem {
-            if #available(macOS 26.0, *) {
-                Label("カスタマイズ", systemImage: "pointer.arrow.rays")
-            } else {
-                Label("カスタマイズ", systemImage: "cursorarrow.rays")
-            }
-        }
-        .tag(SettingsTab.customization)
         .alert("音声が長すぎます", isPresented: $showingAudioLengthError) {
             Button("OK", role: .cancel) { }
         } message: {
@@ -265,9 +267,10 @@ struct CustomizationSettingsTab: View {
                         )
                     }
                 } label: {
-                    Image(systemName: "play.circle")
+                    Label("\(title)をプレビュー", systemImage: "play.circle")
                         .font(.title3)
                 }
+                .labelStyle(.iconOnly)
                 .buttonStyle(.plain)
                 .foregroundStyle(isEnabled ? .secondary : .tertiary)
                 .disabled(!isEnabled || (isCustom && fileName == nil) || eventManager.soundStyle == .system)
@@ -287,7 +290,8 @@ struct CustomizationSettingsTab: View {
                     selectAudioFile(index: index)
                 }
                 .disabled(!isEnabled || !isCustom)
-                .help("Finderからオーディオファイルを選択します。")
+                .help("カスタムサウンドとして使用するオーディオファイルを選択します。")
+                .accessibilityHint("カスタムサウンドとして使用するオーディオファイルを選択します。")
                 
                 Button("削除…", role: .destructive) {
                     soundIndexToDelete = index
@@ -295,7 +299,8 @@ struct CustomizationSettingsTab: View {
                     showingDeleteSoundConfirmation = true
                 }
                 .disabled(!isEnabled || !isCustom || fileName == nil)
-                .help("設定されたカスタムオーディオを削除します。")
+                .help("カスタムサウンドとして設定されたオーディオファイルを削除します。")
+                .accessibilityHint("カスタムサウンドとして設定されたオーディオファイルを削除します。")
             }
         }
         .frame(maxWidth: .infinity)
@@ -600,12 +605,16 @@ struct CustomizationSettingsTab: View {
                             selectCustomIcon()
                         }
                         .disabled(eventManager.pointerIconStyle != .custom)
+                        .help("カスタムアイコンとして使用する画像ファイルを選択します。")
+                        .accessibilityHint("カスタムアイコンとして使用する画像ファイルを選択します。")
                         
                         Button("削除…", role: .destructive) {
                             iconNameToDelete = eventManager.customIconName ?? ""
                             showingDeleteIconConfirmation = true
                         }
                         .disabled(eventManager.pointerIconStyle != .custom || eventManager.customIconPath == nil || !eventManager.isIconEnabled)
+                        .help("カスタムアイコンとして設定された画像ファイルを削除します。")
+                        .accessibilityHint("カスタムアイコンとして設定された画像ファイルを削除します。")
                     }
                     .padding(.vertical, 16)
                     .disabled(!eventManager.isIconEnabled)
@@ -634,6 +643,7 @@ struct CustomizationSettingsTab: View {
                         step: 0.01,
                         label: { Text("大きさ").foregroundStyle(eventManager.isIconEnabled ? .primary : .secondary) }
                     )
+                    .accessibilityValue(Text(eventManager.customIconScale, format: .percent.precision(.fractionLength(0))))
                     Text(eventManager.customIconScale, format: .percent.precision(.fractionLength(0)))
                         .monospacedDigit()
                         .foregroundStyle(eventManager.isIconEnabled ? .secondary : .tertiary)
@@ -647,6 +657,7 @@ struct CustomizationSettingsTab: View {
                         step: 0.01,
                         label: { Text("不透明度").foregroundStyle(eventManager.isIconEnabled ? .primary : .secondary) }
                     )
+                    .accessibilityValue(Text(eventManager.customIconOpacity, format: .percent.precision(.fractionLength(0))))
                     Text(eventManager.customIconOpacity, format: .percent.precision(.fractionLength(0)))
                         .monospacedDigit()
                         .foregroundStyle(eventManager.isIconEnabled ? .secondary : .tertiary)
@@ -660,6 +671,8 @@ struct CustomizationSettingsTab: View {
                         step: 1,
                         label: { Text("Xオフセット").foregroundStyle(eventManager.isIconEnabled ? .primary : .secondary) }
                     )
+                    .accessibilityValue("\(Int(eventManager.customIconXOffset))")
+                    .accessibilityHint("アイコンの水平方向の表示位置を調整します。")
                     Text(Int(eventManager.customIconXOffset), format: .number)
                         .monospacedDigit()
                         .foregroundStyle(eventManager.isIconEnabled ? .secondary : .tertiary)
@@ -673,6 +686,8 @@ struct CustomizationSettingsTab: View {
                         step: 1,
                         label: { Text("Yオフセット").foregroundStyle(eventManager.isIconEnabled ? .primary : .secondary) }
                     )
+                    .accessibilityValue("\(Int(eventManager.customIconYOffset))")
+                    .accessibilityHint("アイコンの垂直方向の表示位置を調整します。")
                     Text(Int(eventManager.customIconYOffset), format: .number)
                         .monospacedDigit()
                         .foregroundStyle(eventManager.isIconEnabled ? .secondary : .tertiary)
@@ -687,6 +702,8 @@ struct CustomizationSettingsTab: View {
                     showingResetIconSettingsConfirmation = true
                 }
                 .disabled(!eventManager.isIconEnabled)
+                .help("大きさ、不透明度、Xオフセット、Yオフセットを既定値にリセットします。")
+                .accessibilityHint("大きさ、不透明度、Xオフセット、Yオフセットを既定値にリセットします。")
                 .alert("設定をリセットしますか？", isPresented: $showingResetIconSettingsConfirmation) {
                     Button("リセット", role: .destructive) {
                         eventManager.resetIconSettings()

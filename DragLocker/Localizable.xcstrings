@@ -130,6 +130,22 @@
         }
       }
     },
+    "%@をプレビュー" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Preview %@"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@をプレビュー"
+          }
+        }
+      }
+    },
     "%@をプレビュー再生します。" : {
       "localizations" : {
         "en" : {
@@ -145,6 +161,9 @@
           }
         }
       }
+    },
+    "%lld" : {
+      "shouldTranslate" : false
     },
     "8ビット" : {
       "comment" : "サウンドの種類：レトロなゲーム風の音",
@@ -309,23 +328,6 @@
         }
       }
     },
-    "DragLocker 設定" : {
-      "comment" : "設定画面のタイトル",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "DragLocker Settings"
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "DragLocker 設定"
-          }
-        }
-      }
-    },
     "DragLocker: 一時停止中" : {
       "comment" : "メニューバーのエクストラメニューにおける停止状態のラベル",
       "localizations" : {
@@ -420,22 +422,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Escキーですべてのロックを解除"
-          }
-        }
-      }
-    },
-    "Finderからオーディオファイルを選択します。" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Select an audio file from Finder."
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Finderからオーディオファイルを選択します。"
           }
         }
       }
@@ -603,6 +589,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "KeyboardShortcutsのGitHubページを開いてもよろしいですか？"
+          }
+        }
+      }
+    },
+    "Launchpadやメニューバー、通知パネルなどのシステムオーバーレイ上でドラッグロックしないようにします。" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Prevents drag lock on system overlays such as Launchpad, menu bars, and notification panels."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Launchpadやメニューバー、通知パネルなどのシステムオーバーレイ上でドラッグロックしないようにします。"
           }
         }
       }
@@ -817,6 +819,38 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "アイコンスタイル"
+          }
+        }
+      }
+    },
+    "アイコンの垂直方向の表示位置を調整します。" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Adjusts the vertical display position of the icon."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "アイコンの垂直方向の表示位置を調整します。"
+          }
+        }
+      }
+    },
+    "アイコンの水平方向の表示位置を調整します。" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Adjusts the horizontal display position of the icon."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "アイコンの水平方向の表示位置を調整します。"
           }
         }
       }
@@ -1065,6 +1099,70 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "カスタム"
+          }
+        }
+      }
+    },
+    "カスタムアイコンとして使用する画像ファイルを選択します。" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Select an image file to use as a custom icon."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "カスタムアイコンとして使用する画像ファイルを選択します。"
+          }
+        }
+      }
+    },
+    "カスタムアイコンとして設定された画像ファイルを削除します。" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Delete the image file set as a custom icon."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "カスタムアイコンとして設定された画像ファイルを削除します。"
+          }
+        }
+      }
+    },
+    "カスタムサウンドとして使用するオーディオファイルを選択します。" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Select an audio file to use as a custom sound."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "カスタムサウンドとして使用するオーディオファイルを選択します。"
+          }
+        }
+      }
+    },
+    "カスタムサウンドとして設定されたオーディオファイルを削除します。" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Delete the audio file set as a custom sound."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "カスタムサウンドとして設定されたオーディオファイルを削除します。"
           }
         }
       }
@@ -1427,6 +1525,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "サウンドの音量"
+          }
+        }
+      }
+    },
+    "サウンドをプレビュー" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Preview sound"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "サウンドをプレビュー"
           }
         }
       }
@@ -3301,6 +3415,22 @@
         }
       }
     },
+    "大きさ、不透明度、Xオフセット、Yオフセットを既定値にリセットします。" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Reset size, opacity, X offset, and Y offset to their default values."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "大きさ、不透明度、Xオフセット、Yオフセットを既定値にリセットします。"
+          }
+        }
+      }
+    },
     "大きさ、不透明度、Xオフセット、Yオフセットを既定値に戻してもよろしいですか？" : {
       "localizations" : {
         "en" : {
@@ -3743,22 +3873,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "設定…"
-          }
-        }
-      }
-    },
-    "設定されたカスタムオーディオを削除します。" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Deletes the configured custom audio."
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "設定されたカスタムオーディオを削除します。"
           }
         }
       }

@@ -394,6 +394,8 @@ struct OnboardingView: View {
                         Text("ロックまでの時間")
                     }
                     .labelsHidden()
+                    .accessibilityValue("\(eventManager.lockDelay, format: .number.precision(.fractionLength(1))) 秒")
+                    .accessibilityHint("マウスボタンを押し続けてからロックされるまでの時間。")
                         .help("マウスボタンを押し続けてからロックされるまでの時間。")
                 }
                 .disabled(eventManager.lockType == .distance)
@@ -412,6 +414,8 @@ struct OnboardingView: View {
                         Text("ロックまでの距離")
                     }
                     .labelsHidden()
+                    .accessibilityValue("\(eventManager.lockDistance, format: .number.precision(.fractionLength(0))) px")
+                    .accessibilityHint("マウスボタンを押してからロックされるまでの移動距離。")
                         .help("マウスボタンを押してからロックされるまでの移動距離。")
                 }
                 .disabled(eventManager.lockType == .time)

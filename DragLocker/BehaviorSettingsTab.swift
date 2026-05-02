@@ -24,13 +24,5 @@ struct BehaviorSettingsTab: View {
             )
         }
         .formStyle(.grouped)
-        .tabItem {
-            if #available(macOS 26.0, *) {
-                Label("動作", systemImage: "pointer.arrow.and.square.on.square.dashed")
-            } else {
-                Label("動作", systemImage: "cursorarrow.and.square.on.square.dashed")
-            }
-        }
-        .tag(SettingsTab.behavior)
     }
 }

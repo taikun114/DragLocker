@@ -14,12 +14,27 @@ struct SettingsView: View {
     @Binding var selectedTab: SettingsTab
     
     var body: some View {
+        let customizationIcon = if #available(macOS 26.0, *) { "pointer.arrow.rays" } else { "cursorarrow.rays" }
+        let behaviorIcon = if #available(macOS 26.0, *) { "pointer.arrow.and.square.on.square.dashed" } else { "cursorarrow.and.square.on.square.dashed" }
+        
         TabView(selection: $selectedTab) {
             GeneralSettingsTab()
+                .tabItem {
+                    Label("一般", systemImage: "gear")
+                }
+                .tag(SettingsTab.general)
             
             CustomizationSettingsTab()
+                .tabItem {
+                    Label("カスタマイズ", systemImage: customizationIcon)
+                }
+                .tag(SettingsTab.customization)
             
             BehaviorSettingsTab()
+                .tabItem {
+                    Label("動作", systemImage: behaviorIcon)
+                }
+                .tag(SettingsTab.behavior)
             
             InfoView()
                 .tabItem {
@@ -27,7 +42,6 @@ struct SettingsView: View {
                 }
                 .tag(SettingsTab.info)
         }
-        .navigationTitle("DragLocker 設定")
         .onAppear {
             // 設定画面を開くたびに「一般」タブにリセットする
             selectedTab = .general
