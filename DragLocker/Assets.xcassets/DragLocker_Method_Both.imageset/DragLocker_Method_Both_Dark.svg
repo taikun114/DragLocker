@@ -61,7 +61,7 @@
                         </g>
                     </g>
                     <g transform="matrix(1,0,0,2,-400,-1438)">
-                        <rect x="1100" y="1358" width="120" height="2" style="fill:white;"/>
+                        <rect x="1100" y="1358" width="120" height="2" style="fill:rgb(165,196,221);"/>
                     </g>
                 </g>
             </g>
