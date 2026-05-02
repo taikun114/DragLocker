@@ -380,39 +380,42 @@ struct OnboardingView: View {
             .padding(.vertical)
 
             VStack(spacing: 16) {
-                if eventManager.lockType == .time || eventManager.lockType == .both {
-                    VStack(spacing: 4) {
-                        HStack {
-                            Text("ロックまでの時間")
-                                .font(.subheadline)
-                            Spacer()
-                            Text("\(eventManager.lockDelay, format: .number.precision(.fractionLength(1))) 秒")
-                                .font(.subheadline)
-                                .foregroundStyle(.secondary)
-                        }
-                        Slider(value: $eventManager.lockDelay, in: 0.2...3.0, step: 0.1)
-                            .labelsHidden()
-                            .help("マウスボタンを押し続けてからロックされるまでの時間。")
+                VStack(spacing: 4) {
+                    HStack {
+                        Text("ロックまでの時間")
+                            .font(.subheadline)
+                            .foregroundStyle(eventManager.lockType == .distance ? .secondary : .primary)
+                        Spacer()
+                        Text("\(eventManager.lockDelay, format: .number.precision(.fractionLength(1))) 秒")
+                            .font(.subheadline)
+                            .foregroundStyle(eventManager.lockType == .distance ? .tertiary : .secondary)
                     }
+                    Slider(value: $eventManager.lockDelay, in: 0.2...3.0, step: 0.1) {
+                        Text("ロックまでの時間")
+                    }
+                    .labelsHidden()
+                        .help("マウスボタンを押し続けてからロックされるまでの時間。")
                 }
+                .disabled(eventManager.lockType == .distance)
 
-                if eventManager.lockType == .distance || eventManager.lockType == .both {
-                    VStack(spacing: 4) {
-                        HStack {
-                            Text("ロックまでの距離")
-                                .font(.subheadline)
-                            Spacer()
-                            Text("\(eventManager.lockDistance, format: .number.precision(.fractionLength(0))) px")
-                                .font(.subheadline)
-                                .foregroundStyle(.secondary)
-                        }
-                        Slider(value: $eventManager.lockDistance, in: 10...500, step: 10)
-                            .labelsHidden()
-                            .help("マウスボタンを押してからロックされるまでの移動距離。")
+                VStack(spacing: 4) {
+                    HStack {
+                        Text("ロックまでの距離")
+                            .font(.subheadline)
+                            .foregroundStyle(eventManager.lockType == .time ? .secondary : .primary)
+                        Spacer()
+                        Text("\(eventManager.lockDistance, format: .number.precision(.fractionLength(0))) px")
+                            .font(.subheadline)
+                            .foregroundStyle(eventManager.lockType == .time ? .tertiary : .secondary)
                     }
+                    Slider(value: $eventManager.lockDistance, in: 10...500, step: 10) {
+                        Text("ロックまでの距離")
+                    }
+                    .labelsHidden()
+                        .help("マウスボタンを押してからロックされるまでの移動距離。")
                 }
+                .disabled(eventManager.lockType == .time)
             }
-            .animation(.easeInOut(duration: 0.2), value: eventManager.lockType)
 
             Spacer(minLength: 0)
 

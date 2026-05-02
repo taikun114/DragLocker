@@ -1035,22 +1035,6 @@
         }
       }
     },
-    "オンボーディングを表示" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Show Onboarding"
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "オンボーディングを表示"
-          }
-        }
-      }
-    },
     "カスタマイズ" : {
       "comment" : "設定画面のカスタマイズタブのラベル",
       "localizations" : {

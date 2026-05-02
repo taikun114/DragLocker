@@ -276,7 +276,7 @@ struct AppCommands: Commands {
 
         #if DEBUG
         CommandGroup(after: .windowList) {
-            Button("オンボーディングを表示") {
+            Button(action: {
                 print("DEBUG: 'Show Onboarding' menu item clicked")
                 DispatchQueue.main.async {
                     if let appDelegate = AppDelegate.shared {
@@ -286,6 +286,8 @@ struct AppCommands: Commands {
                         print("DEBUG: AppDelegate.shared is nil")
                     }
                 }
+            }) {
+                Label("DEBUG MENU: Show Onboarding", systemImage: "hammer.fill")
             }
         }
         #endif
