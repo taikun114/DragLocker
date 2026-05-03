@@ -839,3 +839,9 @@ struct CustomizationSettingsTab: View {
         }
     }
 }
+
+#Preview {
+    CustomizationSettingsTab()
+        .environmentObject(EventManager.shared)
+        .frame(width: 450, height: 450)
+}

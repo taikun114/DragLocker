@@ -119,58 +119,59 @@ struct ManagedAppPickerPopover: View {
         ZStack {
             ScrollViewReader { proxy in
                 ScrollView {
-                    VStack(alignment: .leading) {
+                    VStack(alignment: .leading, spacing: 0) {
                         // スクロール位置の基準点
                         Color.clear
                             .frame(height: 0)
                             .id("top")
 
-                        if filteredRunningApplications.isEmpty {
-                            Text("追加できる実行中のアプリが見つかりません。")
-                                .font(.subheadline)
-                                .foregroundStyle(.secondary)
-                                .frame(maxWidth: .infinity, alignment: .leading)
-                                .padding(.vertical, 6)
-                        } else {
-                            ForEach(filteredRunningApplications, id: \.processIdentifier) { app in
-                                Button {
-                                    if let bundleIdentifier = app.bundleIdentifier {
-                                        onSelectRunningApplication(bundleIdentifier)
-                                    } else if let executablePath = app.executableURL?.path {
-                                        onSelectRunningApplication(executablePath)
-                                    }
-                                } label: {
-                                    HStack {
-                                        Image(nsImage: app.icon ?? NSImage())
-                                            .resizable()
-                                            .frame(width: 16, height: 16)
-                                        
-                                        let name = displayName(for: app)
-                                        let isGenericName = name.lowercased() == "java"
-                                        
-                                        VStack(alignment: .leading, spacing: 0) {
-                                            Text(name)
-                                            if isGenericName, let path = app.executableURL?.path {
-                                                Text(path)
-                                                    .font(.caption2)
-                                                    .foregroundStyle(.secondary)
-                                                    .lineLimit(1)
-                                                    .truncationMode(.middle)
-                                            }
+                        VStack(alignment: .leading, spacing: 16) {
+                            if filteredRunningApplications.isEmpty {
+                                Text("追加できる実行中のアプリが見つかりません。")
+                                    .font(.subheadline)
+                                    .foregroundStyle(.secondary)
+                                    .frame(maxWidth: .infinity, alignment: .leading)
+                            } else {
+                                ForEach(filteredRunningApplications, id: \.processIdentifier) { app in
+                                    Button {
+                                        if let bundleIdentifier = app.bundleIdentifier {
+                                            onSelectRunningApplication(bundleIdentifier)
+                                        } else if let executablePath = app.executableURL?.path {
+                                            onSelectRunningApplication(executablePath)
                                         }
-                                        
-                                        Spacer()
-                                        Text(String(describing: app.processIdentifier))
-                                            .font(.caption)
-                                            .foregroundStyle(.secondary)
+                                    } label: {
+                                        HStack {
+                                            Image(nsImage: app.icon ?? NSImage())
+                                                .resizable()
+                                                .frame(width: 16, height: 16)
+                                            
+                                            let name = displayName(for: app)
+                                            let isGenericName = name.lowercased() == "java"
+                                            
+                                            VStack(alignment: .leading, spacing: 0) {
+                                                Text(name)
+                                                    .lineLimit(2)
+                                                if isGenericName, let path = app.executableURL?.path {
+                                                    Text(path)
+                                                        .font(.caption2)
+                                                        .foregroundStyle(.secondary)
+                                                        .lineLimit(1)
+                                                        .truncationMode(.middle)
+                                                }
+                                            }
+                                            
+                                            Spacer()
+                                            Text(String(describing: app.processIdentifier))
+                                                .font(.caption)
+                                                .foregroundStyle(.secondary)
+                                        }
+                                        .contentShape(Rectangle())
                                     }
-                                    .contentShape(Rectangle())
+                                    .buttonStyle(.plain)
+                                    .help(app.bundleIdentifier != nil ? 
+                                          String(localized: "PID: \(String(app.processIdentifier)), \(displayName(for: app))", comment: "アプリ追加リストのツールチップ（バンドルIDあり）") : 
+                                          String(localized: "PID: \(String(app.processIdentifier)), \(displayName(for: app)) (\(app.executableURL?.path ?? ""))", comment: "アプリ追加リストのツールチップ（バンドルIDなし・パス表示）"))
                                 }
-                                .buttonStyle(.plain)
-                                .help(app.bundleIdentifier != nil ? 
-                                      String(localized: "PID: \(String(app.processIdentifier)), \(displayName(for: app))", comment: "アプリ追加リストのツールチップ（バンドルIDあり）") : 
-                                      String(localized: "PID: \(String(app.processIdentifier)), \(displayName(for: app)) (\(app.executableURL?.path ?? ""))", comment: "アプリ追加リストのツールチップ（バンドルIDなし・パス表示）"))
-                                .padding(.vertical, 4)
                             }
                         }
                     }
@@ -206,7 +207,7 @@ struct ManagedAppPickerPopover: View {
                     finderButton
                 }
         } else {
-            VStack(alignment: .leading) {
+            VStack(alignment: .leading, spacing: 0) {
                 headerBar
                 applicationsScrollView
                 finderButton

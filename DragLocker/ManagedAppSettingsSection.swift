@@ -159,6 +159,7 @@ struct ManagedAppSettingsSection: View {
 
     @State private var showingRemoveMultipleManagedAppsConfirmation = false
     @State private var pendingContextMenuRemovalIds: Set<String> = []
+    @State private var isShowingSystemOverlayHelpPopover = false
 
     private var appListDescription: LocalizedStringKey {
         switch eventManager.appListMode {
@@ -362,6 +363,9 @@ struct ManagedAppSettingsSection: View {
                 }
             }
         }
+        .onTapGesture {
+            selectedManagedAppIds.removeAll()
+        }
     }
 
     private var addButton: some View {
@@ -460,10 +464,10 @@ struct ManagedAppSettingsSection: View {
     private var managedAppListView: some View {
         managedAppList
             .onDrop(of: [.fileURL], isTargeted: nil, perform: handleDroppedAppProviders)
-            .frame(minHeight: 150)
+            .frame(minHeight: 100)
             .scrollContentBackground(.hidden)
             .padding(.bottom, 24)
-            .accessibilityLabel("特定のアプリでの動作リスト")
+            .accessibilityLabel(eventManager.appListMode == .exclude ? "除外するアプリリスト" : "限定するアプリリスト")
             .alert("アプリではありません", isPresented: $showingInvalidAppAlert) {
                 Button("OK") { }
             } message: {
@@ -477,17 +481,30 @@ struct ManagedAppSettingsSection: View {
 
     var body: some View {
         Section {
-            Toggle(isOn: $eventManager.isIgnoreSystemOverlaysEnabled) {
-                Text("システムオーバーレイを無視")
-                Text("Launchpadやメニューバー、通知パネルなどのシステムオーバーレイ上でドラッグロックしないようにします（ただし、Dockはシステムの制約により除外することができません）。")
-                    .font(.subheadline)
-                    .foregroundStyle(.secondary)
-            }
-            .accessibilityHint("Launchpadやメニューバー、通知パネルなどのシステムオーバーレイ上でドラッグロックしないようにします。")
             listModePicker
             managedAppListView
         } header: {
-            Text("特定のアプリでの動作")
+            Text("アプリの除外と限定")
+        } footer: {
+            HStack {
+                Spacer()
+                Button {
+                    isShowingSystemOverlayHelpPopover = true
+                } label: {
+                    Label("システムオーバーレイについて", systemImage: "square.stack.3d.forward.dottedline.fill")
+                }
+                .offset(x: {
+                    if #available(macOS 26.0, *) {
+                        return 10
+                    } else {
+                        return 0
+                    }
+                }())
+                .popover(isPresented: $isShowingSystemOverlayHelpPopover, arrowEdge: .trailing) {
+                    SystemOverlayHelpPopover()
+                        .environmentObject(eventManager)
+                }
+            }
         }
         .alert("すべてのアプリを削除", isPresented: $showingClearAllManagedAppsConfirmation) {
             Button("削除", role: .destructive) {
@@ -540,5 +557,215 @@ struct ManagedAppSettingsSection: View {
         .onChange(of: colorScheme) { _, _ in
             ManagedApplicationDisplayResolver.shared.clearCache()
         }
+    }
+}
+
+private struct SystemOverlayItem: Identifiable {
+    var id: String { path }
+    let description: LocalizedStringKey
+    let path: String
+    let bundleIdentifier: String?
+    
+    // パスから実行ファイル名（プロセス名）を動的に取得
+    var processName: String {
+        URL(fileURLWithPath: path).lastPathComponent
+    }
+    
+    // システムから解決された表示名を取得（フォールバックはプロセス名）
+    var displayName: String {
+        ManagedApplicationDisplayResolver.shared.resolvedInfo(for: path)?.name ?? processName
+    }
+}
+
+struct SystemOverlayHelpPopover: View {
+    @EnvironmentObject var eventManager: EventManager
+    @Environment(\.colorScheme) var colorScheme
+    
+    private var overlayItems: [SystemOverlayItem] {
+        var items = [
+            SystemOverlayItem(
+                description: spotlightDescription,
+                path: "/System/Library/CoreServices/Spotlight.app/Contents/MacOS/Spotlight",
+                bundleIdentifier: "com.apple.Spotlight"
+            ),
+            SystemOverlayItem(
+                description: "アクセシビリティキーボードやスイッチコントロールなどのアクセシビリティオーバーレイ",
+                path: "/System/Library/Input Methods/Assistive Control.app/Contents/MacOS/Assistive Control",
+                bundleIdentifier: "com.apple.inputmethod.AssistiveControl"
+            ),
+            SystemOverlayItem(
+                description: controlCenterDescription,
+                path: "/System/Library/CoreServices/ControlCenter.app/Contents/MacOS/ControlCenter",
+                bundleIdentifier: "com.apple.controlcenter"
+            ),
+            SystemOverlayItem(
+                description: "Dockアイコン上のメニュー",
+                path: "/System/Library/CoreServices/Dock.app/Contents/XPCServices/DockHelper.xpc/Contents/MacOS/DockHelper",
+                bundleIdentifier: "com.apple.dock.helper"
+            ),
+            SystemOverlayItem(
+                description: "アプリケーションの強制終了ウィンドウなど",
+                path: "/System/Library/CoreServices/loginwindow.app/Contents/MacOS/loginwindow",
+                bundleIdentifier: "com.apple.loginwindow"
+            )
+        ]
+        
+        if #unavailable(macOS 26.0) {
+            items.append(SystemOverlayItem(
+                description: "Launchpadなど",
+                path: "/System/Library/CoreServices/Dock.app/Contents/MacOS/Dock",
+                bundleIdentifier: "com.apple.dock"
+            ))
+        }
+        
+        return items.sorted { $0.displayName.localizedCaseInsensitiveCompare($1.displayName) == .orderedAscending }
+    }
+    
+    private var spotlightDescription: LocalizedStringKey {
+        if #available(macOS 26.0, *) {
+            return "Spotlight検索、アプリピッカーなど"
+        } else {
+            return "Spotlight検索など"
+        }
+    }
+    
+    private var controlCenterDescription: LocalizedStringKey {
+        if #available(macOS 26.0, *) {
+            return "コントロールセンターやメニューバーアイテムなど"
+        } else {
+            return "コントロールセンターなど"
+        }
+    }
+    
+    private var footerDescription: LocalizedStringKey {
+        if #available(macOS 26.0, *) {
+            return "コンテキストメニューは各アプリのプロセスが所有しているため、そのアプリを除外することでコンテキストメニューも除外されます。\nなお、システムの制約によりDock自体や通知センターを除外することはできません。"
+        } else {
+            return "コンテキストメニューやメニューバーアイテムは各アプリのプロセスが所有しているため、そのアプリを除外することでコンテキストメニューも除外されます。\nなお、システムの制約によりDock自体や通知センターを除外することはできません。"
+        }
+    }
+    
+    private var headerBar: some View {
+        VStack(alignment: .leading, spacing: 4) {
+            Text("システムオーバーレイについて")
+                .font(.headline)
+                .foregroundStyle(.primary)
+            
+            Text("システムオーバーレイを除外したい場合、オーバーレイを管理しているプロセスを除外する必要があります。\n一般的なオーバーレイプロセスは以下の通りです。")
+                .font(.subheadline)
+                .foregroundStyle(.secondary)
+        }
+        .padding()
+        .frame(maxWidth: .infinity, alignment: .leading)
+    }
+    
+    private var footerBar: some View {
+        Text(footerDescription)
+            .font(.caption)
+            .foregroundStyle(.secondary)
+            .padding()
+            .frame(maxWidth: .infinity, alignment: .leading)
+    }
+    
+    private var itemsListView: some View {
+        VStack(spacing: 12) {
+            ForEach(overlayItems) { item in
+                SystemOverlayItemRow(item: item)
+                if item.id != overlayItems.last?.id {
+                    Divider()
+                        .padding(.horizontal)
+                }
+            }
+        }
+    }
+    
+    @ViewBuilder
+    private var contentView: some View {
+        if #available(macOS 26.0, *) {
+            ScrollView {
+                itemsListView
+            }
+            .safeAreaBar(edge: .top, spacing: 0) {
+                headerBar
+            }
+            .safeAreaBar(edge: .bottom, spacing: 0) {
+                footerBar
+            }
+        } else {
+            VStack(spacing: 0) {
+                headerBar
+                ScrollView {
+                    itemsListView
+                }
+                footerBar
+            }
+        }
+    }
+    
+    var body: some View {
+        contentView
+            .frame(width: 350, height: 400)
+    }
+}
+
+private struct SystemOverlayItemRow: View {
+    @EnvironmentObject var eventManager: EventManager
+    let item: SystemOverlayItem
+    
+    var isAdded: Bool {
+        if let bid = item.bundleIdentifier, eventManager.managedAppBundleIdentifiers.contains(bid) {
+            return true
+        }
+        return eventManager.managedAppBundleIdentifiers.contains(item.path)
+    }
+    
+    var body: some View {
+        let appInfo = ManagedApplicationDisplayResolver.shared.resolvedInfo(for: item.path)
+        
+        return HStack(alignment: .top, spacing: 8) {
+            if let icon = appInfo?.icon {
+                Image(nsImage: icon)
+                    .resizable()
+                    .scaledToFit()
+                    .frame(width: 24, height: 24)
+            } else {
+                Image(nsImage: NSWorkspace.shared.icon(forFile: item.path))
+                    .resizable()
+                    .scaledToFit()
+                    .frame(width: 24, height: 24)
+            }
+            
+            VStack(alignment: .leading, spacing: 2) {
+                Text(item.displayName)
+                    .font(.system(.body, design: .monospaced))
+                    .fontWeight(.medium)
+                    .foregroundStyle(.primary)
+                
+                Text(item.description)
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+            }
+            
+            Spacer(minLength: 0)
+            
+            if isAdded {
+                Button(action: {}) {
+                    Label("追加済み", systemImage: "checkmark")
+                }
+                .disabled(true)
+                .buttonStyle(.bordered)
+                .help(String(localized: "\(item.displayName)はすでに\(eventManager.appListMode == .exclude ? "除外するアプリ" : "限定するアプリ")リストに追加されています。", comment: "システムオーバーレイ追加ボタンのツールチップ（追加済み）"))
+            } else {
+                Button(action: {
+                    // バンドルIDがある場合は優先的に使用、なければパスを使用
+                    eventManager.addManagedApp(bundleIdentifier: item.bundleIdentifier ?? item.path)
+                }) {
+                    Label("追加", systemImage: "plus")
+                }
+                .buttonStyle(.bordered)
+                .help(String(localized: "\(eventManager.appListMode == .exclude ? "除外するアプリ" : "限定するアプリ")リストに\(item.displayName)を追加します。", comment: "システムオーバーレイ追加ボタンのツールチップ（追加）"))
+            }
+        }
+        .padding(.horizontal)
     }
 }

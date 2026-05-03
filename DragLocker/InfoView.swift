@@ -302,4 +302,5 @@ struct InfoView: View {
 
 #Preview {
     InfoView()
+        .frame(width: 450, height: 450)
 }

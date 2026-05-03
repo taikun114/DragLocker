@@ -114,6 +114,23 @@
         }
       }
     },
+    "%@はすでに%@リストに追加されています。" : {
+      "comment" : "システムオーバーレイ追加ボタンのツールチップ（追加済み）",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$@ is already added to the %2$@ list."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$@はすでに%2$@リストに追加されています。"
+          }
+        }
+      }
+    },
     "%@ボタンをドラッグロックの対象にします。" : {
       "localizations" : {
         "en" : {
@@ -126,6 +143,23 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "%@ボタンをドラッグロックの対象にします。"
+          }
+        }
+      }
+    },
+    "%@リストに%@を追加します。" : {
+      "comment" : "システムオーバーレイ追加ボタンのツールチップ（追加）",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Adds %2$@ to the %1$@ list."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@リストに%@を追加します。"
           }
         }
       }
@@ -291,6 +325,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Discussionページへのリンクを開きます。"
+          }
+        }
+      }
+    },
+    "Dockアイコン上のメニュー" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Menus on Dock icons"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dockアイコン上のメニュー"
           }
         }
       }
@@ -593,34 +643,18 @@
         }
       }
     },
-    "Launchpadやメニューバー、通知パネルなどのシステムオーバーレイ上でドラッグロックしないようにします。" : {
+    "Launchpadなど" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Prevents drag lock on system overlays such as Launchpad, menu bars, and notification panels."
+            "value" : "Launchpad, etc."
           }
         },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Launchpadやメニューバー、通知パネルなどのシステムオーバーレイ上でドラッグロックしないようにします。"
-          }
-        }
-      }
-    },
-    "Launchpadやメニューバー、通知パネルなどのシステムオーバーレイ上でドラッグロックしないようにします（ただし、Dockはシステムの制約により除外することができません）。" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Prevents drag lock over system overlays like Launchpad, the menu bar, or notifications (note: the Dock cannot be excluded due to system limitations)."
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Launchpadやメニューバー、通知パネルなどのシステムオーバーレイ上でドラッグロックしないようにします（ただし、Dockはシステムの制約により除外することができません）。"
+            "value" : "Launchpadなど"
           }
         }
       }
@@ -753,6 +787,38 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "PID: %1$@、%2$@（%3$@）"
+          }
+        }
+      }
+    },
+    "Spotlight検索、アプリピッカーなど" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Spotlight Search, App Picker, etc."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Spotlight検索、アプリピッカーなど"
+          }
+        }
+      }
+    },
+    "Spotlight検索など" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Spotlight Search, etc."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Spotlight検索など"
           }
         }
       }
@@ -937,6 +1003,22 @@
         }
       }
     },
+    "アクセシビリティキーボードやスイッチコントロールなどのアクセシビリティオーバーレイ" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Accessibility overlays such as Accessibility Keyboard and Switch Control"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "アクセシビリティキーボードやスイッチコントロールなどのアクセシビリティオーバーレイ"
+          }
+        }
+      }
+    },
     "アクセシビリティ権限が必要" : {
       "localizations" : {
         "en" : {
@@ -986,6 +1068,22 @@
         }
       }
     },
+    "アプリケーションの強制終了ウィンドウなど" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Force Quit Applications window, etc."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "アプリケーションの強制終了ウィンドウなど"
+          }
+        }
+      }
+    },
     "アプリではありません" : {
       "comment" : "無効なファイルがドロップされた際のアラートタイトル",
       "localizations" : {
@@ -999,6 +1097,23 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "アプリではありません"
+          }
+        }
+      }
+    },
+    "アプリの除外と限定" : {
+      "comment" : "アプリフィルタリングセクションのヘッダー",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "App Exclusion and Limitation"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "アプリの除外と限定"
           }
         }
       }
@@ -1414,6 +1529,70 @@
         }
       }
     },
+    "コンテキストメニューは各アプリのプロセスが所有しているため、そのアプリを除外することでコンテキストメニューも除外されます。\nなお、システムの制約によりDock自体や通知センターを除外することはできません。" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Context menus are owned by each application's process, so excluding that application will also exclude its context menu.\nNote: Due to system limitations, the Dock and Notification Center cannot be excluded."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "コンテキストメニューは各アプリのプロセスが所有しているため、そのアプリを除外することでコンテキストメニューも除外されます。\nなお、システムの制約によりDock自体や通知センターを除外することはできません。"
+          }
+        }
+      }
+    },
+    "コンテキストメニューやメニューバーアイテムは各アプリのプロセスが所有しているため、そのアプリを除外することでコンテキストメニューも除外されます。\nなお、システムの制約によりDock自体や通知センターを除外することはできません。" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Context menus and menu bar items are owned by each application's process, so excluding that application will also exclude them.\nNote: Due to system limitations, the Dock and Notification Center cannot be excluded."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "コンテキストメニューやメニューバーアイテムは各アプリのプロセスが所有しているため、そのアプリを除外することでコンテキストメニューも除外されます。\nなお、システムの制約によりDock自体や通知センターを除外することはできません。"
+          }
+        }
+      }
+    },
+    "コントロールセンターなど" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Control Center, etc."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "コントロールセンターなど"
+          }
+        }
+      }
+    },
+    "コントロールセンターやメニューバーアイテムなど" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Control Center, menu bar items, etc."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "コントロールセンターやメニューバーアイテムなど"
+          }
+        }
+      }
+    },
     "サウンド" : {
       "comment" : "設定画面のサウンドセクションヘッダー",
       "localizations" : {
@@ -1612,18 +1791,34 @@
         }
       }
     },
-    "システムオーバーレイを無視" : {
+    "システムオーバーレイについて" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Ignore System Overlays"
+            "value" : "About System Overlays"
           }
         },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "システムオーバーレイを無視"
+            "value" : "システムオーバーレイについて"
+          }
+        }
+      }
+    },
+    "システムオーバーレイを除外したい場合、オーバーレイを管理しているプロセスを除外する必要があります。\n一般的なオーバーレイプロセスは以下の通りです。" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "To exclude system overlays, you need to exclude the processes that manage them.\nCommon overlay processes are as follows."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "システムオーバーレイを除外したい場合、オーバーレイを管理しているプロセスを除外する必要があります。\n一般的なオーバーレイプロセスは以下の通りです。"
           }
         }
       }
@@ -3382,23 +3577,6 @@
         }
       }
     },
-    "含める" : {
-      "comment" : "アプリフィルタリングのモード：リスト内のアプリのみをロック対象にする",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Include"
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "含める"
-          }
-        }
-      }
-    },
     "大きさ" : {
       "localizations" : {
         "en" : {
@@ -3675,40 +3853,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "次へ"
-          }
-        }
-      }
-    },
-    "特定のアプリでの動作" : {
-      "comment" : "アプリフィルタリングセクションのヘッダー",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "App-Specific Behavior"
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "特定のアプリでの動作"
-          }
-        }
-      }
-    },
-    "特定のアプリでの動作リスト" : {
-      "comment" : "アプリリストのアクセシビリティラベル",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "App-Specific Behavior List"
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "特定のアプリでの動作リスト"
           }
         }
       }
@@ -4042,6 +4186,22 @@
         }
       }
     },
+    "追加済み" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Added"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "追加済み"
+          }
+        }
+      }
+    },
     "通知" : {
       "localizations" : {
         "en" : {
@@ -4204,6 +4364,40 @@
         }
       }
     },
+    "限定する" : {
+      "comment" : "アプリフィルタリングのモード：リスト内のアプリのみをロック対象にする",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Limit to"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "限定する"
+          }
+        }
+      }
+    },
+    "限定するアプリリスト" : {
+      "comment" : "アプリリストのアクセシビリティラベル",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Limited App List"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "限定するアプリリスト"
+          }
+        }
+      }
+    },
     "除外する" : {
       "comment" : "アプリフィルタリングのモード：リスト内のアプリをロック対象から外す",
       "localizations" : {
@@ -4217,6 +4411,23 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "除外する"
+          }
+        }
+      }
+    },
+    "除外するアプリリスト" : {
+      "comment" : "アプリリストのアクセシビリティラベル",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Excluded App List"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "除外するアプリリスト"
           }
         }
       }

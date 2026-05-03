@@ -388,3 +388,9 @@ struct GeneralSettingsTab: View {
         .help(Text("\(String(localized: title))ボタンをドラッグロックの対象にします。"))
     }
 }
+
+#Preview {
+    GeneralSettingsTab()
+        .environmentObject(EventManager.shared)
+        .frame(width: 450, height: 450)
+}

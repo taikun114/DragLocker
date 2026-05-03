@@ -172,7 +172,7 @@ enum AppListMode: String, CaseIterable, Sendable {
     var localizedName: LocalizedStringResource {
         switch self {
         case .exclude: return LocalizedStringResource("除外する", comment: "アプリフィルタリングのモード：リスト内のアプリをロック対象から外す")
-        case .include: return LocalizedStringResource("含める", comment: "アプリフィルタリングのモード：リスト内のアプリのみをロック対象にする")
+        case .include: return LocalizedStringResource("限定する", comment: "アプリフィルタリングのモード：リスト内のアプリのみをロック対象にする")
         }
     }
 }
@@ -460,11 +460,7 @@ class EventManager: NSObject, ObservableObject {
         }
     }
 
-    @Published var isIgnoreSystemOverlaysEnabled: Bool = false {
-        didSet {
-            UserDefaults.standard.set(isIgnoreSystemOverlaysEnabled, forKey: "isIgnoreSystemOverlaysEnabled")
-        }
-    }
+
 
     @Published var isUnlockAllWithEscEnabled: Bool = true {
         didSet {
@@ -526,7 +522,7 @@ class EventManager: NSObject, ObservableObject {
             self.appListMode = .exclude
         }
 
-        self.isIgnoreSystemOverlaysEnabled = UserDefaults.standard.bool(forKey: "isIgnoreSystemOverlaysEnabled")
+
 
         if UserDefaults.standard.object(forKey: "isUnlockAllWithEscEnabled") == nil {
             self.isUnlockAllWithEscEnabled = true
@@ -909,19 +905,40 @@ class EventManager: NSObject, ObservableObject {
                 if bounds.contains(location) {
                     let layer = windowInfo[kCGWindowLayer as String] as? Int ?? 0
                     let alpha = windowInfo[kCGWindowAlpha as String] as? Double ?? 1.0
+                    
+                    // アルファ値が0のウインドウ（不可視）は除外する
+                    if alpha <= 0 {
+                        continue
+                    }
+                    
                     let ownerName = windowInfo[kCGWindowOwnerName as String] as? String
                     let windowName = windowInfo[kCGWindowName as String] as? String
                     
-                    // デバッグ用: 座標も一緒に出力
+                    // デバッグ用: 座標とウインドウサイズを出力
                     #if DEBUG
-                    print("[Debug] Window at \(location): owner='\(ownerName ?? "n/a")', layer=\(layer), alpha=\(alpha), name='\(windowName ?? "n/a")'")
+                    print("[Debug] Window at \(location): owner='\(ownerName ?? "n/a")', layer=\(layer), alpha=\(alpha), bounds=\(bounds), name='\(windowName ?? "n/a")'")
                     #endif
                     
                     let pid = pid_t(windowPID)
+                    let runningApp = NSRunningApplication(processIdentifier: pid)
+                    let bundleIdentifier = runningApp?.bundleIdentifier
+                    
+                    // 通知センターが持つ、名前のない巨大な透明背景ウィンドウをスキップする
+                    // これらは表示・非表示にかかわらず画面全体を覆っている場合があり、判定を妨げるため
+                    if bundleIdentifier == "com.apple.notificationcenterui" && (windowName == nil || windowName == "n/a") {
+                        let screens = NSScreen.screens
+                        let totalWidth = screens.reduce(0) { $0 + $1.frame.width }
+                        let isFullScreen = screens.contains { abs(bounds.width - $0.frame.width) < 10 && abs(bounds.height - $0.frame.height) < 10 }
+                        let isSpannedFull = abs(bounds.width - totalWidth) < 50
+                        
+                        if isFullScreen || isSpannedFull {
+                            continue
+                        }
+                    }
                     
                     // 1. 通常のアプリ (layer 0〜19)
-                    // 最前面のアプリ (layer 3) など、Dockアイコンのないものも含めて捕捉
-                    if layer < 20 && ownerName != "Dock" && ownerName != "AssistiveControl" {
+                    // 最前面のアプリ (layer 3) などを捕捉
+                    if layer < 20 {
                         if bestAppPID == nil || layer > bestAppLayer {
                             bestAppPID = pid
                             bestAppLayer = layer
@@ -931,8 +948,8 @@ class EventManager: NSObject, ObservableObject {
                     
                     // 2. システムオーバーレイ (layer 21〜1999)
                     // 20: Dock背景 は無視する
-                    // 2000以上: AssistiveControlの管理用オーバーレイ などは無視する
-                    if layer >= 21 && layer < 2000 {
+                    // 2000以上: AssistiveControlの管理用オーバーレイ などは無視するが、スイッチコントロール(2975)は含める
+                    if (layer >= 21 && layer < 2000) || (layer == 2975 && bundleIdentifier == "com.apple.inputmethod.AssistiveControl") {
                         // Launchpad(27, 29), メニューバー(24, 25), 通知(23), キーボード(101)など
                         if bestOverlayPID == nil || layer > bestOverlayLayer {
                             bestOverlayPID = pid
@@ -989,13 +1006,7 @@ class EventManager: NSObject, ObservableObject {
     private func shouldLock(at location: CGPoint) -> Bool {
         let result = appIdentityForApplication(at: location)
         
-        // システムオーバーレイを無視する設定がオンの場合、オーバーレイ上ではロックしない
-        if isIgnoreSystemOverlaysEnabled && result.isOverlay {
-            #if DEBUG
-            print("App filter check at \(location): System overlay ignored (bundleId=\(result.identifier ?? "unknown"), exe=\(result.executableName ?? "unknown"), path=\(result.executablePath ?? "unknown"))")
-            #endif
-            return false
-        }
+
         
         let shouldLock = ManagedApplicationListEvaluator.shouldLock(
             bundleIdentifier: result.identifier,

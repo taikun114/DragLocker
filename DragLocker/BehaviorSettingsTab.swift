@@ -26,3 +26,9 @@ struct BehaviorSettingsTab: View {
         .formStyle(.grouped)
     }
 }
+
+#Preview {
+    BehaviorSettingsTab()
+        .environmentObject(EventManager.shared)
+        .frame(width: 450, height: 450)
+}

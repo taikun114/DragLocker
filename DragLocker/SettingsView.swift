@@ -43,8 +43,10 @@ struct SettingsView: View {
                 .tag(SettingsTab.info)
         }
         .onAppear {
-            // 設定画面を開くたびに「一般」タブにリセットする
-            selectedTab = .general
+            // プレビュー実行時以外は、設定画面を開くたびに「一般」タブにリセットする
+            if ProcessInfo.processInfo.environment["XCODE_RUNNING_FOR_PREVIEWS"] != "1" {
+                selectedTab = .general
+            }
             
             // アプリを前面に持ってくる
             NSApp.activate(ignoringOtherApps: true)
