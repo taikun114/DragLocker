@@ -654,6 +654,7 @@ struct SystemOverlayHelpPopover: View {
             Text("システムオーバーレイを除外したい場合、オーバーレイを管理しているプロセスを除外する必要があります。\n一般的なオーバーレイプロセスは以下の通りです。")
                 .font(.subheadline)
                 .foregroundStyle(.secondary)
+                .multilineTextAlignment(.leading)
         }
         .padding()
         .frame(maxWidth: .infinity, alignment: .leading)
@@ -663,6 +664,7 @@ struct SystemOverlayHelpPopover: View {
         Text(footerDescription)
             .font(.caption)
             .foregroundStyle(.secondary)
+            .multilineTextAlignment(.leading)
             .padding()
             .frame(maxWidth: .infinity, alignment: .leading)
     }
@@ -744,6 +746,7 @@ private struct SystemOverlayItemRow: View {
                 Text(item.description)
                     .font(.caption)
                     .foregroundStyle(.secondary)
+                    .multilineTextAlignment(.leading)
             }
             
             Spacer(minLength: 0)
