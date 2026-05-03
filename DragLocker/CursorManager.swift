@@ -34,7 +34,8 @@ class CursorManager {
         window.hasShadow = false
         window.level = .screenSaver
         window.ignoresMouseEvents = true
-        window.collectionBehavior = [.canJoinAllSpaces, .stationary, .fullScreenAuxiliary]
+        window.hidesOnDeactivate = false
+        window.collectionBehavior = [.canJoinAllSpaces, .stationary, .fullScreenAuxiliary, .ignoresCycle]
         window.animationBehavior = .none
         
         self.cursorWindow = window
@@ -78,7 +79,7 @@ class CursorManager {
         guard let window = cursorWindow else { return }
         
         updatePosition()
-        window.orderFront(nil)
+        window.orderFrontRegardless()
         
         // 高速移動時のズレを防ぎ、停止時にも正確な位置に配置されるようタイマーで更新を開始
         startPositionUpdateTimer()
