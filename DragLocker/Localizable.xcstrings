@@ -1167,23 +1167,6 @@
         }
       }
     },
-    "アプリを削除しますか？" : {
-      "comment" : "コンテキストメニューでアプリを削除する際のアラートタイトル",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Remove App?"
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "アプリを削除しますか？"
-          }
-        }
-      }
-    },
     "あらゆるマウスでドラッグロック可能にします。" : {
       "localizations" : {
         "en" : {

@@ -177,7 +177,6 @@ class AppExclusionAndLimitationDisplayResolver {
 /// リストの1行分を表示するコンポーネント
 struct AppExclusionAndLimitationRow: View {
     let bundleIdentifier: String
-    let onRemove: () -> Void
     
     private var appInfo: ResolvedAppExclusionAndLimitationInfo? {
         AppExclusionAndLimitationDisplayResolver.shared.resolvedInfo(for: bundleIdentifier)
@@ -207,25 +206,11 @@ struct AppExclusionAndLimitationRow: View {
             .help(bundleIdentifier.starts(with: "/") ? 
                   String(localized: "\(appInfo.name) (\(bundleIdentifier))", comment: "設定画面のアプリリストのツールチップ（パス表示）") : 
                   appInfo.name)
-            .contextMenu {
-                Button(role: .destructive) {
-                    onRemove()
-                } label: {
-                    Label("削除", systemImage: "trash")
-                }
-            }
             .tag(bundleIdentifier)
         } else {
             Text(bundleIdentifier)
                 .foregroundStyle(.secondary)
                 .help(bundleIdentifier)
-                .contextMenu {
-                    Button(role: .destructive) {
-                        onRemove()
-                    } label: {
-                        Label("削除", systemImage: "trash")
-                    }
-                }
                 .tag(bundleIdentifier)
         }
     }
@@ -249,6 +234,7 @@ struct AppExclusionAndLimitationListView: View {
     @State private var showingInvalidAppAlert = false
     @State private var showingClearConfirmation = false
     @State private var showingRemoveMultipleConfirmation = false
+    @State private var idsToRemove: Set<String> = []
     
     private var sortedIdentifiers: [String] {
         bundleIdentifiers.sorted { id1, id2 in
@@ -271,10 +257,19 @@ struct AppExclusionAndLimitationListView: View {
     var body: some View {
         List(selection: $selectedIds) {
             ForEach(sortedIdentifiers, id: \.self) { id in
-                AppExclusionAndLimitationRow(bundleIdentifier: id) {
-                    selectedIds = [id]
-                    showingRemoveMultipleConfirmation = true
-                }
+                AppExclusionAndLimitationRow(bundleIdentifier: id)
+                    .contextMenu {
+                        let idsForContext = selectedIds.contains(id) ? selectedIds : [id]
+                        Button(role: .destructive) {
+                            requestRemove(ids: idsForContext)
+                        } label: {
+                            if idsForContext.count > 1 {
+                                Label("削除…", systemImage: "trash")
+                            } else {
+                                Label("削除", systemImage: "trash")
+                            }
+                        }
+                    }
             }
             .onDelete { indexSet in
                 let idsToDelete = indexSet.map { sortedIdentifiers[$0] }
@@ -306,16 +301,28 @@ struct AppExclusionAndLimitationListView: View {
         } message: {
             Text("リストを空にしてもよろしいですか？この操作は元に戻せません。")
         }
-        .alert(selectedIds.count > 1 ? "複数のアプリを削除しますか？" : "アプリを削除しますか？", 
+        .alert("複数のアプリを削除しますか？", 
                isPresented: $showingRemoveMultipleConfirmation) {
             Button("削除", role: .destructive) {
-                removeApps(ids: selectedIds)
+                removeApps(ids: idsToRemove)
+                idsToRemove.removeAll()
             }
-            Button("キャンセル", role: .cancel) { }
+            Button("キャンセル", role: .cancel) {
+                idsToRemove.removeAll()
+            }
         } message: {
-            Text("選択された\(selectedIds.count)個のアプリをリストから削除してもよろしいですか？")
+            Text("選択された\(idsToRemove.count)個のアプリをリストから削除してもよろしいですか？")
         }
         .id(colorScheme)
+    }
+
+    private func requestRemove(ids: Set<String>) {
+        if ids.count > 1 {
+            idsToRemove = ids
+            showingRemoveMultipleConfirmation = true
+        } else {
+            removeApps(ids: ids)
+        }
     }
 
     private var toolbarOverlay: some View {
@@ -359,11 +366,7 @@ struct AppExclusionAndLimitationListView: View {
 
                 // Remove Button
                 Button {
-                    if selectedIds.count > 1 {
-                        showingRemoveMultipleConfirmation = true
-                    } else {
-                        removeApps(ids: selectedIds)
-                    }
+                    requestRemove(ids: selectedIds)
                 } label: {
                     Image(systemName: "minus")
                         .font(.body)
