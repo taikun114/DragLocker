@@ -468,6 +468,24 @@ class EventManager: NSObject, ObservableObject {
         }
     }
 
+    @Published var isDockLayer18Ignored: Bool = false {
+        didSet {
+            UserDefaults.standard.set(isDockLayer18Ignored, forKey: "isDockLayer18Ignored")
+        }
+    }
+
+    @Published var isLaunchpadExcluded: Bool = false {
+        didSet {
+            UserDefaults.standard.set(isLaunchpadExcluded, forKey: "isLaunchpadExcluded")
+        }
+    }
+
+    @Published var isOSDExcluded: Bool = false {
+        didSet {
+            UserDefaults.standard.set(isOSDExcluded, forKey: "isOSDExcluded")
+        }
+    }
+
     @Published var managedAppBundleIdentifiers: [String] = [] {
         didSet {
             if let encoded = try? JSONEncoder().encode(managedAppBundleIdentifiers) {
@@ -488,6 +506,9 @@ class EventManager: NSObject, ObservableObject {
     private var lastAppExecutableName: String?
     private var lastAppExecutablePath: String?
     private var lastAppIsOverlay: Bool = false
+    
+    private var lastAppIsLaunchpad: Bool = false
+    private var lastAppIsOSD: Bool = false
     
     // カスタムアイコンのメモリ節約用キャッシュ
     @Published var cachedCustomIconImage: NSImage? = nil
@@ -529,6 +550,9 @@ class EventManager: NSObject, ObservableObject {
         } else {
             self.isUnlockAllWithEscEnabled = UserDefaults.standard.bool(forKey: "isUnlockAllWithEscEnabled")
         }
+
+        self.isDockLayer18Ignored = UserDefaults.standard.bool(forKey: "isDockLayer18Ignored")
+        self.isLaunchpadExcluded = UserDefaults.standard.bool(forKey: "isLaunchpadExcluded") || UserDefaults.standard.bool(forKey: "isLaunchpadIgnored")
 
         if let appListData = UserDefaults.standard.data(forKey: "managedAppBundleIdentifiersData"),
            let decodedAppBundleIdentifiers = try? JSONDecoder().decode([String].self, from: appListData) {
@@ -885,7 +909,7 @@ class EventManager: NSObject, ObservableObject {
         }
     }
 
-    private func windowOwnerPID(at location: CGPoint) -> (pid: pid_t, isOverlay: Bool)? {
+    private func windowOwnerPID(at location: CGPoint) -> (pid: pid_t, isOverlay: Bool, isLaunchpad: Bool, isOSD: Bool)? {
         return autoreleasepool {
             let windowList = CGWindowListCopyWindowInfo([.optionOnScreenOnly, .excludeDesktopElements], kCGNullWindowID) as? [[String: Any]] ?? []
             
@@ -894,6 +918,8 @@ class EventManager: NSObject, ObservableObject {
             
             var bestOverlayPID: pid_t? = nil
             var bestOverlayLayer: Int = -1
+            var bestOverlayIsLaunchpad = false
+            var bestOverlayIsOSD = false
             
             for windowInfo in windowList {
                 guard let windowPID = windowInfo[kCGWindowOwnerPID as String] as? Int,
@@ -939,6 +965,11 @@ class EventManager: NSObject, ObservableObject {
                     // 1. 通常のアプリ (layer 0〜19)
                     // 最前面のアプリ (layer 3) などを捕捉
                     if layer < 20 {
+                        // デスクトップ表示中やMission Control中のDock(18)を無視（常にスキップ）
+                        if isDockLayer18Ignored && layer == 18 && bundleIdentifier == "com.apple.dock" {
+                            continue
+                        }
+                        
                         if bestAppPID == nil || layer > bestAppLayer {
                             bestAppPID = pid
                             bestAppLayer = layer
@@ -946,43 +977,65 @@ class EventManager: NSObject, ObservableObject {
                         continue
                     }
                     
-                    // 2. システムオーバーレイ (layer 21〜1999)
-                    // 20: Dock背景 は無視する
-                    // 2000以上: AssistiveControlの管理用オーバーレイ などは無視するが、スイッチコントロール(2975)は含める
-                    if (layer >= 21 && layer < 2000) || (layer == 2975 && bundleIdentifier == "com.apple.inputmethod.AssistiveControl") {
+                    // 2. システムオーバーレイ (layer 20〜1999)
+                    // 20: Dock背景 は無視するが、他のプロセスがこのレイヤーにいる場合は含める
+                    // 2000以上: 基本的に無視するが、スイッチコントロール(2975)、VoiceOver(3000)、および特定のOSバージョンに応じたレイヤー2005（ControlCenter/OSDUIHelper）は含める
+                    let majorVersion = ProcessInfo.processInfo.operatingSystemVersion.majorVersion
+                    if (layer >= 20 && layer < 2000) || 
+                       (layer == 2975 && bundleIdentifier == "com.apple.inputmethod.AssistiveControl") ||
+                       (layer == 3000 && bundleIdentifier == "com.apple.VoiceOver") ||
+                       (layer == 2005 && (majorVersion >= 26 ? bundleIdentifier == "com.apple.controlcenter" : bundleIdentifier == "com.apple.OSDUIHelper")) {
+                        
+                        // レイヤー20のDock（背景）だけを無視
+                        if layer == 20 && bundleIdentifier == "com.apple.dock" {
+                            continue
+                        }
+
+                        // Launchpad(27, 29) などはスキップせず、後段のshouldLockで除外判定を行う
+                        
                         // Launchpad(27, 29), メニューバー(24, 25), 通知(23), キーボード(101)など
                         if bestOverlayPID == nil || layer > bestOverlayLayer {
                             bestOverlayPID = pid
                             bestOverlayLayer = layer
+                            
+                            // macOS 26.0 未満の場合のみ Launchpad (レイヤー 27/29) を判定
+                            if #unavailable(macOS 26.0) {
+                                bestOverlayIsLaunchpad = (layer == 27 || layer == 29) && bundleIdentifier == "com.apple.dock"
+                            } else {
+                                bestOverlayIsLaunchpad = false
+                            }
+                            
+                            // OSD判定 (レイヤー 2005)
+                            bestOverlayIsOSD = (layer == 2005) && (majorVersion >= 26 ? bundleIdentifier == "com.apple.controlcenter" : bundleIdentifier == "com.apple.OSDUIHelper")
                         }
                     }
                 }
             }
             
             if let opid = bestOverlayPID {
-                return (opid, true)
+                return (opid, true, bestOverlayIsLaunchpad, bestOverlayIsOSD)
             }
             if let apid = bestAppPID {
-                return (apid, false)
+                return (apid, false, false, false)
             }
             return nil
         }
     }
 
-    private func appIdentityForApplication(at location: CGPoint) -> (identifier: String?, executableName: String?, executablePath: String?, isOverlay: Bool) {
+    private func appIdentityForApplication(at location: CGPoint) -> (identifier: String?, executableName: String?, executablePath: String?, isOverlay: Bool, isLaunchpad: Bool, isOSD: Bool) {
         let dx = location.x - lastAppCheckLocation.x
         let dy = location.y - lastAppCheckLocation.y
         let distanceSquared = dx * dx + dy * dy
         
         if distanceSquared < 4.0 {
             if Date().timeIntervalSince(lastAppCheckTime) < 0.5 {
-                return (lastAppBundleIdentifier, lastAppExecutableName, lastAppExecutablePath, lastAppIsOverlay)
+                return (lastAppBundleIdentifier, lastAppExecutableName, lastAppExecutablePath, lastAppIsOverlay, lastAppIsLaunchpad, lastAppIsOSD)
             }
         }
 
-        let result = autoreleasepool { () -> (identifier: String?, executableName: String?, executablePath: String?, isOverlay: Bool) in
+        let result = autoreleasepool { () -> (identifier: String?, executableName: String?, executablePath: String?, isOverlay: Bool, isLaunchpad: Bool, isOSD: Bool) in
             guard let target = windowOwnerPID(at: location) else {
-                return (nil, nil, nil, false)
+                return (nil, nil, nil, false, false, false)
             }
 
             let runningApp = NSRunningApplication(processIdentifier: target.pid)
@@ -990,7 +1043,7 @@ class EventManager: NSObject, ObservableObject {
             let executableURL = runningApp?.executableURL
             let executableName = executableURL?.lastPathComponent
             let executablePath = executableURL?.path
-            return (identifier, executableName, executablePath, target.isOverlay)
+            return (identifier, executableName, executablePath, target.isOverlay, target.isLaunchpad, target.isOSD)
         }
         
         lastAppCheckTime = Date()
@@ -999,12 +1052,30 @@ class EventManager: NSObject, ObservableObject {
         lastAppExecutableName = result.executableName
         lastAppExecutablePath = result.executablePath
         lastAppIsOverlay = result.isOverlay
+        lastAppIsLaunchpad = result.isLaunchpad
+        lastAppIsOSD = result.isOSD
         
         return result
     }
 
     private func shouldLock(at location: CGPoint) -> Bool {
         let result = appIdentityForApplication(at: location)
+        
+        // Launchpad除外設定が有効な場合、検出はするがロックは行わない
+        if isLaunchpadExcluded && result.isLaunchpad {
+            #if DEBUG
+            print("Launchpad detected (Excluded): No lock")
+            #endif
+            return false
+        }
+        
+        // OSD除外設定が有効な場合、検出はするがロックは行わない
+        if isOSDExcluded && result.isOSD {
+            #if DEBUG
+            print("OSD detected (Excluded): No lock")
+            #endif
+            return false
+        }
         
 
         

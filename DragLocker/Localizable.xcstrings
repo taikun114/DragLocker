@@ -114,6 +114,22 @@
         }
       }
     },
+    "%@、レイヤー%@、%@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$@, Layer %2$@, %3$@"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$@、レイヤー%2$@、%3$@"
+          }
+        }
+      }
+    },
     "%@はすでに%@リストに追加されています。" : {
       "comment" : "システムオーバーレイ追加ボタンのツールチップ（追加済み）",
       "localizations" : {
@@ -639,6 +655,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "KeyboardShortcutsのGitHubページを開いてもよろしいですか？"
+          }
+        }
+      }
+    },
+    "Launchpad" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Launchpad"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Launchpad"
           }
         }
       }
@@ -1331,6 +1363,22 @@
         }
       }
     },
+    "キャプションパネル" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Caption Panel"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "キャプションパネル"
+          }
+        }
+      }
+    },
     "キャンセル" : {
       "comment" : "アラートダイアログのキャンセルボタン",
       "localizations" : {
@@ -1344,6 +1392,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "キャンセル"
+          }
+        }
+      }
+    },
+    "クイックメモ" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Quick Note"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "クイックメモ"
           }
         }
       }
@@ -1534,7 +1598,7 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Context menus are owned by each application's process, so excluding that application will also exclude its context menu.\nNote: Due to system limitations, the Dock and Notification Center cannot be excluded."
+            "value" : "Since context menus are owned by each app's process, excluding the app will also exclude its context menus.\nNote: Due to system limitations, the Dock itself and Notification Center cannot be excluded."
           }
         },
         "ja" : {
@@ -1550,13 +1614,29 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Context menus and menu bar items (except those included in the Control Center) are owned by each application's process, so excluding that application will also exclude them.\nNote: Due to system limitations, the Dock and Notification Center cannot be excluded."
+            "value" : "Since context menus and menu bar items (other than those included in Control Center) are owned by each app's process, excluding the app will also exclude them.\nNote: Due to system limitations, the Dock itself and Notification Center cannot be excluded."
           }
         },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "コンテキストメニューやメニューバーアイテム（コントロールセンターに含まれるもの以外）は各アプリのプロセスが所有しているため、そのアプリを除外することでそれらも除外されます。\nなお、システムの制約によりDock自体や通知センターを除外することはできません。"
+          }
+        }
+      }
+    },
+    "コントロールセンター、メニューバーアイテム、音量や明るさのOSDなど" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Control Center, Menu Bar Items, Volume/Brightness OSD, etc."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "コントロールセンター、メニューバーアイテム、音量や明るさのOSDなど"
           }
         }
       }
@@ -1573,22 +1653,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "コントロールセンターなど"
-          }
-        }
-      }
-    },
-    "コントロールセンターやメニューバーアイテムなど" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Control Center, menu bar items, etc."
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "コントロールセンターやメニューバーアイテムなど"
           }
         }
       }
@@ -2069,6 +2133,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "テキスト（縦）"
+          }
+        }
+      }
+    },
+    "デスクトップを表示 / Mission Control" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Show Desktop / Mission Control"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "デスクトップを表示 / Mission Control"
           }
         }
       }
@@ -2629,6 +2709,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "バグを見つけましたか？"
+          }
+        }
+      }
+    },
+    "ピクチャインピクチャウィンドウ" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Picture in Picture Window"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ピクチャインピクチャウィンドウ"
           }
         }
       }
@@ -3873,6 +3969,38 @@
         }
       }
     },
+    "無視" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ignore"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "無視"
+          }
+        }
+      }
+    },
+    "特定のシステムオーバーレイを無視または除外" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ignore or Exclude Specific System Overlays"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "特定のシステムオーバーレイを無視または除外"
+          }
+        }
+      }
+    },
     "状態" : {
       "localizations" : {
         "en" : {
@@ -3951,6 +4079,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "終了"
+          }
+        }
+      }
+    },
+    "絵文字と記号、文字ビューアなど" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Emojis & Symbols, Character Viewer, etc."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "絵文字と記号、文字ビューアなど"
           }
         }
       }
@@ -4414,6 +4558,22 @@
         }
       }
     },
+    "除外" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Exclude"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "除外"
+          }
+        }
+      }
+    },
     "除外する" : {
       "comment" : "アプリフィルタリングのモード：リスト内のアプリをロック対象から外す",
       "localizations" : {
@@ -4460,6 +4620,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "音声が長すぎます"
+          }
+        }
+      }
+    },
+    "音量・明るさOSD" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Volume/Brightness OSD"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "音量・明るさOSD"
           }
         }
       }

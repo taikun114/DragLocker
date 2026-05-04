@@ -81,11 +81,33 @@ private final class ManagedApplicationDisplayResolver {
             return resolvedInfo
         }
         
-        // ファイルパスとして直接アイコンを取得してみる（識別子がフルパスの場合）
+        // 2. バンドル識別子としてアプリを探す（実行中でない場合）
+        if !identifier.starts(with: "/"),
+           let applicationURL = NSWorkspace.shared.urlForApplication(withBundleIdentifier: identifier),
+           let resolvedInfo = resolvedInfo(from: applicationURL, fallbackName: identifier) {
+            store(resolvedInfo, for: identifier)
+            return resolvedInfo
+        }
+
+        // 3. ファイルパスとして直接アイコンを取得してみる（識別子がフルパスの場合）
         if identifier.starts(with: "/"), fileManager.fileExists(atPath: identifier) {
             let url = URL(fileURLWithPath: identifier)
-            let icon = NSWorkspace.shared.icon(forFile: identifier)
-            let name = url.lastPathComponent
+            var icon = NSWorkspace.shared.icon(forFile: identifier)
+            var name = url.lastPathComponent
+            
+            // 実行ファイルパスの場合、親ディレクトリを遡って .app を探す
+            var current = url.deletingLastPathComponent()
+            while current.path != "/" {
+                if current.pathExtension.lowercased() == "app" {
+                    icon = NSWorkspace.shared.icon(forFile: current.path)
+                    // ローカライズされた名前を取得、失敗した場合は .app を除いた名前
+                    name = (try? current.resourceValues(forKeys: [.localizedNameKey]).localizedName)
+                        ?? current.deletingPathExtension().lastPathComponent
+                    break
+                }
+                current = current.deletingLastPathComponent()
+            }
+
             let resolvedInfo = ResolvedManagedApplicationInfo(name: name, icon: icon)
             store(resolvedInfo, for: identifier)
             return resolvedInfo
@@ -506,6 +528,58 @@ struct ManagedAppSettingsSection: View {
                 }
             }
         }
+        
+        Section {
+            if #unavailable(macOS 26.0) {
+                Toggle(isOn: $eventManager.isLaunchpadExcluded) {
+                    Label {
+                        VStack(alignment: .leading, spacing: 2) {
+                            Text("Launchpad")
+                            Text("\("Dock")、レイヤー\("27 / 29")、\(Text("除外"))")
+                                .font(.subheadline)
+                                .foregroundStyle(.secondary)
+                        }
+                    } icon: {
+                        Image(systemName: "square.grid.3x2")
+                            .frame(width: 24)
+                    }
+                }
+            }
+            Toggle(isOn: $eventManager.isDockLayer18Ignored) {
+                Label {
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text("デスクトップを表示 / Mission Control")
+                        Text("\("Dock")、レイヤー\("18")、\(Text("無視"))")
+                            .font(.subheadline)
+                            .foregroundStyle(.secondary)
+                    }
+                } icon: {
+                    Image(systemName: "rectangle.3.group")
+                        .frame(width: 24)
+                }
+            }
+            Toggle(isOn: $eventManager.isOSDExcluded) {
+                Label {
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text("音量・明るさOSD")
+                        Group {
+                            if #available(macOS 26.0, *) {
+                                Text("\("コントロールセンター")、レイヤー\("2005")、\(Text("除外"))")
+                            } else {
+                                Text("\("OSDUIHelper")、レイヤー\("2005")、\(Text("除外"))")
+                            }
+                        }
+                        .font(.subheadline)
+                        .foregroundStyle(.secondary)
+                    }
+                } icon: {
+                    Image(systemName: "slider.horizontal.below.rectangle")
+                        .frame(width: 24)
+                }
+            }
+        } header: {
+            Text("特定のシステムオーバーレイを無視または除外")
+        }
         .alert("すべてのアプリを削除", isPresented: $showingClearAllManagedAppsConfirmation) {
             Button("削除", role: .destructive) {
                 eventManager.clearManagedApps()
@@ -573,7 +647,7 @@ private struct SystemOverlayItem: Identifiable {
     
     // システムから解決された表示名を取得（フォールバックはプロセス名）
     var displayName: String {
-        ManagedApplicationDisplayResolver.shared.resolvedInfo(for: path)?.name ?? processName
+        ManagedApplicationDisplayResolver.shared.resolvedInfo(for: bundleIdentifier ?? path)?.name ?? processName
     }
 }
 
@@ -612,6 +686,26 @@ struct SystemOverlayHelpPopover: View {
                 description: "アプリケーションの強制終了ウィンドウなど",
                 path: "/System/Library/CoreServices/loginwindow.app/Contents/MacOS/loginwindow",
                 bundleIdentifier: "com.apple.loginwindow"
+            ),
+            SystemOverlayItem(
+                description: "キャプションパネル",
+                path: "/System/Library/CoreServices/VoiceOver.app/Contents/MacOS/VoiceOver",
+                bundleIdentifier: "com.apple.VoiceOver"
+            ),
+            SystemOverlayItem(
+                description: "ピクチャインピクチャウィンドウ",
+                path: "/System/Library/CoreServices/PIPAgent.app/Contents/MacOS/PIPAgent",
+                bundleIdentifier: "com.apple.PIPAgent"
+            ),
+            SystemOverlayItem(
+                description: "絵文字と記号、文字ビューアなど",
+                path: "/System/Library/Input Methods/CharacterPalette.app/Contents/MacOS/CharacterPalette",
+                bundleIdentifier: "com.apple.CharacterPaletteIM"
+            ),
+            SystemOverlayItem(
+                description: "クイックメモ",
+                path: "/System/Library/Frameworks/PaperKit.framework/Contents/LinkedNotesUIService.app/Contents/MacOS/LinkedNotesUIService",
+                bundleIdentifier: "com.apple.LinkedNotesUIService"
             )
         ]
         
@@ -637,7 +731,7 @@ struct SystemOverlayHelpPopover: View {
     
     private var controlCenterDescription: LocalizedStringKey {
         if #available(macOS 26.0, *) {
-            return "コントロールセンターやメニューバーアイテムなど"
+            return "コントロールセンター、メニューバーアイテム、音量や明るさのOSDなど"
         } else {
             return "コントロールセンターなど"
         }
@@ -728,7 +822,7 @@ private struct SystemOverlayItemRow: View {
     }
     
     var body: some View {
-        let appInfo = ManagedApplicationDisplayResolver.shared.resolvedInfo(for: item.path)
+        let appInfo = ManagedApplicationDisplayResolver.shared.resolvedInfo(for: item.bundleIdentifier ?? item.path)
         
         return HStack(alignment: .top, spacing: 8) {
             if let icon = appInfo?.icon {
