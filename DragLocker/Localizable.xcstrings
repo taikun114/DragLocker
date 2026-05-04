@@ -1545,18 +1545,18 @@
         }
       }
     },
-    "コンテキストメニューやメニューバーアイテムは各アプリのプロセスが所有しているため、そのアプリを除外することでコンテキストメニューも除外されます。\nなお、システムの制約によりDock自体や通知センターを除外することはできません。" : {
+    "コンテキストメニューやメニューバーアイテム（コントロールセンターに含まれるもの以外）は各アプリのプロセスが所有しているため、そのアプリを除外することでそれらも除外されます。\nなお、システムの制約によりDock自体や通知センターを除外することはできません。" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Context menus and menu bar items are owned by each application's process, so excluding that application will also exclude them.\nNote: Due to system limitations, the Dock and Notification Center cannot be excluded."
+            "value" : "Context menus and menu bar items (except those included in the Control Center) are owned by each application's process, so excluding that application will also exclude them.\nNote: Due to system limitations, the Dock and Notification Center cannot be excluded."
           }
         },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "コンテキストメニューやメニューバーアイテムは各アプリのプロセスが所有しているため、そのアプリを除外することでコンテキストメニューも除外されます。\nなお、システムの制約によりDock自体や通知センターを除外することはできません。"
+            "value" : "コンテキストメニューやメニューバーアイテム（コントロールセンターに含まれるもの以外）は各アプリのプロセスが所有しているため、そのアプリを除外することでそれらも除外されます。\nなお、システムの制約によりDock自体や通知センターを除外することはできません。"
           }
         }
       }
