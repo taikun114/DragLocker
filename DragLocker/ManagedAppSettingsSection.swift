@@ -582,7 +582,7 @@ struct SystemOverlayHelpPopover: View {
     @Environment(\.colorScheme) var colorScheme
     
     private var overlayItems: [SystemOverlayItem] {
-        var items = [
+        let items = [
             SystemOverlayItem(
                 description: spotlightDescription,
                 path: "/System/Library/CoreServices/Spotlight.app/Contents/MacOS/Spotlight",
@@ -599,6 +599,11 @@ struct SystemOverlayHelpPopover: View {
                 bundleIdentifier: "com.apple.controlcenter"
             ),
             SystemOverlayItem(
+                description: dockDescription,
+                path: "/System/Library/CoreServices/Dock.app/Contents/MacOS/Dock",
+                bundleIdentifier: "com.apple.dock"
+            ),
+            SystemOverlayItem(
                 description: "Dockアイコン上のメニュー",
                 path: "/System/Library/CoreServices/Dock.app/Contents/XPCServices/DockHelper.xpc/Contents/MacOS/DockHelper",
                 bundleIdentifier: "com.apple.dock.helper"
@@ -610,15 +615,16 @@ struct SystemOverlayHelpPopover: View {
             )
         ]
         
-        if #unavailable(macOS 26.0) {
-            items.append(SystemOverlayItem(
-                description: "Launchpadなど",
-                path: "/System/Library/CoreServices/Dock.app/Contents/MacOS/Dock",
-                bundleIdentifier: "com.apple.dock"
-            ))
-        }
         
         return items.sorted { $0.displayName.localizedCaseInsensitiveCompare($1.displayName) == .orderedAscending }
+    }
+    
+    private var dockDescription: LocalizedStringKey {
+        if #available(macOS 26.0, *) {
+            return "デスクトップを表示、Mission Controlなど"
+        } else {
+            return "Launchpad、デスクトップを表示、Mission Controlなど"
+        }
     }
     
     private var spotlightDescription: LocalizedStringKey {

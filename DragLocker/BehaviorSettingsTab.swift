@@ -32,3 +32,4 @@ struct BehaviorSettingsTab: View {
         .environmentObject(EventManager.shared)
         .frame(width: 450, height: 450)
 }
+  

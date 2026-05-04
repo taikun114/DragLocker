@@ -643,18 +643,18 @@
         }
       }
     },
-    "Launchpadなど" : {
+    "Launchpad、デスクトップを表示、Mission Controlなど" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Launchpad, etc."
+            "value" : "Launchpad, Show Desktop, Mission Control, etc."
           }
         },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Launchpadなど"
+            "value" : "Launchpad、デスクトップを表示、Mission Controlなど"
           }
         }
       }
@@ -2069,6 +2069,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "テキスト（縦）"
+          }
+        }
+      }
+    },
+    "デスクトップを表示、Mission Controlなど" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Show Desktop, Mission Control, etc."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "デスクトップを表示、Mission Controlなど"
           }
         }
       }

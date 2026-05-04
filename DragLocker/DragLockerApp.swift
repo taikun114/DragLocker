@@ -287,7 +287,11 @@ struct AppCommands: Commands {
                     }
                 }
             }) {
-                Label("DEBUG MENU: Show Onboarding", systemImage: "hammer.fill")
+                Label {
+                    Text(verbatim: "DEBUG MENU: Show Onboarding")
+                } icon: {
+                    Image(systemName: "hammer.fill")
+                }
             }
         }
         #endif
