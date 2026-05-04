@@ -177,7 +177,7 @@ enum AppListMode: String, CaseIterable, Sendable {
     }
 }
 
-enum ManagedApplicationListEvaluator {
+enum AppExclusionAndLimitationEvaluator {
     static func shouldLock(
         bundleIdentifier: String?,
         executableName: String?,
@@ -209,7 +209,7 @@ class EventManager: NSObject, ObservableObject {
     static let shared = EventManager()
     
     // パフォーマンス向上のためのSetキャッシュ
-    private var managedAppBundleIdentifiersSet: Set<String> = []
+    private var appExclusionAndLimitationIdentifiersSet: Set<String> = []
 
     @Published var isTrusted: Bool = false
     @Published var isEnabled: Bool = true {
@@ -486,13 +486,13 @@ class EventManager: NSObject, ObservableObject {
         }
     }
 
-    @Published var managedAppBundleIdentifiers: [String] = [] {
+    @Published var appExclusionAndLimitationIdentifiers: [String] = [] {
         didSet {
-            if let encoded = try? JSONEncoder().encode(managedAppBundleIdentifiers) {
-                UserDefaults.standard.set(encoded, forKey: "managedAppBundleIdentifiersData")
+            if let encoded = try? JSONEncoder().encode(appExclusionAndLimitationIdentifiers) {
+                UserDefaults.standard.set(encoded, forKey: "appExclusionAndLimitationIdentifiersData")
             }
             // 配列が更新されたらSetのキャッシュも更新する
-            managedAppBundleIdentifiersSet = Set(managedAppBundleIdentifiers)
+            appExclusionAndLimitationIdentifiersSet = Set(appExclusionAndLimitationIdentifiers)
         }
     }
 
@@ -554,13 +554,13 @@ class EventManager: NSObject, ObservableObject {
         self.isDockLayer18Ignored = UserDefaults.standard.bool(forKey: "isDockLayer18Ignored")
         self.isLaunchpadExcluded = UserDefaults.standard.bool(forKey: "isLaunchpadExcluded") || UserDefaults.standard.bool(forKey: "isLaunchpadIgnored")
 
-        if let appListData = UserDefaults.standard.data(forKey: "managedAppBundleIdentifiersData"),
+        if let appListData = UserDefaults.standard.data(forKey: "appExclusionAndLimitationIdentifiersData"),
            let decodedAppBundleIdentifiers = try? JSONDecoder().decode([String].self, from: appListData) {
-            self.managedAppBundleIdentifiers = decodedAppBundleIdentifiers
-            self.managedAppBundleIdentifiersSet = Set(decodedAppBundleIdentifiers)
+            self.appExclusionAndLimitationIdentifiers = decodedAppBundleIdentifiers
+            self.appExclusionAndLimitationIdentifiersSet = Set(decodedAppBundleIdentifiers)
         } else {
-            self.managedAppBundleIdentifiers = []
-            self.managedAppBundleIdentifiersSet = []
+            self.appExclusionAndLimitationIdentifiers = []
+            self.appExclusionAndLimitationIdentifiersSet = []
         }
 
         if let savedButtons = UserDefaults.standard.array(forKey: "enabledButtonRawValues") as? [Int] {
@@ -1079,12 +1079,12 @@ class EventManager: NSObject, ObservableObject {
         
 
         
-        let shouldLock = ManagedApplicationListEvaluator.shouldLock(
+        let shouldLock = AppExclusionAndLimitationEvaluator.shouldLock(
             bundleIdentifier: result.identifier,
             executableName: result.executableName,
             executablePath: result.executablePath,
             mode: appListMode,
-            listedIdentifiers: managedAppBundleIdentifiersSet
+            listedIdentifiers: appExclusionAndLimitationIdentifiersSet
         )
 
         #if DEBUG
@@ -1093,31 +1093,31 @@ class EventManager: NSObject, ObservableObject {
         return shouldLock
     }
 
-    func addManagedApp(bundleIdentifier: String) {
-        guard !managedAppBundleIdentifiers.contains(bundleIdentifier) else {
+    func addAppExclusionAndLimitation(bundleIdentifier: String) {
+        guard !appExclusionAndLimitationIdentifiers.contains(bundleIdentifier) else {
             #if DEBUG
-            print("Managed app already exists: \(bundleIdentifier)")
+            print("App already exists in the list: \(bundleIdentifier)")
             #endif
             return
         }
 
-        managedAppBundleIdentifiers.append(bundleIdentifier)
+        appExclusionAndLimitationIdentifiers.append(bundleIdentifier)
         #if DEBUG
-        print("Managed app added: \(bundleIdentifier)")
+        print("AppExclusionAndLimitation added: \(bundleIdentifier)")
         #endif
     }
 
-    func removeManagedApp(bundleIdentifier: String) {
-        managedAppBundleIdentifiers.removeAll { $0 == bundleIdentifier }
+    func removeAppExclusionAndLimitation(bundleIdentifier: String) {
+        appExclusionAndLimitationIdentifiers.removeAll { $0 == bundleIdentifier }
         #if DEBUG
-        print("Managed app removed: \(bundleIdentifier)")
+        print("AppExclusionAndLimitation removed: \(bundleIdentifier)")
         #endif
     }
 
-    func clearManagedApps() {
-        managedAppBundleIdentifiers = []
+    func clearAppExclusionAndLimitation() {
+        appExclusionAndLimitationIdentifiers = []
         #if DEBUG
-        print("Managed app list cleared")
+        print("AppExclusionAndLimitation list cleared")
         #endif
     }
 
