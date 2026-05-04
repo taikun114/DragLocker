@@ -2,7 +2,7 @@ import AppKit
 import SwiftUI
 
 /// フォーカスを奪わないように設定されたカスタムウィンドウ
-class PointerIndicatorWindow: NSWindow {
+class PointerIndicatorWindow: NSPanel {
     override var canBecomeKey: Bool { false }
     override var canBecomeMain: Bool { false }
 }
@@ -24,7 +24,7 @@ class CursorManager {
     private func setupCursorWindow() {
         let window = PointerIndicatorWindow(
             contentRect: NSRect(x: 0, y: 0, width: 80, height: 80),
-            styleMask: [.borderless],
+            styleMask: [.borderless, .nonactivatingPanel],
             backing: .buffered,
             defer: false
         )
@@ -35,7 +35,7 @@ class CursorManager {
         window.level = .screenSaver
         window.ignoresMouseEvents = true
         window.hidesOnDeactivate = false
-        window.collectionBehavior = [.canJoinAllSpaces, .stationary, .fullScreenAuxiliary, .ignoresCycle]
+        window.collectionBehavior = [.canJoinAllSpaces, .fullScreenAuxiliary, .ignoresCycle]
         window.animationBehavior = .none
         
         self.cursorWindow = window
