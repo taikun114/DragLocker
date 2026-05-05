@@ -121,6 +121,17 @@ struct BehaviorSettingsTab: View {
             } header: {
                 Text("特定のシステムオーバーレイを無視または除外")
             }
+
+            Section {
+                PerAppSettingListView(perAppSettings: $eventManager.perAppSettings)
+            } header: {
+                Text("アプリごとの動作", comment: "アプリごとの動作設定セクションのヘッダー")
+            } footer: {
+                Text("各アプリをダブルクリックすることで設定画面を開くことができます。", comment: "アプリごとの動作設定セクションのフッター")
+                    .font(.subheadline)
+                    .foregroundStyle(.secondary)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+            }
         }
         .formStyle(.grouped)
         .onChange(of: colorScheme) { _, _ in

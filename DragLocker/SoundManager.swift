@@ -3,7 +3,7 @@ import AVFoundation
 import Foundation
 import SwiftUI
 
-enum SoundStyle: String, CaseIterable, Sendable {
+enum SoundStyle: String, CaseIterable, Sendable, Codable {
     case system = "system"
     case snap = "snap"
     case click = "click"

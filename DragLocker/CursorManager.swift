@@ -46,7 +46,7 @@ class CursorManager {
         stopPositionUpdateTimer()
         
         // 現在のアニメーション設定に応じた待機時間を設定（ポップ系は0.3秒、それ以外は0.1秒）
-        let animationType = EventManager.shared.iconAnimation
+        let animationType = EventManager.shared.effectiveSetting?.iconAnimation ?? EventManager.shared.iconAnimation
         let duration: Double = (animationType == .pop || animationType == .popPlus) ? 0.3 : Self.animationDuration
         
         // アニメーションが完了するのを確実に待ってからウィンドウを隠す (0.05sのマージン)
@@ -112,8 +112,8 @@ class CursorManager {
         // 全てのスタイルでウィンドウの中心（40.0, 40.0）をカーソル先端に合わせる
         // xOffset: 正の値で右へ移動
         // yOffset: 正の値で下へ移動（macOSの座標系ではY減少）
-        let xOffset = -40.0 + EventManager.shared.customIconXOffset
-        let yOffset = -40.0 - EventManager.shared.customIconYOffset
+        let xOffset = -40.0 + EventManager.shared.effectiveIconSetting(key: "xOffset")
+        let yOffset = -40.0 - EventManager.shared.effectiveIconSetting(key: "yOffset")
         
         let newOrigin = NSPoint(
             x: (mouseLocation.x + xOffset).rounded(),
@@ -137,9 +137,10 @@ struct CursorView: View {
     @State private var isVisible = false
     
     var body: some View {
-        let style = eventManager.pointerIconStyle
+        let setting = eventManager.effectiveSetting ?? eventManager.resolveSetting(for: nil)
+        let style = setting.pointerIconStyle
         let isLocked = !lockState.lockedButtons.isEmpty
-        let scale = eventManager.customIconScale
+        let scale = EventManager.shared.effectiveIconSetting(key: "scale")
         
         ZStack(alignment: .center) {
             if style == .padlock {
@@ -346,13 +347,13 @@ struct CursorView: View {
         }
         .frame(width: 80, height: 80, alignment: .center) // 全てのスタイルを80x80の中心に固定して配置
         .clipped()
-        .opacity(eventManager.customIconOpacity)
+        .opacity(EventManager.shared.effectiveIconSetting(key: "opacity"))
         
         // アニメーション設定の適用
         // isVisible (ローカル状態) の変化に連動してアニメーションさせる
         .opacity(isVisible ? 1.0 : 0.0)
-        .scaleEffect(currentScale(animationType: eventManager.iconAnimation, isLocked: isVisible, style: style))
-        .animation(currentAnimation(animationType: eventManager.iconAnimation), value: isVisible)
+        .scaleEffect(currentScale(animationType: setting.iconAnimation, isLocked: isVisible, style: style))
+        .animation(currentAnimation(animationType: setting.iconAnimation), value: isVisible)
         .fixedSize()
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .center)
         .onAppear {

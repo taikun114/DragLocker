@@ -280,7 +280,7 @@ struct AppExclusionAndLimitationListView: View {
             selectedIds.removeAll()
         }
         .onDrop(of: [.fileURL], isTargeted: nil, perform: handleDrop)
-        .frame(minHeight: 100)
+        .frame(minHeight: 120)
         .scrollContentBackground(.hidden)
         .padding(.bottom, 24)
         .accessibilityLabel(accessibilityLabel)
@@ -372,7 +372,7 @@ struct AppExclusionAndLimitationListView: View {
                         .font(.body)
                         .fontWeight(.medium)
                         .frame(width: 24, height: 24)
-                        .offset(y: -0.5)
+                        .offset(y: -0.6)
                         .contentShape(Rectangle())
                 }
                 .buttonStyle(.borderless)
@@ -712,5 +712,273 @@ struct AppExclusionAndLimitationPickerPopover: View {
         .onChange(of: colorScheme) { _, _ in
             refreshRunningApplications()
         }
+    }
+}
+// MARK: - Per-App Setting Components
+
+/// アプリごとの設定リストを管理するコンポーネント
+struct PerAppSettingListView: View {
+    @EnvironmentObject var eventManager: EventManager
+    @Environment(\.colorScheme) var colorScheme
+    @Binding var perAppSettings: [String: PerAppSetting]
+    
+    @State private var selectedIds: Set<String> = []
+    @State private var isShowingPicker = false
+    @State private var showAllRunningApps = false
+    @State private var runningApplications: [NSRunningApplication] = []
+    @State private var showingInvalidAppAlert = false
+    @State private var showingClearConfirmation = false
+    @State private var showingRemoveMultipleConfirmation = false
+    @State private var idsToRemove: Set<String> = []
+    @State private var editingSetting: PerAppSetting?
+
+    private var sortedBundleIdentifiers: [String] {
+        perAppSettings.keys.sorted { id1, id2 in
+            let name1 = AppExclusionAndLimitationDisplayResolver.shared.resolvedInfo(for: id1)?.name
+            let name2 = AppExclusionAndLimitationDisplayResolver.shared.resolvedInfo(for: id2)?.name
+            return (name1 ?? id1).localizedCaseInsensitiveCompare(name2 ?? id2) == .orderedAscending
+        }
+    }
+
+    var body: some View {
+        List(selection: $selectedIds) {
+            ForEach(sortedBundleIdentifiers, id: \.self) { id in
+                AppExclusionAndLimitationRow(bundleIdentifier: id)
+            }
+            .onDelete { indexSet in
+                let idsToDelete = indexSet.map { sortedBundleIdentifiers[$0] }
+                removeApps(ids: Set(idsToDelete))
+            }
+        }
+        .contextMenu(forSelectionType: String.self) { items in
+            Button {
+                openSettings(for: items)
+            } label: {
+                Label("設定…", systemImage: "gear")
+            }
+            
+            Divider()
+            
+            Button(role: .destructive) {
+                requestRemove(ids: items)
+            } label: {
+                Label(items.count > 1 ? "削除…" : "削除", systemImage: "trash")
+            }
+        } primaryAction: { items in
+            openSettings(for: items)
+        }
+        .onTapGesture {
+            selectedIds.removeAll()
+        }
+        .onDrop(of: [.fileURL], isTargeted: nil, perform: handleDrop)
+        .frame(minHeight: 120)
+        .scrollContentBackground(.hidden)
+        .padding(.bottom, 24)
+        .overlay(alignment: .bottom) {
+            toolbarOverlay
+        }
+        .sheet(item: $editingSetting) { setting in
+            PerAppSettingEditorView(setting: Binding(
+                get: { self.perAppSettings[setting.bundleIdentifier] ?? setting },
+                set: { self.perAppSettings[setting.bundleIdentifier] = $0 }
+            ))
+            .environmentObject(eventManager)
+        }
+        .alert("アプリではありません", isPresented: $showingInvalidAppAlert) {
+            Button("OK") { }
+        } message: {
+            Text("リストにはアプリのみ追加することができます。")
+        }
+        .alert("すべてのアプリを削除", isPresented: $showingClearConfirmation) {
+            Button("削除", role: .destructive) {
+                perAppSettings.removeAll()
+                selectedIds.removeAll()
+            }
+            Button("キャンセル", role: .cancel) { }
+        } message: {
+            Text("リストを空にしてもよろしいですか？この操作は元に戻せません。")
+        }
+        .alert("複数のアプリを削除しますか？", isPresented: $showingRemoveMultipleConfirmation) {
+            Button("削除", role: .destructive) {
+                removeApps(ids: idsToRemove)
+                idsToRemove.removeAll()
+            }
+            Button("キャンセル", role: .cancel) {
+                idsToRemove.removeAll()
+            }
+        } message: {
+            Text("選択された\(idsToRemove.count)個のアプリをリストから削除してもよろしいですか？")
+        }
+    }
+
+    private var toolbarOverlay: some View {
+        VStack(alignment: .leading, spacing: 0) {
+            Divider()
+            HStack(spacing: 0) {
+                Button {
+                    runningApplications = NSWorkspace.shared.runningApplications
+                    isShowingPicker = true
+                } label: {
+                    Image(systemName: "plus")
+                        .font(.body)
+                        .fontWeight(.medium)
+                        .frame(width: 24, height: 24)
+                        .offset(x: 2.0, y: -1.0)
+                        .contentShape(Rectangle())
+                }
+                .buttonStyle(.borderless)
+                .popover(isPresented: $isShowingPicker, arrowEdge: .leading) {
+                    AppExclusionAndLimitationPickerPopover(
+                        showAllRunningApps: $showAllRunningApps,
+                        runningApplications: runningApplications,
+                        existingBundleIdentifiers: Set(perAppSettings.keys),
+                        onSelectRunningApplication: { id in
+                            addApp(id: id)
+                            isShowingPicker = false
+                        },
+                        onSelectFromFinder: {
+                            isShowingPicker = false
+                            openFinder()
+                        }
+                    )
+                }
+
+                Divider()
+                    .frame(width: 1, height: 16)
+                    .background(Color.gray.opacity(0.1))
+                    .padding(.horizontal, 4)
+
+                Button {
+                    requestRemove(ids: selectedIds)
+                } label: {
+                    Image(systemName: "minus")
+                        .font(.body)
+                        .fontWeight(.medium)
+                        .frame(width: 24, height: 24)
+                        .offset(y: -0.6)
+                        .contentShape(Rectangle())
+                }
+                .buttonStyle(.borderless)
+                .disabled(selectedIds.isEmpty)
+
+                Spacer()
+
+                Button {
+                    openSettings(for: selectedIds)
+                } label: {
+                    Image(systemName: "gear")
+                        .font(.body)
+                        .fontWeight(.medium)
+                        .frame(width: 24, height: 24)
+                        .offset(y: -1.2)
+                        .contentShape(Rectangle())
+                }
+                .buttonStyle(.borderless)
+                .disabled(selectedIds.isEmpty)
+                .help("選択したアプリの個別設定を表示します。")
+
+                Divider()
+                    .frame(width: 1, height: 16)
+                    .background(Color.gray.opacity(0.1))
+                    .padding(.horizontal, 4)
+
+                Button {
+                    showingClearConfirmation = true
+                } label: {
+                    Image(systemName: "trash")
+                        .font(.body)
+                        .fontWeight(.medium)
+                        .frame(width: 24, height: 24)
+                        .offset(x: -2.0, y: -2.0)
+                        .contentShape(Rectangle())
+                        .foregroundStyle(perAppSettings.isEmpty ? Color.secondary : Color.red)
+                }
+                .buttonStyle(.borderless)
+                .disabled(perAppSettings.isEmpty)
+            }
+            .background(Rectangle().opacity(0.04))
+        }
+    }
+
+    private func addApp(id: String) {
+        if perAppSettings[id] == nil {
+            eventManager.addPerAppSetting(bundleIdentifier: id)
+        }
+    }
+
+    private func openSettings(for ids: Set<String>) {
+        if let first = ids.first {
+            editingSetting = perAppSettings[first]
+        }
+    }
+
+    private func removeApps(ids: Set<String>) {
+        for id in ids {
+            eventManager.removePerAppSetting(bundleIdentifier: id)
+        }
+        selectedIds.subtract(ids)
+    }
+
+    private func requestRemove(ids: Set<String>) {
+        if ids.count > 1 {
+            idsToRemove = ids
+            showingRemoveMultipleConfirmation = true
+        } else {
+            removeApps(ids: ids)
+        }
+    }
+
+    private func openFinder() {
+        let openPanel = NSOpenPanel()
+        openPanel.allowedContentTypes = [.application]
+        openPanel.allowsMultipleSelection = false
+        openPanel.canChooseDirectories = false
+        openPanel.canChooseFiles = true
+        openPanel.prompt = NSLocalizedString("追加", comment: "Finderの実行ボタン（OKボタン）のラベル")
+        openPanel.message = NSLocalizedString("アプリごとの動作設定に追加するアプリを選択してください。", comment: "Finderのメッセージ")
+        
+        guard let window = NSApp.keyWindow ?? NSApp.mainWindow else { return }
+        
+        openPanel.beginSheetModal(for: window) { response in
+            guard response == .OK, let url = openPanel.url else { return }
+            guard let bundle = Bundle(url: url), let id = bundle.bundleIdentifier else {
+                showingInvalidAppAlert = true
+                return
+            }
+            addApp(id: id)
+        }
+    }
+
+    private func handleDrop(_ providers: [NSItemProvider]) -> Bool {
+        let group = DispatchGroup()
+        var invalidCount = 0
+        
+        for provider in providers {
+            group.enter()
+            provider.loadItem(forTypeIdentifier: UTType.fileURL.identifier, options: nil) { urlData, _ in
+                defer { group.leave() }
+                guard let data = urlData as? Data, let url = URL(dataRepresentation: data, relativeTo: nil) else {
+                    invalidCount += 1
+                    return
+                }
+                if url.pathExtension == "app" || FileManager.default.fileExists(atPath: url.appendingPathComponent("Contents/Info.plist").path) {
+                    guard let bundle = Bundle(url: url), let id = bundle.bundleIdentifier else {
+                        invalidCount += 1
+                        return
+                    }
+                    DispatchQueue.main.async {
+                        addApp(id: id)
+                    }
+                } else {
+                    invalidCount += 1
+                }
+            }
+        }
+        group.notify(queue: .main) {
+            if invalidCount > 0 {
+                showingInvalidAppAlert = true
+            }
+        }
+        return true
     }
 }

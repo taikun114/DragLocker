@@ -19,7 +19,7 @@ enum EventManagerState: Equatable, Sendable {
     case locked  // ロック状態
 }
 
-enum MouseButton: Int, CaseIterable, Sendable {
+enum MouseButton: Int, CaseIterable, Sendable, Codable {
     case left = 0
     case right = 1
     case middle = 2
@@ -57,7 +57,7 @@ enum MouseButton: Int, CaseIterable, Sendable {
     }
 }
 
-enum IconAnimation: String, CaseIterable, Sendable {
+enum IconAnimation: String, CaseIterable, Sendable, Codable {
     case `default` = "default"
     case none = "none"
     case fade = "fade"
@@ -81,7 +81,7 @@ enum IconAnimation: String, CaseIterable, Sendable {
     }
 }
 
-enum IconStyle: String, CaseIterable, Sendable {
+enum IconStyle: String, CaseIterable, Sendable, Codable {
     case padlock = "padlock"
     case dot = "dot"
     case largeRing = "large_ring"
@@ -151,7 +151,7 @@ enum IconStyle: String, CaseIterable, Sendable {
     }
 }
 
-enum LockType: String, CaseIterable, Sendable {
+enum LockType: String, CaseIterable, Sendable, Codable {
     case time = "time"
     case distance = "distance"
     case both = "both"
@@ -163,9 +163,17 @@ enum LockType: String, CaseIterable, Sendable {
         case .both: return LocalizedStringResource("両方", comment: "ドラッグロックの開始条件：時間と距離の両方を有効にする")
         }
     }
+
+    var supportsTime: Bool {
+        self == .time || self == .both
+    }
+
+    var supportsDistance: Bool {
+        self == .distance || self == .both
+    }
 }
 
-enum AppListMode: String, CaseIterable, Sendable {
+enum AppListMode: String, CaseIterable, Sendable, Codable {
     case exclude = "exclude"
     case include = "include"
 
@@ -244,7 +252,11 @@ class EventManager: NSObject, ObservableObject {
     private var eventTap: CFMachPort?
     private var runLoopSource: CFRunLoopSource?
 
+    /// 各アイコンスタイルごとの設定値を保持する（永続化用）
     private var iconSettings: [String: Double] = [:]
+    /// 全てのアイコン設定のコピーを取得する
+    var allIconSettings: [String: Double] { iconSettings }
+    
     private var isInitializing = false
 
     private var buttonStates: [MouseButton: EventManagerState] = [
@@ -260,7 +272,7 @@ class EventManager: NSObject, ObservableObject {
             }
             // アイコン表示設定が有効な場合のみカーソルの表示切り替え
             DispatchQueue.main.async {
-                if self.isLocked && self.isIconEnabled {
+                if self.isLocked && (self.effectiveSetting?.isIconEnabled ?? self.isIconEnabled) {
                     CursorManager.shared.showCustomCursor()
                 } else {
                     CursorManager.shared.hideCustomCursor()
@@ -486,6 +498,14 @@ class EventManager: NSObject, ObservableObject {
         }
     }
 
+    @Published var perAppSettings: [String: PerAppSetting] = [:] {
+        didSet {
+            if let encoded = try? JSONEncoder().encode(perAppSettings) {
+                UserDefaults.standard.set(encoded, forKey: "perAppSettingsData")
+            }
+        }
+    }
+
     @Published var appExclusionAndLimitationIdentifiers: [String] = [] {
         didSet {
             if let encoded = try? JSONEncoder().encode(appExclusionAndLimitationIdentifiers) {
@@ -495,6 +515,9 @@ class EventManager: NSObject, ObservableObject {
             appExclusionAndLimitationIdentifiersSet = Set(appExclusionAndLimitationIdentifiers)
         }
     }
+
+    /// 現在適用されている設定（ロック中はそのロックを開始したアプリの設定、それ以外はカーソル下のアプリの設定）
+    @Published var effectiveSetting: PerAppSetting?
 
     private var dragStartLocations: [MouseButton: CGPoint] = [:]
     private var lastLocation: CGPoint = .zero
@@ -599,6 +622,14 @@ class EventManager: NSObject, ObservableObject {
             self.customIconOpacity = 1.0
         }
 
+        if let savedPerAppSettingData = UserDefaults.standard.data(forKey: "perAppSettingsData"),
+           let decodedPerAppSettings = try? JSONDecoder().decode([String: PerAppSetting].self, from: savedPerAppSettingData) {
+            self.perAppSettings = decodedPerAppSettings
+        } else {
+            self.perAppSettings = [:]
+        }
+
+
         self.isIconEnabled = UserDefaults.standard.bool(forKey: "isIconEnabled")
         if let savedAnimationRaw = UserDefaults.standard.string(forKey: "iconAnimation"), let animation = IconAnimation(rawValue: savedAnimationRaw) {
             self.iconAnimation = animation
@@ -617,6 +648,9 @@ class EventManager: NSObject, ObservableObject {
 
         isInitializing = true
         super.init()
+
+        // 初期状態の設定を解決
+        self.effectiveSetting = resolveSetting(for: nil)
 
         if let savedStyle = UserDefaults.standard.string(forKey: "pointerIconStyle"), let style = IconStyle(rawValue: savedStyle) {
             self.pointerIconStyle = style
@@ -949,6 +983,13 @@ class EventManager: NSObject, ObservableObject {
                     let runningApp = NSRunningApplication(processIdentifier: pid)
                     let bundleIdentifier = runningApp?.bundleIdentifier
                     
+                    // 自分自身（DragLocker）のアイコンウィンドウはスキップする
+                    // ロック解除直後に再度ロックした際、消えかけているアイコンウィンドウを誤認するのを防ぐため
+                    // 通常のウインドウ（layer 0）は除外せず、アイコン（layer 1000以上）のみを除外する
+                    if bundleIdentifier == Bundle.main.bundleIdentifier && layer >= 1000 {
+                        continue
+                    }
+                    
                     // 通知センターが持つ、名前のない巨大な透明背景ウィンドウをスキップする
                     // これらは表示・非表示にかかわらず画面全体を覆っている場合があり、判定を妨げるため
                     if bundleIdentifier == "com.apple.notificationcenterui" && (windowName == nil || windowName == "n/a") {
@@ -1121,6 +1162,68 @@ class EventManager: NSObject, ObservableObject {
         #endif
     }
 
+    // MARK: - Per-App Settings Management
+
+    func addPerAppSetting(bundleIdentifier: String) {
+        guard perAppSettings[bundleIdentifier] == nil else { return }
+        perAppSettings[bundleIdentifier] = PerAppSetting(bundleIdentifier: bundleIdentifier, eventManager: self)
+    }
+
+    func removePerAppSetting(bundleIdentifier: String) {
+        perAppSettings.removeValue(forKey: bundleIdentifier)
+    }
+
+    func updatePerAppSetting(_ setting: PerAppSetting) {
+        perAppSettings[setting.bundleIdentifier] = setting
+    }
+
+    /// 指定されたアプリ識別子に対する設定を解決する（個別設定があればそれを、なければ現在のグローバル設定を返す）
+    func resolveSetting(for bundleIdentifier: String?) -> PerAppSetting {
+        if let bundleIdentifier = bundleIdentifier, var setting = perAppSettings[bundleIdentifier] {
+            // 上書きされていない項目を現在のグローバル設定で同期する
+            if !setting.overrides.contains("mouseButtons") { setting.enabledButtonRawValues = self.enabledButtonRawValues }
+            if !setting.overrides.contains("lockMethod") { setting.lockType = self.lockType }
+            
+            // 依存関係を考慮した解決
+            if !setting.overrides.contains("lockDelay") || !setting.lockType.supportsTime {
+                setting.lockDelay = self.lockDelay
+            }
+            if !setting.overrides.contains("lockDistance") || !setting.lockType.supportsDistance {
+                setting.lockDistance = self.lockDistance
+            }
+            
+            if !setting.overrides.contains("iconEnabled") { setting.isIconEnabled = self.isIconEnabled }
+            if !setting.overrides.contains("pointerIconStyle") || !setting.isIconEnabled {
+                setting.pointerIconStyle = self.pointerIconStyle
+            }
+            if !setting.overrides.contains("iconAnimation") || !setting.isIconEnabled {
+                setting.iconAnimation = self.iconAnimation
+            }
+            
+            // 現在UIで上書き不可なアイコン詳細設定（オフセットなど）は
+            // PerAppSetting内の辞書にスタイルごとに保存されているため、ここでは同期不要
+            
+            if !setting.overrides.contains("soundEnabled") { setting.isSoundEnabled = self.isSoundEnabled }
+            if !setting.overrides.contains("soundStyle") || !setting.isSoundEnabled {
+                setting.soundStyle = self.soundStyle
+            }
+            if !setting.overrides.contains("soundVolume") || !setting.isSoundEnabled {
+                setting.soundVolume = self.soundVolume
+            }
+            if !setting.overrides.contains("soundInverted") || !setting.isSoundEnabled {
+                setting.isSoundInverted = self.isSoundInverted
+            }
+            
+            // UIで上書き不可な設定は常にグローバルに従う
+            setting.isUnlockAllWithEscEnabled = self.isUnlockAllWithEscEnabled
+            
+            return setting
+        }
+        
+        // 個別設定がない場合はグローバル設定を PerAppSetting 構造体にラップして返す
+        return PerAppSetting(bundleIdentifier: "", eventManager: self)
+    }
+
     // MARK: - Custom Sound Management
 
     private var appSupportDirectory: URL {
@@ -1288,9 +1391,10 @@ class EventManager: NSObject, ObservableObject {
         if type == .keyDown {
             let keyCode = event.getIntegerValueField(.keyboardEventKeycode)
             if keyCode == 53 /* Escape key */ {
-                if isUnlockAllWithEscEnabled {
+                // アプリ個別設定に関わらず、グローバル設定がオンなら常に解除する
+                if self.isUnlockAllWithEscEnabled {
                     #if DEBUG
-                    print("Escape pressed: Releasing all locks")
+                    print("Escape pressed: Releasing all locks (global settings)")
                     #endif
                     releaseAllLocks()
                 }
@@ -1300,25 +1404,86 @@ class EventManager: NSObject, ObservableObject {
 
         // 各ボタンのイベント判定
         let currentLocation = event.location
+        
+        // ロック中かどうかの即時判定
+        let isCurrentlyLocked = !lockedButtons.isEmpty
+        
+        // マウス移動イベントの特急処理 (ロック中でなければ、座標だけ更新して即座に流す)
+        if type == .mouseMoved {
+            if !isCurrentlyLocked {
+                lastLocation = currentLocation
+                return Unmanaged.passUnretained(event)
+            }
+        }
+
+        // 基本的には現在の effectiveSetting を使用する
+        var currentSetting = effectiveSetting ?? resolveSetting(for: nil)
+        
+        // マウスダウンイベントの場合のみ、カーソル下のアプリを特定して設定を更新する
+        let isMouseDown = type == .leftMouseDown || type == .rightMouseDown || type == .otherMouseDown
+        if isMouseDown {
+            let appIdentity = appIdentityForApplication(at: currentLocation)
+            currentSetting = resolveSetting(for: appIdentity.identifier)
+            
+            // ロック中でない場合は effectiveSetting を更新（UI/アイコン用）
+            if !isCurrentlyLocked {
+                self.effectiveSetting = currentSetting
+            }
+        }
+        
+        // 座標更新 (ドラッグイベント時)
+        if type == .leftMouseDragged || type == .rightMouseDragged || type == .otherMouseDragged {
+            lastLocation = currentLocation
+        }
 
         // マウスダウン・アップの処理
         for button in MouseButton.allCases {
-            if !enabledButtonRawValues.contains(button.rawValue) { continue }
+            // 1. 状態維持・解除の判定 (設定に関わらず、既存の状態を適切に処理する)
+            if type == button.mouseDownType {
+                if type == .otherMouseDown {
+                    let buttonNumber = event.getIntegerValueField(.mouseEventButtonNumber)
+                    if buttonNumber != 2 { continue }
+                }
+
+                if buttonStates[button] == .locked {
+                    #if DEBUG
+                    print("\(button) down while locked: Releasing lock (priority)")
+                    #endif
+                    releaseLock(for: button)
+                    return Unmanaged.passUnretained(event)
+                }
+            }
+            
+            if type == button.mouseUpType {
+                if type == .otherMouseUp {
+                    let buttonNumber = event.getIntegerValueField(.mouseEventButtonNumber)
+                    if buttonNumber != 2 { continue }
+                }
+                
+                if buttonStates[button] == .locked {
+                    #if DEBUG
+                    print("\(button) up while locked: Blocking up event (priority)")
+                    #endif
+                    return nil
+                }
+                
+                if buttonStates[button] == .holding {
+                    #if DEBUG
+                    print("\(button) up while holding: Releasing hold (priority)")
+                    #endif
+                    cancelHold(for: button)
+                    return Unmanaged.passUnretained(event)
+                }
+            }
+
+            // 2. ロック開始の判定 (ここからは現在の設定に従う)
+            if !currentSetting.enabledButtonRawValues.contains(button.rawValue) { continue }
 
             if type == button.mouseDownType {
                 // 中ボタン(OtherMouse)の場合は、ボタン番号が正しいかチェック
                 if type == .otherMouseDown {
                     let buttonNumber = event.getIntegerValueField(.mouseEventButtonNumber)
                     if buttonNumber != 2 { continue } // 2が中ボタン
-                }
-
-                // すでにロックされている場合は、アプリのフィルタに関係なく解除を優先する
-                if buttonStates[button] == .locked {
-                    #if DEBUG
-                    print("\(button) down while locked: Releasing lock")
-                    #endif
-                    releaseLock(for: button)
-                    return Unmanaged.passUnretained(event)
                 }
 
                 if !shouldLock(at: currentLocation) {
@@ -1339,49 +1504,28 @@ class EventManager: NSObject, ObservableObject {
                     dragStartLocations[button] = currentLocation
                     lastLocation = currentLocation
                     
-                    if lockType == .time || lockType == .both {
+                    if currentSetting.lockType == .time || currentSetting.lockType == .both {
                         DispatchQueue.main.async {
-                            self.startTimer(for: button)
+                            self.startTimer(for: button, delay: currentSetting.lockDelay)
                         }
                     }
                 }
                 return Unmanaged.passUnretained(event)
             }
-
-            if type == button.mouseUpType {
-                if type == .otherMouseUp {
-                    let buttonNumber = event.getIntegerValueField(.mouseEventButtonNumber)
-                    if buttonNumber != 2 { continue }
-                }
-
-                if buttonStates[button] == .holding {
-                    #if DEBUG
-                    print("\(button) up: Normal click, canceling timer")
-                    #endif
-                    cancelHold(for: button)
-                    return Unmanaged.passUnretained(event)
-                } else if buttonStates[button] == .locked {
-                    #if DEBUG
-                    print("\(button) up while locked: Ignoring to keep the lock")
-                    #endif
-                    return nil
-                }
-            }
         }
 
-        // ドラッグ・移動イベントの処理
+        // ドラッグ・移動イベントの判定 (距離ロック判定とドラッグ変換)
         if type == .leftMouseDragged || type == .rightMouseDragged || type == .otherMouseDragged || type == .mouseMoved {
-            lastLocation = currentLocation
             
-            if (lockType == .distance || lockType == .both) && !isLocked {
+            // 距離ロックの判定 (物理ドラッグ中のみ実行)
+            if type != .mouseMoved && (currentSetting.lockType == .distance || currentSetting.lockType == .both) && !isCurrentlyLocked {
                 for button in MouseButton.allCases {
                     if buttonStates[button] == .holding, let startLocation = dragStartLocations[button] {
                         let distance = sqrt(pow(currentLocation.x - startLocation.x, 2) + pow(currentLocation.y - startLocation.y, 2))
                         
-                        if distance >= lockDistance {
-                            // ロックするかどうかの判定はマウスダウン時に行われているため、ここでは判定せずにロックを開始する
+                        if distance >= currentSetting.lockDistance {
                             #if DEBUG
-                            print("\(button) distance (\(distance)) exceeded threshold (\(lockDistance)) at \(currentLocation): Locking")
+                            print("\(button) distance (\(distance)) exceeded threshold (\(currentSetting.lockDistance)): Locking")
                             #endif
                             updateButtonState(button, to: .locked)
                             break
@@ -1391,7 +1535,7 @@ class EventManager: NSObject, ObservableObject {
             }
 
             // いずれかのボタンがロック中なら、mouseMoved（物理ボタンが押されていない状態での移動）をドラッグに変換
-            if isLocked {
+            if !lockedButtons.isEmpty {
                 if type == .mouseMoved {
                     // 現在ロック中のボタンのうち、最初に見つかったもののドラッグタイプを使用
                     if let lockedButton = MouseButton.allCases.first(where: { buttonStates[$0] == .locked }) {
@@ -1432,20 +1576,21 @@ class EventManager: NSObject, ObservableObject {
         }
 
         // サウンド再生の判定
-        if isSoundEnabled {
+        let currentSetting = effectiveSetting ?? resolveSetting(for: nil)
+        if currentSetting.isSoundEnabled {
             if oldState != .locked && newState == .locked {
                 // ロックされた
-                SoundManager.shared.play(style: soundStyle, volume: soundVolume, isLocked: true, isInverted: isSoundInverted)
+                SoundManager.shared.play(style: currentSetting.soundStyle, volume: currentSetting.soundVolume, isLocked: true, isInverted: currentSetting.isSoundInverted)
             } else if oldState == .locked && newState != .locked {
                 // 解除された
-                SoundManager.shared.play(style: soundStyle, volume: soundVolume, isLocked: false, isInverted: isSoundInverted)
+                SoundManager.shared.play(style: currentSetting.soundStyle, volume: currentSetting.soundVolume, isLocked: false, isInverted: currentSetting.isSoundInverted)
             }
         }
     }
 
-    private func startTimer(for button: MouseButton) {
+    private func startTimer(for button: MouseButton, delay: TimeInterval) {
         holdTimers[button]?.invalidate()
-        let timer = Timer(timeInterval: lockDelay, repeats: false) { [weak self] _ in
+        let timer = Timer(timeInterval: delay, repeats: false) { [weak self] _ in
             DispatchQueue.main.async { [weak self] in
                 guard let self = self else { return }
                 if self.buttonStates[button] == .holding {
@@ -1669,6 +1814,62 @@ class EventManager: NSObject, ObservableObject {
             }
         }
     }
+    
+    /// 指定されたアプリの指定されたスタイルの特定の設定値を取得する（解決済み）
+    func iconSetting(for bundleIdentifier: String?, style: IconStyle, key: String) -> Double {
+        // 個別設定があるか確認
+        if let bundleId = bundleIdentifier, let perApp = perAppSettings[bundleId] {
+            // アプリの設定があれば、そのアプリの辞書から取得を試みる
+            return perApp.iconSetting(for: style, key: key)
+        }
+        
+        // グローバル設定を使用
+        let styleStr = style.rawValue
+        let settingKey = "\(styleStr)_\(key)"
+        
+        if let value = iconSettings[settingKey] {
+            return value
+        }
+        
+        // 辞書にない場合はデフォルト値を返す
+        switch key {
+        case "scale": return style.defaultScale
+        case "opacity": return style.defaultOpacity
+        case "xOffset": return style.defaultXOffset
+        case "yOffset": return style.defaultYOffset
+        default: return 0.0
+        }
+    }
+    
+    /// 現在有効なアイコン設定値を取得する
+    func effectiveIconSetting(key: String) -> Double {
+        let setting = effectiveSetting
+        let style = setting?.pointerIconStyle ?? pointerIconStyle
+        
+        if let bundleId = setting?.bundleIdentifier, !bundleId.isEmpty, let perApp = perAppSettings[bundleId], perApp.overrides.contains("pointerIconStyle") {
+             // アプリがスタイルを上書きしている場合、そのアプリの設定を優先
+             return perApp.iconSetting(for: style, key: key)
+        }
+        
+        // それ以外（グローバルまたはオフセットが上書きされていない場合）
+        
+        let styleStr = style.rawValue
+        let settingKey = "\(styleStr)_\(key)"
+        
+        // もし現在アクティブなスタイルがグローバルと同じなら、現在のプロパティ値を返すのが最も確実（編集中の値が即座に反映されるため）
+        if style == pointerIconStyle {
+            switch key {
+            case "scale": return customIconScale
+            case "opacity": return customIconOpacity
+            case "xOffset": return customIconXOffset
+            case "yOffset": return customIconYOffset
+            default: break
+            }
+        }
+        
+        // それ以外は辞書から
+        return iconSettings[settingKey] ?? (key == "scale" ? style.defaultScale : (key == "opacity" ? style.defaultOpacity : (key == "xOffset" ? style.defaultXOffset : style.defaultYOffset)))
+    }
 }
 
 extension EventManager: UNUserNotificationCenterDelegate {
@@ -1754,5 +1955,192 @@ extension NSImage {
         }
         
         return NSImage(cgImage: trimmedCgImage, size: NSSize(width: trimRect.width, height: trimRect.height))
+    }
+}
+
+extension IconStyle {
+    // プロジェクト全体で共有するキャッシュ
+    private static var iconCache = NSCache<NSString, NSImage>()
+    
+    /// 指定されたスタイルのプレビュー画像を生成またはキャッシュから取得します
+    func previewImage(eventManager: EventManager) -> Image {
+        if self == .custom {
+            return Image(nsImage: generateNSImage(eventManager: eventManager))
+        }
+        
+        let cacheKey = self.rawValue as NSString
+        if let cached = Self.iconCache.object(forKey: cacheKey) {
+            return Image(nsImage: cached)
+        }
+        
+        let generated = generateNSImage(eventManager: eventManager)
+        Self.iconCache.setObject(generated, forKey: cacheKey)
+        return Image(nsImage: generated)
+    }
+    
+    /// ビットマップ画像を生成します
+    private func generateNSImage(eventManager: EventManager) -> NSImage {
+        let view: AnyView
+        
+        switch self {
+        case .padlock:
+            view = AnyView(Image("Pointer_Locked").frame(width: 16, height: 16, alignment: .center))
+        case .dot:
+            view = AnyView(ZStack(alignment: .center) {
+                Circle().fill(Color.white).frame(width: 8, height: 8)
+                Circle().fill(Color.black).frame(width: 6, height: 6)
+            }.frame(width: 16, height: 16, alignment: .center))
+        case .largeRing:
+            view = AnyView(Circle()
+                .stroke(Color.white, lineWidth: 3)
+                .frame(width: 13, height: 13)
+                .overlay(
+                    Circle()
+                        .stroke(Color.black, lineWidth: 1)
+                        .frame(width: 13, height: 13)
+                )
+                .frame(width: 16, height: 16, alignment: .center))
+        case .trafficLight:
+            let scale = 16.0 / 35.0
+            view = AnyView(HStack(spacing: 3 * scale) {
+                Circle().fill(Color.green).frame(width: 7 * scale, height: 7 * scale)
+                Circle().fill(Color.yellow).frame(width: 7 * scale, height: 7 * scale)
+                Circle().fill(Color.red).frame(width: 7 * scale, height: 7 * scale)
+            }
+            .padding(.horizontal, 4 * scale)
+            .padding(.vertical, 3 * scale)
+            .background(
+                Capsule()
+                    .fill(Color.black)
+                    .overlay(
+                        Capsule()
+                            .stroke(Color.white, lineWidth: 1.0 * scale)
+                    )
+            )
+            .frame(width: 16, height: 16, alignment: .center))
+        case .smallTrafficLight:
+            let scale = 16.0 / 24.0
+            view = AnyView(HStack(spacing: 2 * scale) {
+                Circle().fill(Color.green).frame(width: 5 * scale, height: 5 * scale)
+                Circle().fill(Color.yellow).frame(width: 5 * scale, height: 5 * scale)
+                Circle().fill(Color.red).frame(width: 5 * scale, height: 5 * scale)
+            }
+            .padding(.horizontal, 2.5 * scale)
+            .padding(.vertical, 2 * scale)
+            .background(
+                Capsule()
+                    .fill(Color.black)
+                    .overlay(
+                        Capsule()
+                            .stroke(Color.white, lineWidth: 1.0 * scale)
+                    )
+            )
+            .frame(width: 16, height: 16, alignment: .center))
+        case .trafficLightVertical:
+            let scale = 16.0 / 35.0
+            view = AnyView(VStack(spacing: 3 * scale) {
+                Circle().fill(Color.green).frame(width: 7 * scale, height: 7 * scale)
+                Circle().fill(Color.yellow).frame(width: 7 * scale, height: 7 * scale)
+                Circle().fill(Color.red).frame(width: 7 * scale, height: 7 * scale)
+            }
+            .padding(.horizontal, 3 * scale)
+            .padding(.vertical, 4 * scale)
+            .background(
+                Capsule()
+                    .fill(Color.black)
+                    .overlay(
+                        Capsule()
+                            .stroke(Color.white, lineWidth: 1.0 * scale)
+                    )
+            )
+            .frame(width: 16, height: 16, alignment: .center))
+        case .smallTrafficLightVertical:
+            let scale = 16.0 / 24.0
+            view = AnyView(VStack(spacing: 2 * scale) {
+                Circle().fill(Color.green).frame(width: 5 * scale, height: 5 * scale)
+                Circle().fill(Color.yellow).frame(width: 5 * scale, height: 5 * scale)
+                Circle().fill(Color.red).frame(width: 5 * scale, height: 5 * scale)
+            }
+            .padding(.horizontal, 2 * scale)
+            .padding(.vertical, 2.5 * scale)
+            .background(
+                Capsule()
+                    .fill(Color.black)
+                    .overlay(
+                        Capsule()
+                            .stroke(Color.white, lineWidth: 1.0 * scale)
+                    )
+            )
+            .frame(width: 16, height: 16, alignment: .center))
+        case .textHorizontal:
+            view = AnyView(HStack(spacing: 1) {
+                Text(verbatim: "L")
+                Text(verbatim: "M").padding(.leading, -1.5)
+                Text(verbatim: "R")
+            }
+            .font(.system(size: 6.5, weight: .bold, design: .monospaced))
+            .foregroundColor(.white)
+            .padding(.horizontal, 2)
+            .frame(height: 9)
+            .background(
+                Capsule()
+                    .fill(Color.black)
+                    .overlay(
+                        Capsule()
+                            .stroke(Color.white, lineWidth: 1.0)
+                    )
+            )
+            .frame(width: 16, height: 16, alignment: .center))
+        case .textVertical:
+            view = AnyView(VStack(spacing: -1.2) {
+                Text(verbatim: "L")
+                Text(verbatim: "M")
+                Text(verbatim: "R")
+            }
+            .font(.system(size: 4, weight: .bold, design: .monospaced))
+            .foregroundColor(.white)
+            .padding(.vertical, 0.5)
+            .frame(width: 7)
+            .background(
+                Capsule()
+                    .fill(Color.black)
+                    .overlay(
+                        Capsule()
+                            .stroke(Color.white, lineWidth: 1.0)
+                    )
+            )
+            .frame(width: 16, height: 16, alignment: .center))
+        case .focus:
+            view = AnyView(ZStack {
+                FocusCorner(length: 5, thickness: 2, innerThickness: 1, alignment: .topLeading, containerSize: 16)
+                FocusCorner(length: 5, thickness: 2, innerThickness: 1, alignment: .topTrailing, containerSize: 16)
+                FocusCorner(length: 5, thickness: 2, innerThickness: 1, alignment: .bottomLeading, containerSize: 16)
+                FocusCorner(length: 5, thickness: 2, innerThickness: 1, alignment: .bottomTrailing, containerSize: 16)
+            }.frame(width: 16, height: 16, alignment: .center))
+        case .custom:
+            if let image = eventManager.cachedCustomIconImage {
+                let fitScale = min(1.0, 80.0 / max(1, image.size.width), 80.0 / max(1, image.size.height))
+                let contentDisplaySizeIn80 = max(image.size.width, image.size.height) * fitScale * eventManager.customIconScale
+                let normalizedScale = contentDisplaySizeIn80 / 80.0
+                
+                view = AnyView(
+                    Image(nsImage: image)
+                        .resizable()
+                        .scaledToFit()
+                        .frame(width: 16, height: 16)
+                        .scaleEffect(max(1.0, normalizedScale))
+                        .opacity(eventManager.customIconOpacity)
+                        .clipped()
+                )
+            } else {
+                view = AnyView(Color.clear.frame(width: 16, height: 16))
+            }
+        }
+        
+        let hostingView = NSHostingView(rootView: view)
+        hostingView.setFrameSize(CGSize(width: 16, height: 16))
+        let bitmap = hostingView.bitmapImageRepForCachingDisplay(in: NSRect(x: 0, y: 0, width: 16, height: 16))!
+        hostingView.cacheDisplay(in: NSRect(x: 0, y: 0, width: 16, height: 16), to: bitmap)
+        return NSImage(cgImage: bitmap.cgImage!, size: CGSize(width: 16, height: 16))
     }
 }

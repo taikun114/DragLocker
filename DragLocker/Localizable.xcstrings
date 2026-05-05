@@ -65,6 +65,22 @@
         }
       }
     },
+    "「%@」設定を上書きする" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Override \"%@\" setting"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "「%@」設定を上書きする"
+          }
+        }
+      }
+    },
     "%@ (%@)" : {
       "comment" : "設定画面のアプリリストのツールチップ（パス表示）",
       "localizations" : {
@@ -1116,6 +1132,40 @@
         }
       }
     },
+    "アプリごとの動作" : {
+      "comment" : "アプリごとの動作設定セクションのヘッダー",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Per-App Behavior"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "アプリごとの動作"
+          }
+        }
+      }
+    },
+    "アプリごとの動作設定に追加するアプリを選択してください。" : {
+      "comment" : "Finderのメッセージ",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Please select the applications to add to the per-app behavior settings."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "アプリごとの動作設定に追加するアプリを選択してください。"
+          }
+        }
+      }
+    },
     "アプリではありません" : {
       "comment" : "無効なファイルがドロップされた際のアラートタイトル",
       "localizations" : {
@@ -2086,6 +2136,22 @@
         }
       }
     },
+    "チェックを入れると、この項目のグローバル設定を上書きします。" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Check this to override the global settings for this item."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "チェックを入れると、この項目のグローバル設定を上書きします。"
+          }
+        }
+      }
+    },
     "テキスト（横）" : {
       "comment" : "ポインタ付近に表示するアイコンの種類：テキスト（横）",
       "localizations" : {
@@ -2250,7 +2316,7 @@
         }
       }
     },
-    "ドラッグロックされた時と解除されたときにサウンドを再生します。" : {
+    "ドラッグロックされたときと解除されたときにサウンドを再生します。" : {
       "comment" : "サウンド機能の説明文",
       "localizations" : {
         "en" : {
@@ -2262,12 +2328,12 @@
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "ドラッグロックされた時と解除されたときにサウンドを再生します。"
+            "value" : "ドラッグロックされたときと解除されたときにサウンドを再生します。"
           }
         }
       }
     },
-    "ドラッグロックされた時と解除された時に再生されるサウンドを入れ替えます。" : {
+    "ドラッグロックされたときと解除されたときに再生されるサウンドを入れ替えます。" : {
       "comment" : "サウンド反転設定の説明文",
       "localizations" : {
         "en" : {
@@ -2279,7 +2345,7 @@
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "ドラッグロックされた時と解除された時に再生されるサウンドを入れ替えます。"
+            "value" : "ドラッグロックされたときと解除されたときに再生されるサウンドを入れ替えます。"
           }
         }
       }
@@ -2511,6 +2577,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "ドラッグロック中にマウスポインタ付近に表示されるアイコンのスタイルを選択します。"
+          }
+        }
+      }
+    },
+    "ドラッグロック中にマウスポインタ付近に表示されるアイコンのスタイルを選択します。\nカスタムアイコンはグローバル設定で指定されているものが使用されます。" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Select the style of the icon displayed near the mouse pointer during drag lock.\nCustom icons use those specified in the global settings."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ドラッグロック中にマウスポインタ付近に表示されるアイコンのスタイルを選択します。\nカスタムアイコンはグローバル設定で指定されているものが使用されます。"
           }
         }
       }
@@ -3427,6 +3509,22 @@
         }
       }
     },
+    "再生するサウンドを選択します。マウスホバーでサウンドをプレビューできます。\nカスタムサウンドはグローバル設定で指定されているものが使用されます。" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Select the sound to play. You can preview sounds by hovering over them.\nCustom sounds use those specified in the global settings."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "再生するサウンドを選択します。マウスホバーでサウンドをプレビューできます。\nカスタムサウンドはグローバル設定で指定されているものが使用されます。"
+          }
+        }
+      }
+    },
     "再開" : {
       "comment" : "再開アクションボタン",
       "localizations" : {
@@ -3656,6 +3754,23 @@
         }
       }
     },
+    "各アプリをダブルクリックすることで設定画面を開くことができます。" : {
+      "comment" : "アプリごとの動作設定セクションのフッター",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "You can open the settings by double-clicking each application."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "各アプリをダブルクリックすることで設定画面を開くことができます。"
+          }
+        }
+      }
+    },
     "各サウンドには、最大10秒までのオーディオファイルを設定することができ、片方だけが設定された場合はロック時と解除時に同じサウンドが使用されます。" : {
       "localizations" : {
         "en" : {
@@ -3668,6 +3783,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "各サウンドには、最大10秒までのオーディオファイルを設定することができ、片方だけが設定された場合はロック時と解除時に同じサウンドが使用されます。"
+          }
+        }
+      }
+    },
+    "変更を保存せずに閉じます。" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Close without saving changes."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "変更を保存せずに閉じます。"
           }
         }
       }
@@ -4438,6 +4569,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "選択された%lld個のアプリをリストから削除してもよろしいですか？"
+          }
+        }
+      }
+    },
+    "選択したアプリの個別設定を表示します。" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Show individual settings for the selected application."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "選択したアプリの個別設定を表示します。"
           }
         }
       }

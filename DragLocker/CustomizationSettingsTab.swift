@@ -89,11 +89,11 @@ struct CustomizationSettingsTab: View {
                     set: { eventManager.isSoundEnabled = $0 }
                 )) {
                     Text("サウンドを再生")
-                    Text("ドラッグロックされた時と解除されたときにサウンドを再生します。")
+                    Text("ドラッグロックされたときと解除されたときにサウンドを再生します。")
                         .font(.subheadline)
                         .foregroundStyle(.secondary)
                 }
-                .accessibilityHint("ドラッグロックされた時と解除されたときにサウンドを再生します。")
+                .accessibilityHint("ドラッグロックされたときと解除されたときにサウンドを再生します。")
                 
                 HStack(alignment: .top) {
                     Picker(selection: $eventManager.soundStyle.animation(.spring(response: 0.3, dampingFraction: 0.8))) {
@@ -197,12 +197,12 @@ struct CustomizationSettingsTab: View {
                 Toggle(isOn: $eventManager.isSoundInverted) {
                     Text("サウンドを反転")
                         .foregroundStyle(eventManager.isSoundEnabled && eventManager.soundStyle != .system ? .primary : .secondary)
-                    Text("ドラッグロックされた時と解除された時に再生されるサウンドを入れ替えます。")
+                    Text("ドラッグロックされたときと解除されたときに再生されるサウンドを入れ替えます。")
                         .font(.subheadline)
                         .foregroundStyle(eventManager.isSoundEnabled && eventManager.soundStyle != .system ? .secondary : .tertiary)
                 }
                 .disabled(!eventManager.isSoundEnabled || eventManager.soundStyle == .system)
-                .accessibilityHint("ドラッグロックされた時と解除された時に再生されるサウンドを入れ替えます。")
+                .accessibilityHint("ドラッグロックされたときと解除されたときに再生されるサウンドを入れ替えます。")
             }
         }
         .formStyle(.grouped)
@@ -306,191 +306,8 @@ struct CustomizationSettingsTab: View {
         .frame(maxWidth: .infinity)
     }
     
-    private static var iconCache: [IconStyle: Image] = [:]
-    
-    private func getIcon(for style: IconStyle) -> Image {
-        // カスタムスタイルの場合は、スケールや不透明度の変更を反映するためキャッシュせず毎回生成する
-        if style == .custom {
-            return generateIcon(for: .custom)
-        }
-        
-        if let cached = Self.iconCache[style] {
-            return cached
-        }
-        let generated = generateIcon(for: style)
-        Self.iconCache[style] = generated
-        return generated
-    }
-    
-    private func generateIcon(for style: IconStyle) -> Image {
-        let view: AnyView
-        switch style {
-        case .padlock:
-            view = AnyView(Image("Pointer_Locked").frame(width: 16, height: 16, alignment: .center))
-        case .dot:
-            view = AnyView(ZStack(alignment: .center) {
-                Circle().fill(Color.white).frame(width: 8, height: 8)
-                Circle().fill(Color.black).frame(width: 6, height: 6)
-            }.frame(width: 16, height: 16, alignment: .center))
-        case .largeRing:
-            view = AnyView(Circle()
-                .stroke(Color.white, lineWidth: 3)
-                .frame(width: 13, height: 13)
-                .overlay(
-                    Circle()
-                        .stroke(Color.black, lineWidth: 1)
-                        .frame(width: 13, height: 13)
-                )
-                    .frame(width: 16, height: 16, alignment: .center))
-        case .trafficLight:
-            let scale = 16.0 / 35.0
-            view = AnyView(HStack(spacing: 3 * scale) {
-                Circle().fill(Color.green).frame(width: 7 * scale, height: 7 * scale)
-                Circle().fill(Color.yellow).frame(width: 7 * scale, height: 7 * scale)
-                Circle().fill(Color.red).frame(width: 7 * scale, height: 7 * scale)
-            }
-                .padding(.horizontal, 4 * scale)
-                .padding(.vertical, 3 * scale)
-                .background(
-                    Capsule()
-                        .fill(Color.black)
-                        .overlay(
-                            Capsule()
-                                .stroke(Color.white, lineWidth: 1.0 * scale)
-                        )
-                )
-                    .frame(width: 16, height: 16, alignment: .center))
-        case .smallTrafficLight:
-            let scale = 16.0 / 24.0
-            view = AnyView(HStack(spacing: 2 * scale) {
-                Circle().fill(Color.green).frame(width: 5 * scale, height: 5 * scale)
-                Circle().fill(Color.yellow).frame(width: 5 * scale, height: 5 * scale)
-                Circle().fill(Color.red).frame(width: 5 * scale, height: 5 * scale)
-            }
-                .padding(.horizontal, 2.5 * scale)
-                .padding(.vertical, 2 * scale)
-                .background(
-                    Capsule()
-                        .fill(Color.black)
-                        .overlay(
-                            Capsule()
-                                .stroke(Color.white, lineWidth: 1.0 * scale)
-                        )
-                )
-                    .frame(width: 16, height: 16, alignment: .center))
-        case .trafficLightVertical:
-            let scale = 16.0 / 35.0
-            view = AnyView(VStack(spacing: 3 * scale) {
-                Circle().fill(Color.green).frame(width: 7 * scale, height: 7 * scale)
-                Circle().fill(Color.yellow).frame(width: 7 * scale, height: 7 * scale)
-                Circle().fill(Color.red).frame(width: 7 * scale, height: 7 * scale)
-            }
-                .padding(.horizontal, 3 * scale)
-                .padding(.vertical, 4 * scale)
-                .background(
-                    Capsule()
-                        .fill(Color.black)
-                        .overlay(
-                            Capsule()
-                                .stroke(Color.white, lineWidth: 1.0 * scale)
-                        )
-                )
-                    .frame(width: 16, height: 16, alignment: .center))
-        case .smallTrafficLightVertical:
-            let scale = 16.0 / 24.0
-            view = AnyView(VStack(spacing: 2 * scale) {
-                Circle().fill(Color.green).frame(width: 5 * scale, height: 5 * scale)
-                Circle().fill(Color.yellow).frame(width: 5 * scale, height: 5 * scale)
-                Circle().fill(Color.red).frame(width: 5 * scale, height: 5 * scale)
-            }
-                .padding(.horizontal, 2 * scale)
-                .padding(.vertical, 2.5 * scale)
-                .background(
-                    Capsule()
-                        .fill(Color.black)
-                        .overlay(
-                            Capsule()
-                                .stroke(Color.white, lineWidth: 1.0 * scale)
-                        )
-                )
-                    .frame(width: 16, height: 16, alignment: .center))
-        case .textHorizontal:
-            view = AnyView(HStack(spacing: 1) {
-                Text(verbatim: "L")
-                Text(verbatim: "M").padding(.leading, -1.5)
-                Text(verbatim: "R")
-            }
-                .font(.system(size: 6.5, weight: .bold, design: .monospaced))
-                .foregroundColor(.white)
-                .padding(.horizontal, 2)
-                .frame(height: 9)
-                .background(
-                    Capsule()
-                        .fill(Color.black)
-                        .overlay(
-                            Capsule()
-                                .stroke(Color.white, lineWidth: 1.0)
-                        )
-                )
-                    .frame(width: 16, height: 16, alignment: .center))
-        case .textVertical:
-            view = AnyView(VStack(spacing: -1.2) {
-                Text(verbatim: "L")
-                Text(verbatim: "M")
-                Text(verbatim: "R")
-            }
-                .font(.system(size: 4, weight: .bold, design: .monospaced))
-                .foregroundColor(.white)
-                .padding(.vertical, 0.5)
-                .frame(width: 7)
-                .background(
-                    Capsule()
-                        .fill(Color.black)
-                        .overlay(
-                            Capsule()
-                                .stroke(Color.white, lineWidth: 1.0)
-                        )
-                )
-                    .frame(width: 16, height: 16, alignment: .center))
-        case .focus:
-            view = AnyView(ZStack {
-                FocusCorner(length: 5, thickness: 2, innerThickness: 1, alignment: .topLeading, containerSize: 16)
-                FocusCorner(length: 5, thickness: 2, innerThickness: 1, alignment: .topTrailing, containerSize: 16)
-                FocusCorner(length: 5, thickness: 2, innerThickness: 1, alignment: .bottomLeading, containerSize: 16)
-                FocusCorner(length: 5, thickness: 2, innerThickness: 1, alignment: .bottomTrailing, containerSize: 16)
-            }.frame(width: 16, height: 16, alignment: .center))
-        case .custom:
-            if let image = eventManager.cachedCustomIconImage {
-                // EventManagerのキャッシュは既にトリミング・リサイズ済み
-                // 80x80相当での表示倍率を計算
-                let fitScale = min(1.0, 80.0 / max(1, image.size.width), 80.0 / max(1, image.size.height))
-                let contentDisplaySizeIn80 = max(image.size.width, image.size.height) * fitScale * eventManager.customIconScale
-                let normalizedScale = contentDisplaySizeIn80 / 80.0
-                
-                view = AnyView(
-                    Image(nsImage: image)
-                        .resizable()
-                        .scaledToFit()
-                        .frame(width: 16, height: 16)
-                        .scaleEffect(max(1.0, normalizedScale))
-                        .opacity(eventManager.customIconOpacity)
-                        .clipped()
-                )
-            } else {
-                view = AnyView(Color.clear.frame(width: 16, height: 16))
-            }
-        }
-        
-        let hostingView = NSHostingView(rootView: view)
-        hostingView.setFrameSize(CGSize(width: 16, height: 16))
-        let bitmap = hostingView.bitmapImageRepForCachingDisplay(in: NSRect(x: 0, y: 0, width: 16, height: 16))!
-        hostingView.cacheDisplay(in: NSRect(x: 0, y: 0, width: 16, height: 16), to: bitmap)
-        return Image(nsImage: NSImage(cgImage: bitmap.cgImage!, size: CGSize(width: 16, height: 16)))
-    }
-    
-    @ViewBuilder
     private func previewIcon(for style: IconStyle) -> some View {
-        getIcon(for: style)
+        style.previewImage(eventManager: eventManager)
             .resizable()
             .frame(width: 16, height: 16)
     }

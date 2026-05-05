@@ -40,54 +40,66 @@ struct DragLockerTests {
         }
     }
 
-    @Test func testManagedApplicationListEvaluatorExcludeMode() {
-        let listedBundleIdentifiers: Set<String> = ["com.apple.finder", "com.apple.Safari"]
+    @Test func testAppExclusionAndLimitationEvaluatorExcludeMode() {
+        let listedIdentifiers: Set<String> = ["com.apple.finder", "com.apple.Safari"]
 
         #expect(
-            ManagedApplicationListEvaluator.shouldLock(
+            AppExclusionAndLimitationEvaluator.shouldLock(
                 bundleIdentifier: "com.apple.finder",
+                executableName: "Finder",
+                executablePath: "/System/Library/CoreServices/Finder.app/Contents/MacOS/Finder",
                 mode: .exclude,
-                listedBundleIdentifiers: listedBundleIdentifiers
+                listedIdentifiers: listedIdentifiers
             ) == false
         )
         #expect(
-            ManagedApplicationListEvaluator.shouldLock(
+            AppExclusionAndLimitationEvaluator.shouldLock(
                 bundleIdentifier: "com.apple.TextEdit",
+                executableName: "TextEdit",
+                executablePath: "/System/Applications/TextEdit.app/Contents/MacOS/TextEdit",
                 mode: .exclude,
-                listedBundleIdentifiers: listedBundleIdentifiers
+                listedIdentifiers: listedIdentifiers
             ) == true
         )
         #expect(
-            ManagedApplicationListEvaluator.shouldLock(
+            AppExclusionAndLimitationEvaluator.shouldLock(
                 bundleIdentifier: nil,
+                executableName: nil,
+                executablePath: nil,
                 mode: .exclude,
-                listedBundleIdentifiers: listedBundleIdentifiers
+                listedIdentifiers: listedIdentifiers
             ) == true
         )
     }
 
-    @Test func testManagedApplicationListEvaluatorIncludeMode() {
-        let listedBundleIdentifiers: Set<String> = ["com.apple.finder", "com.apple.Safari"]
+    @Test func testAppExclusionAndLimitationEvaluatorIncludeMode() {
+        let listedIdentifiers: Set<String> = ["com.apple.finder", "com.apple.Safari"]
 
         #expect(
-            ManagedApplicationListEvaluator.shouldLock(
+            AppExclusionAndLimitationEvaluator.shouldLock(
                 bundleIdentifier: "com.apple.Safari",
+                executableName: "Safari",
+                executablePath: "/Applications/Safari.app/Contents/MacOS/Safari",
                 mode: .include,
-                listedBundleIdentifiers: listedBundleIdentifiers
+                listedIdentifiers: listedIdentifiers
             ) == true
         )
         #expect(
-            ManagedApplicationListEvaluator.shouldLock(
+            AppExclusionAndLimitationEvaluator.shouldLock(
                 bundleIdentifier: "com.apple.TextEdit",
+                executableName: "TextEdit",
+                executablePath: "/System/Applications/TextEdit.app/Contents/MacOS/TextEdit",
                 mode: .include,
-                listedBundleIdentifiers: listedBundleIdentifiers
+                listedIdentifiers: listedIdentifiers
             ) == false
         )
         #expect(
-            ManagedApplicationListEvaluator.shouldLock(
+            AppExclusionAndLimitationEvaluator.shouldLock(
                 bundleIdentifier: nil,
+                executableName: nil,
+                executablePath: nil,
                 mode: .include,
-                listedBundleIdentifiers: listedBundleIdentifiers
+                listedIdentifiers: listedIdentifiers
             ) == false
         )
     }
