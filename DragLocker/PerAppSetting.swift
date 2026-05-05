@@ -17,8 +17,6 @@ struct PerAppSetting: Codable, Identifiable, Equatable {
     var isIconEnabled: Bool
     var pointerIconStyle: IconStyle
     var iconAnimation: IconAnimation
-    /// 各アイコンスタイルごとの設定値（scale, opacity, xOffset, yOffset）を保持する辞書
-    var iconSettings: [String: Double]
     
     // MARK: - サウンド設定
     var isSoundEnabled: Bool
@@ -47,33 +45,9 @@ struct PerAppSetting: Codable, Identifiable, Equatable {
         self.pointerIconStyle = eventManager.pointerIconStyle
         self.iconAnimation = eventManager.iconAnimation
         
-        // 全てのアイコン設定のコピーを取得
-        self.iconSettings = eventManager.allIconSettings
-        
         self.isSoundEnabled = eventManager.isSoundEnabled
         self.soundStyle = eventManager.soundStyle
         self.soundVolume = eventManager.soundVolume
         self.isSoundInverted = eventManager.isSoundInverted
-    }
-    
-    // MARK: - Helpers
-    
-    /// 指定されたスタイルの特定の設定値を取得する
-    func iconSetting(for style: IconStyle, key: String) -> Double {
-        let styleStr = style.rawValue
-        let settingKey = "\(styleStr)_\(key)"
-        
-        if let value = iconSettings[settingKey] {
-            return value
-        }
-        
-        // 辞書にない場合はデフォルト値を返す
-        switch key {
-        case "scale": return style.defaultScale
-        case "opacity": return style.defaultOpacity
-        case "xOffset": return style.defaultXOffset
-        case "yOffset": return style.defaultYOffset
-        default: return 0.0
-        }
     }
 }

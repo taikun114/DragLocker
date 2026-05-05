@@ -155,8 +155,8 @@ struct PerAppSettingEditorView: View {
             resolved.isSoundInverted = eventManager.isSoundInverted 
         }
         
-        // オフセット、スケール、不透明度は辞書(iconSettings)にスタイルごとに保存されているため
-        // ここでの個別の解決は不要
+        // オフセット、スケール、不透明度は常に最新のグローバル設定を参照するため
+        // 個別設定への反映は不要（常に同期される）
         
         return resolved
     }

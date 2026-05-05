@@ -429,8 +429,8 @@ class EventManager: NSObject, ObservableObject {
         }
         didSet {
             UserDefaults.standard.set(pointerIconStyle.rawValue, forKey: "pointerIconStyle")
-            // スタイル変更時にロード（初期化中以外かつカスタム以外ならリセット）
-            loadIconSettings(for: pointerIconStyle, resetToDefaults: !isInitializing && pointerIconStyle != .custom)
+            // スタイル変更時にロード（常に過去の設定を復元し、勝手にリセットしない）
+            loadIconSettings(for: pointerIconStyle, resetToDefaults: false)
             
             if !isInitializing {
                 cleanupUnusedCustomFiles()
@@ -1200,8 +1200,8 @@ class EventManager: NSObject, ObservableObject {
                 setting.iconAnimation = self.iconAnimation
             }
             
-            // 現在UIで上書き不可なアイコン詳細設定（オフセットなど）は
-            // PerAppSetting内の辞書にスタイルごとに保存されているため、ここでは同期不要
+            // アイコン詳細設定（大きさ、オフセット等）は常に最新のグローバル設定を参照するため
+            // 個別の同期処理は不要（effectiveIconSettingで解決される）
             
             if !setting.overrides.contains("soundEnabled") { setting.isSoundEnabled = self.isSoundEnabled }
             if !setting.overrides.contains("soundStyle") || !setting.isSoundEnabled {
@@ -1815,48 +1815,16 @@ class EventManager: NSObject, ObservableObject {
         }
     }
     
-    /// 指定されたアプリの指定されたスタイルの特定の設定値を取得する（解決済み）
-    func iconSetting(for bundleIdentifier: String?, style: IconStyle, key: String) -> Double {
-        // 個別設定があるか確認
-        if let bundleId = bundleIdentifier, let perApp = perAppSettings[bundleId] {
-            // アプリの設定があれば、そのアプリの辞書から取得を試みる
-            return perApp.iconSetting(for: style, key: key)
-        }
-        
-        // グローバル設定を使用
-        let styleStr = style.rawValue
-        let settingKey = "\(styleStr)_\(key)"
-        
-        if let value = iconSettings[settingKey] {
-            return value
-        }
-        
-        // 辞書にない場合はデフォルト値を返す
-        switch key {
-        case "scale": return style.defaultScale
-        case "opacity": return style.defaultOpacity
-        case "xOffset": return style.defaultXOffset
-        case "yOffset": return style.defaultYOffset
-        default: return 0.0
-        }
-    }
     
     /// 現在有効なアイコン設定値を取得する
     func effectiveIconSetting(key: String) -> Double {
         let setting = effectiveSetting
         let style = setting?.pointerIconStyle ?? pointerIconStyle
         
-        if let bundleId = setting?.bundleIdentifier, !bundleId.isEmpty, let perApp = perAppSettings[bundleId], perApp.overrides.contains("pointerIconStyle") {
-             // アプリがスタイルを上書きしている場合、そのアプリの設定を優先
-             return perApp.iconSetting(for: style, key: key)
-        }
+        // アイコンの大きさやオフセットなどは、アプリ側での個別設定を廃止し、
+        // スタイルが上書きされていても、常にそのスタイルに対するグローバル設定（最新の調整値）を使用するようにする
         
-        // それ以外（グローバルまたはオフセットが上書きされていない場合）
-        
-        let styleStr = style.rawValue
-        let settingKey = "\(styleStr)_\(key)"
-        
-        // もし現在アクティブなスタイルがグローバルと同じなら、現在のプロパティ値を返すのが最も確実（編集中の値が即座に反映されるため）
+        // 現在のグローバルスタイルと同じなら、メモリ上の最新プロパティ値を返す（プレビュー即時反映のため）
         if style == pointerIconStyle {
             switch key {
             case "scale": return customIconScale
@@ -1867,8 +1835,22 @@ class EventManager: NSObject, ObservableObject {
             }
         }
         
-        // それ以外は辞書から
-        return iconSettings[settingKey] ?? (key == "scale" ? style.defaultScale : (key == "opacity" ? style.defaultOpacity : (key == "xOffset" ? style.defaultXOffset : style.defaultYOffset)))
+        // それ以外（別のスタイルの設定を参照する場合）は、グローバルの辞書から取得する
+        let styleStr = style.rawValue
+        let settingKey = "\(styleStr)_\(key)"
+        
+        if let value = iconSettings[settingKey] {
+            return value
+        }
+        
+        // 辞書にない場合は、スタイルのデフォルト値を返す
+        switch key {
+        case "scale": return style.defaultScale
+        case "opacity": return style.defaultOpacity
+        case "xOffset": return style.defaultXOffset
+        case "yOffset": return style.defaultYOffset
+        default: return 0.0
+        }
     }
 }
 
