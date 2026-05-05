@@ -432,9 +432,11 @@ struct FocusCorner: View {
     }
     
     private var blackShape: some Shape {
-        // 内側の黒い芯 (厚さ 2px)
-        // 1pxずつ上下左右にインセット。さらに先端（切り口）に白いボーダーを出すため、長さも2px短縮する。
-        SpecificCornerShape(length: length - 2, thickness: innerThickness, alignment: alignment, inset: 1)
+        // 内側の黒い芯 (厚さ 2px * scale)
+        // 外側の枠との差分から適切なインセット量を計算する（スケールに連動させる）
+        let inset = (thickness - innerThickness) / 2
+        // 両端（コーナー側と先端側）に均等なボーダーを出すため、長さは差分分短縮する
+        return SpecificCornerShape(length: length - (thickness - innerThickness), thickness: innerThickness, alignment: alignment, inset: inset)
     }
 }
 
