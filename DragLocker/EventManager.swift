@@ -768,7 +768,6 @@ class EventManager: NSObject, ObservableObject {
         print("Checking Accessibility Permissions (Main): \(accessEnabled)")
 
         DispatchQueue.main.async {
-            // 状態が変化したときだけ処理を行う（不要なログ出力とUI更新を抑止）
             if self.isTrusted != accessEnabled {
                 self.isTrusted = accessEnabled
             }
@@ -780,6 +779,7 @@ class EventManager: NSObject, ObservableObject {
                 }
             } else {
                 // 信頼されていない場合は、動作中のTapを停止し、ロックを強制解除する
+                self.isEnabled = false
                 self.stopEventTap()
             }
         }
@@ -1726,6 +1726,12 @@ class EventManager: NSObject, ObservableObject {
     }
 
     func resumeFromOnboarding() {
+        // 権限がない場合は有効化しない
+        guard isTrusted else {
+            print("DEBUG: resumeFromOnboarding aborted - Accessibility permission not granted")
+            return
+        }
+        
         isProcessingNotificationAction = true
         isEnabled = true
         isProcessingNotificationAction = false
@@ -1734,6 +1740,12 @@ class EventManager: NSObject, ObservableObject {
     func toggleEnabled(isSilent: Bool = false) {
         // オンボーディングが完了していない場合は状態の切り替え（再開）を許可しない
         guard UserDefaults.standard.bool(forKey: "hasCompletedOnboarding") else { return }
+        
+        // 再開しようとしている（現在 false）かつ 権限がない（isTrusted が false）場合は許可しない
+        if !isEnabled && !isTrusted {
+            print("DEBUG: Cannot resume - Accessibility permission not granted")
+            return
+        }
         
         if isSilent {
             self.isProcessingNotificationAction = true

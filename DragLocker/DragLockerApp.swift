@@ -202,8 +202,8 @@ struct DragLockerApp: App {
             // 状態表示用のラベル（クリック不可）
             HStack {
                 Label(
-                    eventManager.isEnabled ? "DragLocker: 動作中" : "DragLocker: 一時停止中",
-                    systemImage: eventManager.isEnabled ? "play.fill" : "pause.fill"
+                    eventManager.isTrusted ? (eventManager.isEnabled ? "DragLocker: 動作中" : "DragLocker: 一時停止中") : "DragLocker: 停止中",
+                    systemImage: eventManager.isTrusted ? (eventManager.isEnabled ? "play.fill" : "pause.fill") : "exclamationmark.triangle.fill"
                 )
                 .labelStyle(.titleAndIcon)
             }
@@ -219,7 +219,14 @@ struct DragLockerApp: App {
                 .labelStyle(.titleAndIcon)
             }
             .applyKeyboardShortcut(for: .toggleMonitoring)
-            .disabled(!hasCompletedOnboarding)
+            .disabled(!hasCompletedOnboarding || !eventManager.isTrusted)
+            
+            if !eventManager.isTrusted {
+                SettingsLink {
+                    Label("アクセシビリティ権限がありません", systemImage: "exclamationmark.triangle")
+                }
+                .disabled(!hasCompletedOnboarding)
+            }
             
             Divider()
             

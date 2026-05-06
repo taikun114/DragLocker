@@ -427,6 +427,22 @@
         }
       }
     },
+    "DragLocker: 停止中" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "DragLocker: Stopped"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "DragLocker: 停止中"
+          }
+        }
+      }
+    },
     "DragLocker: 動作中" : {
       "comment" : "メニューバーのエクストラメニューにおける動作状態のラベル",
       "localizations" : {
@@ -1063,6 +1079,38 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "アクセシビリティキーボードやスイッチコントロールなどのアクセシビリティオーバーレイ"
+          }
+        }
+      }
+    },
+    "アクセシビリティ権限がありません" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No Accessibility Permission"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "アクセシビリティ権限がありません"
+          }
+        }
+      }
+    },
+    "アクセシビリティ権限が付与されていないため、ドラッグロックなどの機能が動作しません。\nDragLockerを正常に機能させるためには、システム設定からDragLockerにアクセシビリティ権限を与える必要があります。" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Drag lock and other features will not work because accessibility permission has not been granted.\nTo make DragLocker function properly, you need to grant accessibility permission to DragLocker from System Settings."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "アクセシビリティ権限が付与されていないため、ドラッグロックなどの機能が動作しません。\nDragLockerを正常に機能させるためには、システム設定からDragLockerにアクセシビリティ権限を与える必要があります。"
           }
         }
       }

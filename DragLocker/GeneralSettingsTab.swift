@@ -7,9 +7,48 @@ struct GeneralSettingsTab: View {
     @EnvironmentObject var eventManager: EventManager
     @Environment(\.accessibilityDifferentiateWithoutColor) var differentiateWithoutColor
     @AppStorage("lockDelay") private var lockDelay: Double = 1.0
+    @State private var hasRequestedAccessibility = false
     
     var body: some View {
         Form {
+            if !eventManager.isTrusted {
+                Section {
+                    HStack(alignment: .top) {
+                        Image(systemName: "exclamationmark.triangle.fill")
+                            .font(.title2)
+                            .foregroundStyle(.red)
+                        
+                        VStack(alignment: .leading, spacing: 2) {
+                            Text("アクセシビリティ権限がありません")
+                                .font(.headline)
+                                .foregroundStyle(.red)
+                            
+                            Text("アクセシビリティ権限が付与されていないため、ドラッグロックなどの機能が動作しません。\nDragLockerを正常に機能させるためには、システム設定からDragLockerにアクセシビリティ権限を与える必要があります。")
+                                .font(.subheadline)
+                                .foregroundStyle(.secondary)
+                                .fixedSize(horizontal: false, vertical: true)
+                        }
+                        
+                        Spacer()
+                        
+                        Button(action: {
+                            if hasRequestedAccessibility {
+                                eventManager.openAccessibilitySettings()
+                            } else {
+                                eventManager.requestAccessibilityPermissions()
+                                hasRequestedAccessibility = true
+                            }
+                        }) {
+                            HStack {
+                                Image(systemName: "gear")
+                                Text(hasRequestedAccessibility ? "設定を開く" : "許可")
+                            }
+                        }
+                        .buttonStyle(.borderedProminent)
+                    }
+                }
+            }
+
             Section(header: Text("一般")) {
                 Toggle(isOn: Binding(
                     get: { eventManager.isLaunchAtLoginEnabled },
