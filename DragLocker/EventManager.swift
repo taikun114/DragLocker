@@ -919,9 +919,9 @@ class EventManager: NSObject, ObservableObject {
         // Cのコールバック関数に self を渡すため、Unmanaged を使用
         let userInfo = UnsafeMutableRawPointer(Unmanaged.passUnretained(self).toOpaque())
 
-        // cghidEventTap を使用することで、どのアプリにフォーカスがあっても全イベントをキャッチできる
+        // cgSessionEventTap を使用することで、アクセシビリティキーボードなどのソフトウェア由来のイベントもキャッチできる
         eventTap = CGEvent.tapCreate(
-            tap: .cghidEventTap,
+            tap: .cgSessionEventTap,
             place: .headInsertEventTap,
             options: .defaultTap,
             eventsOfInterest: CGEventMask(eventMask),
