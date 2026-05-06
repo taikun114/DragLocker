@@ -251,6 +251,8 @@ class EventManager: NSObject, ObservableObject {
 
     private var eventTap: CFMachPort?
     private var runLoopSource: CFRunLoopSource?
+    private var dlLocalMonitor: Any?
+    private var dlGlobalMonitor: Any?
 
     /// 各アイコンスタイルごとの設定値を保持する（永続化用）
     private var iconSettings: [String: Double] = [:]
@@ -723,6 +725,22 @@ class EventManager: NSObject, ObservableObject {
 
         // 未使用のカスタムファイルをクリーンアップ
         cleanupUnusedCustomFiles()
+
+        // クリックイベントに応じた権限チェックの設定
+        setupEventMonitors()
+    }
+
+    private func setupEventMonitors() {
+        // アプリ内でのクリック時にチェック（Local）
+        self.dlLocalMonitor = NSEvent.addLocalMonitorForEvents(matching: [.leftMouseDown, .rightMouseDown]) { [weak self] event in
+            self?.checkAccessibilityPermissions()
+            return event
+        }
+        
+        // アプリ外でのクリック時にチェック（Global - 権限がある場合のみ動作するが、状態同期に役立つ）
+        self.dlGlobalMonitor = NSEvent.addGlobalMonitorForEvents(matching: [.leftMouseDown, .rightMouseDown]) { [weak self] _ in
+            self?.checkAccessibilityPermissions()
+        }
     }
 
     @objc private func handleSystemEvent() {
@@ -747,12 +765,22 @@ class EventManager: NSObject, ObservableObject {
         let options: NSDictionary = [kAXTrustedCheckOptionPrompt.takeUnretainedValue() as String: false]
         let accessEnabled = AXIsProcessTrustedWithOptions(options)
 
-        print("Checking Accessibility Permissions: \(accessEnabled)")
+        print("Checking Accessibility Permissions (Main): \(accessEnabled)")
 
         DispatchQueue.main.async {
-            self.isTrusted = accessEnabled
+            // 状態が変化したときだけ処理を行う（不要なログ出力とUI更新を抑止）
+            if self.isTrusted != accessEnabled {
+                self.isTrusted = accessEnabled
+            }
+
             if self.isTrusted {
-                self.setupEventTap()
+                // 信頼されており、かつEvent Tapが未設定なら設定を試みる
+                if self.eventTap == nil {
+                    self.setupEventTap()
+                }
+            } else {
+                // 信頼されていない場合は、動作中のTapを停止し、ロックを強制解除する
+                self.stopEventTap()
             }
         }
     }
@@ -903,7 +931,7 @@ class EventManager: NSObject, ObservableObject {
         if !isTrusted && !force { return }
         if eventTap != nil { return }
 
-        print("Attempting to create event tap to trigger system prompt if needed...")
+        print("Attempting to create event tap...")
         let eventMask = (1 << CGEventType.leftMouseDown.rawValue) |
                         (1 << CGEventType.leftMouseUp.rawValue) |
                         (1 << CGEventType.leftMouseDragged.rawValue) |
@@ -931,6 +959,10 @@ class EventManager: NSObject, ObservableObject {
 
         guard let tap = eventTap else {
             print("Failed to create event tap")
+            // 安全策：Tap作成に失敗した場合はロックを維持できないため強制解除する
+            if isLocked {
+                forceUnlock()
+            }
             return
         }
 
@@ -941,6 +973,21 @@ class EventManager: NSObject, ObservableObject {
             CGEvent.tapEnable(tap: tap, enable: true)
             print("Event tap successfully set up")
         }
+    }
+
+    private func stopEventTap() {
+        print("Stopping event tap...")
+        if let source = runLoopSource {
+            CFRunLoopRemoveSource(CFRunLoopGetMain(), source, .commonModes)
+            runLoopSource = nil
+        }
+        if let tap = eventTap {
+            CGEvent.tapEnable(tap: tap, enable: false)
+            eventTap = nil
+        }
+        
+        // 安全策：監視を停止する際は必ずロックを解除する
+        forceUnlock()
     }
 
     private func windowOwnerPID(at location: CGPoint) -> (pid: pid_t, isOverlay: Bool, isLaunchpad: Bool, isOSD: Bool)? {
@@ -1375,18 +1422,55 @@ class EventManager: NSObject, ObservableObject {
 
     // イベント処理のエントリーポイント
     func handleEvent(proxy: CGEventTapProxy, type: CGEventType, event: CGEvent) -> Unmanaged<CGEvent>? {
-
         // macOSがタイムアウト等でイベントタップを無効化した場合、再有効化する
         if type == .tapDisabledByTimeout || type == .tapDisabledByUserInput {
-            print("Event tap was disabled by system, re-enabling...")
+            print("Event tap was disabled by system (type: \(type.rawValue)), attempting to re-enable...")
+            
+            // 現在の権限を即座に再確認
+            let options: NSDictionary = [kAXTrustedCheckOptionPrompt.takeUnretainedValue() as String: false]
+            if !AXIsProcessTrustedWithOptions(options) {
+                print("Trust confirmed lost in re-enable block. Cleaning up.")
+                stopEventTap()
+                DispatchQueue.main.async {
+                    self.isTrusted = false
+                    self.forceUnlock()
+                }
+                return Unmanaged.passUnretained(event)
+            }
+
+            // クールダウン期間を設けず、即座に有効化または再構築を試みる
             if let tap = eventTap {
                 CGEvent.tapEnable(tap: tap, enable: true)
+                
+                // それでも有効にならない（または頻繁に無効化される）場合は再構築が必要
+                print("Re-establishing event tap after system disabled it...")
+                stopEventTap()
+                setupEventTap()
+            } else {
+                setupEventTap()
             }
             return Unmanaged.passUnretained(event)
         }
 
         // アプリケーション機能が一時停止中の場合は何も処理せずイベントを流す
         guard isEnabled else { return Unmanaged.passUnretained(event) }
+
+        // マウスダウン時に権限を再確認する（オン→オフへの変化を即座に捉えるため）
+        if type == .leftMouseDown || type == .rightMouseDown || type == .otherMouseDown {
+            let options: NSDictionary = [kAXTrustedCheckOptionPrompt.takeUnretainedValue() as String: false]
+            let isTrust = AXIsProcessTrustedWithOptions(options)
+            print("Checking Accessibility Permissions (EventTap): \(isTrust)")
+            
+            if !isTrust {
+                print("Trust lost detected during mouse down. Releasing locks immediately.")
+                stopEventTap()
+                DispatchQueue.main.async {
+                    self.isTrusted = false
+                    self.forceUnlock()
+                }
+                return Unmanaged.passUnretained(event)
+            }
+        }
 
         if type == .keyDown {
             let keyCode = event.getIntegerValueField(.keyboardEventKeycode)
