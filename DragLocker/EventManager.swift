@@ -1452,10 +1452,8 @@ class EventManager: NSObject, ObservableObject {
             return Unmanaged.passUnretained(event)
         }
 
-        // アプリケーション機能が一時停止中の場合は何も処理せずイベントを流す
-        guard isEnabled else { return Unmanaged.passUnretained(event) }
-
         // マウスダウン時に権限を再確認する（オン→オフへの変化を即座に捉えるため）
+        // 一時停止中であっても、権限喪失時は即座にTapを停止して安全を確保する必要がある
         if type == .leftMouseDown || type == .rightMouseDown || type == .otherMouseDown {
             let options: NSDictionary = [kAXTrustedCheckOptionPrompt.takeUnretainedValue() as String: false]
             let isTrust = AXIsProcessTrustedWithOptions(options)
@@ -1471,6 +1469,9 @@ class EventManager: NSObject, ObservableObject {
                 return Unmanaged.passUnretained(event)
             }
         }
+
+        // アプリケーション機能が一時停止中の場合は何も処理せずイベントを流す
+        guard isEnabled else { return Unmanaged.passUnretained(event) }
 
         if type == .keyDown {
             let keyCode = event.getIntegerValueField(.keyboardEventKeycode)
