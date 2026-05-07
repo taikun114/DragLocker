@@ -773,13 +773,13 @@ class EventManager: NSObject, ObservableObject {
             }
 
             if self.isTrusted {
-                // 信頼されており、かつEvent Tapが未設定なら設定を試みる
-                if self.eventTap == nil {
+                // 信頼されており、かつ有効化されている場合はEvent Tapを設定する
+                if self.isEnabled && self.eventTap == nil {
                     self.setupEventTap()
                 }
             } else {
                 // 信頼されていない場合は、動作中のTapを停止し、ロックを強制解除する
-                self.isEnabled = false
+                // isEnabled は変更せず、権限が戻った時に以前の状態が維持されるようにする
                 self.stopEventTap()
             }
         }
@@ -1741,11 +1741,8 @@ class EventManager: NSObject, ObservableObject {
         // オンボーディングが完了していない場合は状態の切り替え（再開）を許可しない
         guard UserDefaults.standard.bool(forKey: "hasCompletedOnboarding") else { return }
         
-        // 再開しようとしている（現在 false）かつ 権限がない（isTrusted が false）場合は許可しない
-        if !isEnabled && !isTrusted {
-            print("DEBUG: Cannot resume - Accessibility permission not granted")
-            return
-        }
+        // 権限がない場合は状態の切り替えを許可しない
+        guard isTrusted else { return }
         
         if isSilent {
             self.isProcessingNotificationAction = true

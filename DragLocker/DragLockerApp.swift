@@ -213,8 +213,8 @@ struct DragLockerApp: App {
                 eventManager.toggleEnabled()
             }) {
                 Label(
-                    eventManager.isEnabled ? "ドラッグロックを一時停止" : "ドラッグロックを再開",
-                    systemImage: eventManager.isEnabled ? "pause" : "play"
+                    eventManager.isTrusted ? (eventManager.isEnabled ? "ドラッグロックを一時停止" : "ドラッグロックを再開") : "ドラッグロックを再開",
+                    systemImage: eventManager.isTrusted ? (eventManager.isEnabled ? "pause" : "play") : "play"
                 )
                 .labelStyle(.titleAndIcon)
             }
@@ -224,6 +224,7 @@ struct DragLockerApp: App {
             if !eventManager.isTrusted {
                 SettingsLink {
                     Label("アクセシビリティ権限がありません", systemImage: "exclamationmark.triangle")
+                        .labelStyle(.titleAndIcon)
                 }
                 .disabled(!hasCompletedOnboarding)
             }
@@ -310,7 +311,7 @@ struct MenuBarIconView: View {
     @ObservedObject var lockState = LockStateManager.shared
     
     var body: some View {
-        if !eventManager.isEnabled {
+        if !eventManager.isTrusted || !eventManager.isEnabled {
             Image("MenuBarIcon_Paused")
         } else {
             Image(lockState.isLocked ? "MenuBarIcon_Locked" : "MenuBarIcon")
