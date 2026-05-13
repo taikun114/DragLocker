@@ -11,13 +11,11 @@ struct CustomizationSettingsTab: View {
     @State private var showingDeleteSoundConfirmation = false
     @State private var soundIndexToDelete: Int = 1
     @State private var soundNameToDelete: String = ""
-    @State private var previewCursorPhase: Int = 0
     @State private var showingCustomIconError = false
     @State private var iconErrorMessage = ""
     @State private var showingDeleteIconConfirmation = false
     @State private var iconNameToDelete = ""
     @State private var showingResetIconSettingsConfirmation = false
-    @State private var isAppActive = true
     @State private var iconPreloadTask: Task<Void, Never>? = nil
     
     var body: some View {
@@ -347,61 +345,8 @@ struct CustomizationSettingsTab: View {
         VStack(alignment: .leading, spacing: 16) {
             HStack(alignment: .top, spacing: 12) {
                 // 左側：プレビュー画像エリア
-                ZStack {
-                    let isOld = ProcessInfo.processInfo.operatingSystemVersion.majorVersion < 26
-                    let suffix = isOld ? "_Old" : ""
-                    let cursors = ["Cursor_Pointer\(suffix)", "Cursor_PointingHand\(suffix)", "Cursor_IbeamVertical\(suffix)"]
-                    let currentCursorName = cursors[previewCursorPhase % cursors.count]
-                    
-                    Group {
-                        if eventManager.pointerIconStyle == .custom {
-                            if let nsImage = eventManager.cachedCustomIconImage {
-                                let fitScale = min(1.0, 80.0 / max(1, nsImage.size.width), 80.0 / max(1, nsImage.size.height))
-                                let displayWidth = nsImage.size.width * fitScale * eventManager.customIconScale
-                                let displayHeight = nsImage.size.height * fitScale * eventManager.customIconScale
-                                
-                                Image(nsImage: nsImage)
-                                    .resizable()
-                                    .scaledToFit()
-                                    .frame(width: displayWidth, height: displayHeight)
-                            } else {
-                                Color.clear
-                            }
-                        } else {
-                            iconPreviewArea
-                        }
-                    }
-                    .frame(width: 80, height: 80, alignment: .center)
-                    .opacity(eventManager.customIconOpacity)
-                    .clipped()
-                    .offset(
-                        x: eventManager.customIconXOffset,
-                        y: eventManager.customIconYOffset
-                    )
-                    
-                    ForEach(cursors, id: \.self) { cursor in
-                        Image(cursor)
-                            .resizable()
-                            .scaledToFit()
-                            .frame(width: 160, height: 160)
-                            .opacity(cursor == currentCursorName ? 1.0 : 0.0)
-                            .animation(.easeInOut(duration: 0.5), value: currentCursorName)
-                    }
-                }
-                .frame(width: 160, height: 160)
-                .background(VisualEffectView(material: .hudWindow, blendingMode: .behindWindow))
-                .clipShape(RoundedRectangle(cornerRadius: 8))
-                .overlay(RoundedRectangle(cornerRadius: 8).stroke(Color.primary.opacity(0.1), lineWidth: 1))
-                .onReceive(Timer.publish(every: 2.0, on: .main, in: .common).autoconnect()) { _ in
-                    if isAppActive {
-                        previewCursorPhase += 1
-                    }
-                }
-                .onReceive(NotificationCenter.default.publisher(for: NSApplication.didBecomeActiveNotification)) { _ in
-                    isAppActive = true
-                }
-                .onReceive(NotificationCenter.default.publisher(for: NSApplication.didResignActiveNotification)) { _ in
-                    isAppActive = false
+                CursorPreviewAreaView {
+                    iconPreviewArea
                 }
                 
                 // 右側：画像選択・削除ボタンと説明テキスト
@@ -653,6 +598,76 @@ struct CustomizationSettingsTab: View {
                     showingCustomIconError = true
                 }
             }
+        }
+    }
+}
+
+struct CursorPreviewAreaView<Content: View>: View {
+    @EnvironmentObject var eventManager: EventManager
+    @State private var previewCursorPhase: Int = 0
+    @State private var isAppActive = true
+    let content: Content
+
+    init(@ViewBuilder content: () -> Content) {
+        self.content = content()
+    }
+
+    var body: some View {
+        ZStack {
+            let isOld = ProcessInfo.processInfo.operatingSystemVersion.majorVersion < 26
+            let suffix = isOld ? "_Old" : ""
+            let cursors = ["Cursor_Pointer\(suffix)", "Cursor_PointingHand\(suffix)", "Cursor_IbeamVertical\(suffix)"]
+            let currentCursorName = cursors[previewCursorPhase % cursors.count]
+            
+            Group {
+                if eventManager.pointerIconStyle == .custom {
+                    if let nsImage = eventManager.cachedCustomIconImage {
+                        let fitScale = min(1.0, 80.0 / max(1, nsImage.size.width), 80.0 / max(1, nsImage.size.height))
+                        let displayWidth = nsImage.size.width * fitScale * eventManager.customIconScale
+                        let displayHeight = nsImage.size.height * fitScale * eventManager.customIconScale
+                        
+                        Image(nsImage: nsImage)
+                            .resizable()
+                            .scaledToFit()
+                            .frame(width: displayWidth, height: displayHeight)
+                    } else {
+                        Color.clear
+                    }
+                } else {
+                    content
+                }
+            }
+            .frame(width: 80, height: 80, alignment: .center)
+            .opacity(eventManager.customIconOpacity)
+            .clipped()
+            .offset(
+                x: eventManager.customIconXOffset,
+                y: eventManager.customIconYOffset
+            )
+            
+            ForEach(cursors, id: \.self) { cursor in
+                Image(cursor)
+                    .resizable()
+                    .scaledToFit()
+                    .frame(width: 160, height: 160)
+                    .opacity(cursor == currentCursorName ? 1.0 : 0.0)
+                    .animation(.easeInOut(duration: 0.5), value: currentCursorName)
+            }
+        }
+        .frame(width: 160, height: 160)
+        .background(VisualEffectView(material: .hudWindow, blendingMode: .behindWindow))
+        .clipShape(RoundedRectangle(cornerRadius: 8))
+        .overlay(RoundedRectangle(cornerRadius: 8).stroke(Color.primary.opacity(0.1), lineWidth: 1))
+        .onReceive(Timer.publish(every: 2.0, on: .main, in: .common).autoconnect()) { _ in
+            if isAppActive {
+                previewCursorPhase += 1
+            }
+        }
+        .onReceive(NotificationCenter.default.publisher(for: NSApplication.didBecomeActiveNotification)) { _ in
+            isAppActive = true
+        }
+        .onReceive(NotificationCenter.default.publisher(for: NSApplication.didResignActiveNotification)) { _ in
+            isAppActive = false
         }
     }
 }

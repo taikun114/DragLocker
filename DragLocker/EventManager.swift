@@ -1511,7 +1511,7 @@ class EventManager: NSObject, ObservableObject {
             currentSetting = resolveSetting(for: appIdentity.identifier)
             
             // ロック中でない場合は effectiveSetting を更新（UI/アイコン用）
-            if !isCurrentlyLocked {
+            if !isCurrentlyLocked && self.effectiveSetting != currentSetting {
                 self.effectiveSetting = currentSetting
             }
         }
