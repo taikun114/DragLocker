@@ -1248,6 +1248,22 @@
         }
       }
     },
+    "アプリモード" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "App Mode"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "アプリモード"
+          }
+        }
+      }
+    },
     "アプリをリストへ追加します。" : {
       "comment" : "追加ボタンのツールチップ",
       "localizations" : {
@@ -1560,23 +1576,6 @@
         }
       }
     },
-    "このモードでは、リスト内に追加したアプリでドラッグロックしないようにします。" : {
-      "comment" : "除外モード時の説明文",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "In this mode, drag lock is disabled for apps in the list."
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "このモードでは、リスト内に追加したアプリでドラッグロックしないようにします。"
-          }
-        }
-      }
-    },
     "このモードでは、リスト内に追加したアプリでのみドラッグロックするようにします。" : {
       "comment" : "含めるモード時の説明文",
       "localizations" : {
@@ -1590,6 +1589,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "このモードでは、リスト内に追加したアプリでのみドラッグロックするようにします。"
+          }
+        }
+      }
+    },
+    "このモードでは、リスト内に追加したアプリを検出されないように無視するか、ドラッグロックしないように除外します。" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "In this mode, apps added in the list will be ignored to prevent detection or excluded to prevent drag lock."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "このモードでは、リスト内に追加したアプリを検出されないように無視するか、ドラッグロックしないように除外します。"
           }
         }
       }
@@ -4132,6 +4147,7 @@
       }
     },
     "無視" : {
+      "comment" : "アプリフィルタリングのモード：無視",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -4143,6 +4159,40 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "無視"
+          }
+        }
+      }
+    },
+    "無視または除外する" : {
+      "comment" : "アプリフィルタリングのモード：リスト内のアプリをロック対象から外すか無視する",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ignore or Exclude"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "無視または除外する"
+          }
+        }
+      }
+    },
+    "無視または除外するアプリリスト" : {
+      "comment" : "アプリリストのアクセシビリティラベル",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ignore or Exclude App List"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "無視または除外するアプリリスト"
           }
         }
       }
@@ -4637,6 +4687,38 @@
         }
       }
     },
+    "選択したアプリを「無視」に設定します。" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sets the selected app(s) to \"Ignore\"."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "選択したアプリを「無視」に設定します。"
+          }
+        }
+      }
+    },
+    "選択したアプリを「除外」に設定します。" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sets the selected app(s) to \"Exclude\"."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "選択したアプリを「除外」に設定します。"
+          }
+        }
+      }
+    },
     "選択したアプリをリストから削除します。" : {
       "comment" : "削除ボタンのツールチップ",
       "localizations" : {
@@ -4737,6 +4819,7 @@
       }
     },
     "除外" : {
+      "comment" : "アプリフィルタリングのモード：除外",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -4748,40 +4831,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "除外"
-          }
-        }
-      }
-    },
-    "除外する" : {
-      "comment" : "アプリフィルタリングのモード：リスト内のアプリをロック対象から外す",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Exclude"
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "除外する"
-          }
-        }
-      }
-    },
-    "除外するアプリリスト" : {
-      "comment" : "アプリリストのアクセシビリティラベル",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Excluded App List"
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "除外するアプリリスト"
           }
         }
       }

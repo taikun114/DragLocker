@@ -179,8 +179,27 @@ enum AppListMode: String, CaseIterable, Sendable, Codable {
 
     var localizedName: LocalizedStringResource {
         switch self {
-        case .exclude: return LocalizedStringResource("除外する", comment: "アプリフィルタリングのモード：リスト内のアプリをロック対象から外す")
+        case .exclude: return LocalizedStringResource("無視または除外する", comment: "アプリフィルタリングのモード：リスト内のアプリをロック対象から外すか無視する")
         case .include: return LocalizedStringResource("限定する", comment: "アプリフィルタリングのモード：リスト内のアプリのみをロック対象にする")
+        }
+    }
+}
+
+enum AppFilterMode: String, CaseIterable, Sendable, Codable {
+    case exclude = "exclude"
+    case ignore = "ignore"
+
+    var localizedName: String {
+        switch self {
+        case .exclude: return String(localized: "除外", comment: "アプリフィルタリングのモード：除外")
+        case .ignore: return String(localized: "無視", comment: "アプリフィルタリングのモード：無視")
+        }
+    }
+
+    var iconName: String {
+        switch self {
+        case .exclude: return "nosign"
+        case .ignore: return "circle.dashed"
         }
     }
 }
@@ -508,6 +527,14 @@ class EventManager: NSObject, ObservableObject {
         }
     }
 
+    @Published var appFilterModes: [String: AppFilterMode] = [:] {
+        didSet {
+            if let encoded = try? JSONEncoder().encode(appFilterModes) {
+                UserDefaults.standard.set(encoded, forKey: "appFilterModesData")
+            }
+        }
+    }
+
     @Published var appExclusionAndLimitationIdentifiers: [String] = [] {
         didSet {
             if let encoded = try? JSONEncoder().encode(appExclusionAndLimitationIdentifiers) {
@@ -629,6 +656,13 @@ class EventManager: NSObject, ObservableObject {
             self.perAppSettings = decodedPerAppSettings
         } else {
             self.perAppSettings = [:]
+        }
+
+        if let savedAppFilterModesData = UserDefaults.standard.data(forKey: "appFilterModesData"),
+           let decodedAppFilterModes = try? JSONDecoder().decode([String: AppFilterMode].self, from: savedAppFilterModesData) {
+            self.appFilterModes = decodedAppFilterModes
+        } else {
+            self.appFilterModes = [:]
         }
 
 
@@ -1029,6 +1063,29 @@ class EventManager: NSObject, ObservableObject {
                     let pid = pid_t(windowPID)
                     let runningApp = NSRunningApplication(processIdentifier: pid)
                     let bundleIdentifier = runningApp?.bundleIdentifier
+                    let executableName = runningApp?.executableURL?.lastPathComponent
+                    let executablePath = runningApp?.executableURL?.path
+
+                    // 無視リストに含まれているアプリかチェック（「無視または除外」モード時のみ）
+                    if appListMode == .exclude {
+                        let isIgnored: Bool
+                        if let bid = bundleIdentifier, appFilterModes[bid] == .ignore && appExclusionAndLimitationIdentifiersSet.contains(bid) {
+                            isIgnored = true
+                        } else if let name = executableName, appFilterModes[name] == .ignore && appExclusionAndLimitationIdentifiersSet.contains(name) {
+                            isIgnored = true
+                        } else if let path = executablePath, appFilterModes[path] == .ignore && appExclusionAndLimitationIdentifiersSet.contains(path) {
+                            isIgnored = true
+                        } else {
+                            isIgnored = false
+                        }
+                        
+                        if isIgnored {
+                            #if DEBUG
+                            print("[Debug] Ignoring window of \(bundleIdentifier ?? "unknown") (layer \(layer))")
+                            #endif
+                            continue
+                        }
+                    }
                     
                     // 自分自身（DragLocker）のアイコンウィンドウはスキップする
                     // ロック解除直後に再度ロックした際、消えかけているアイコンウィンドウを誤認するのを防ぐため

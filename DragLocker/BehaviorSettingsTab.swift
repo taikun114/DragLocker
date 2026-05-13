@@ -13,7 +13,7 @@ struct BehaviorSettingsTab: View {
         case .include:
             return "このモードでは、リスト内に追加したアプリでのみドラッグロックするようにします。"
         case .exclude:
-            return "このモードでは、リスト内に追加したアプリでドラッグロックしないようにします。"
+            return "このモードでは、リスト内に追加したアプリを検出されないように無視するか、ドラッグロックしないように除外します。"
         }
     }
 
@@ -48,7 +48,7 @@ struct BehaviorSettingsTab: View {
         AppExclusionAndLimitationListView(
             bundleIdentifiers: $eventManager.appExclusionAndLimitationIdentifiers,
             accessibilityLabel: eventManager.appListMode == .exclude ? 
-                String(localized: "除外するアプリリスト", comment: "アプリリストのアクセシビリティラベル") : 
+                String(localized: "無視または除外するアプリリスト", comment: "アプリリストのアクセシビリティラベル") : 
                 String(localized: "限定するアプリリスト", comment: "アプリリストのアクセシビリティラベル")
         )
     }

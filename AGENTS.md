@@ -28,6 +28,7 @@ SwiftUIで構築されており、メニューバー常駐型のエクスペリ�
 - **`Localizable.xcstrings` の更新について**:
   - コード内に追加した新しい翻訳キーを `Localizable.xcstrings` に反映（再インデックス）させるには、XcodeのMCPツール（`BuildProject`）またはXcodeのGUIでビルドを行う必要がある。
   - シェルコマンド（`xcodebuild`など）でビルドしただけでは新しいキーがファイルに認識されないため注意すること。MCPツールが利用できない環境では、ユーザーにGUIでのビルドを依頼するか、手動でキーを追加して対応すること。
+  - 新たに追加されたキーを確認する場合は、`Localizable.xcstrings` ファイルに対して `git diff` を行うことで確認できる。
 
 #### 表記について
 

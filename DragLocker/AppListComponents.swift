@@ -176,10 +176,16 @@ class AppExclusionAndLimitationDisplayResolver {
 
 /// リストの1行分を表示するコンポーネント
 struct AppExclusionAndLimitationRow: View {
+    @EnvironmentObject var eventManager: EventManager
     let bundleIdentifier: String
+    var showFilterMode: Bool = true
     
     private var appInfo: ResolvedAppExclusionAndLimitationInfo? {
         AppExclusionAndLimitationDisplayResolver.shared.resolvedInfo(for: bundleIdentifier)
+    }
+
+    private var filterMode: AppFilterMode {
+        eventManager.appFilterModes[bundleIdentifier] ?? .exclude
     }
 
     var body: some View {
@@ -189,6 +195,15 @@ struct AppExclusionAndLimitationRow: View {
                     Image(nsImage: appIcon)
                         .resizable()
                         .frame(width: 16, height: 16)
+                }
+
+                if showFilterMode && eventManager.appListMode == .exclude {
+                    HStack(spacing: 4) {
+                        Image(systemName: filterMode.iconName)
+                        Text(filterMode.localizedName)
+                    }
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
                 }
                 
                 if bundleIdentifier.starts(with: "/") {
@@ -218,6 +233,7 @@ struct AppExclusionAndLimitationRow: View {
 
 /// アプリリスト全体を管理するメインコンポーネント
 struct AppExclusionAndLimitationListView: View {
+    @EnvironmentObject var eventManager: EventManager
     @Environment(\.colorScheme) var colorScheme
     @Binding var bundleIdentifiers: [String]
     let accessibilityLabel: String
@@ -260,6 +276,28 @@ struct AppExclusionAndLimitationListView: View {
                 AppExclusionAndLimitationRow(bundleIdentifier: id)
                     .contextMenu {
                         let idsForContext = selectedIds.contains(id) ? selectedIds : [id]
+                        
+                        if eventManager.appListMode == .exclude {
+                            Picker(selection: Binding(
+                                get: { eventManager.appFilterModes[id] ?? .exclude },
+                                set: { newMode in
+                                    for cid in idsForContext {
+                                        eventManager.appFilterModes[cid] = newMode
+                                    }
+                                }
+                            )) {
+                                ForEach(AppFilterMode.allCases, id: \.self) { mode in
+                                    Label(mode.localizedName, systemImage: mode.iconName)
+                                        .tag(mode)
+                                }
+                            } label: {
+                                Text("アプリモード")
+                            }
+                            .pickerStyle(.inline)
+                            .labelsHidden()
+                            .labelStyle(.titleAndIcon)
+                        }
+
                         Button(role: .destructive) {
                             requestRemove(ids: idsForContext)
                         } label: {
@@ -380,6 +418,37 @@ struct AppExclusionAndLimitationListView: View {
                 .help("選択したアプリをリストから削除します。")
 
                 Spacer()
+
+                if eventManager.appListMode == .exclude {
+                    // Toggle Filter Mode Button
+                    let nextMode: AppFilterMode = {
+                        if selectedIds.isEmpty { return .ignore }
+                        // 選択されているもののうち、一つでもExcludeがあればIgnoreに、そうでなければExcludeにする（トグル動作）
+                        let hasExclude = selectedIds.contains { (eventManager.appFilterModes[$0] ?? .exclude) == .exclude }
+                        return hasExclude ? .ignore : .exclude
+                    }()
+
+                    Button {
+                        for id in selectedIds {
+                            eventManager.appFilterModes[id] = nextMode
+                        }
+                    } label: {
+                        Image(systemName: nextMode.iconName)
+                            .font(.body)
+                            .fontWeight(.medium)
+                            .frame(width: 24, height: 24)
+                            .offset(y: -1.2)
+                            .contentShape(Rectangle())
+                    }
+                    .buttonStyle(.borderless)
+                    .disabled(selectedIds.isEmpty)
+                    .help(nextMode == .ignore ? "選択したアプリを「無視」に設定します。" : "選択したアプリを「除外」に設定します。")
+                    
+                    Divider()
+                        .frame(width: 1, height: 16)
+                        .background(Color.gray.opacity(0.1))
+                        .padding(.horizontal, 4)
+                }
 
                 // Clear Button
                 Button {
@@ -743,7 +812,7 @@ struct PerAppSettingListView: View {
     var body: some View {
         List(selection: $selectedIds) {
             ForEach(sortedBundleIdentifiers, id: \.self) { id in
-                AppExclusionAndLimitationRow(bundleIdentifier: id)
+                AppExclusionAndLimitationRow(bundleIdentifier: id, showFilterMode: false)
             }
             .onDelete { indexSet in
                 let idsToDelete = indexSet.map { sortedBundleIdentifiers[$0] }
