@@ -17,6 +17,18 @@ struct BehaviorSettingsTab: View {
         }
     }
 
+    private var controlCenterDisplayName: String {
+        AppExclusionAndLimitationDisplayResolver.shared.resolvedInfo(for: "com.apple.controlcenter")?.name ?? "Control Center"
+    }
+
+    private var osdUIHelperDisplayName: String {
+        AppExclusionAndLimitationDisplayResolver.shared.resolvedInfo(for: "com.apple.OSDUIHelper")?.name ?? "OSDUIHelper"
+    }
+
+    private var dockDisplayName: String {
+        AppExclusionAndLimitationDisplayResolver.shared.resolvedInfo(for: "com.apple.dock")?.name ?? "Dock"
+    }
+
     private var listModePicker: some View {
         Picker(selection: $eventManager.appListMode) {
             ForEach(AppListMode.allCases, id: \.self) { mode in
@@ -76,7 +88,7 @@ struct BehaviorSettingsTab: View {
                         Label {
                             VStack(alignment: .leading, spacing: 2) {
                                 Text("Launchpad")
-                                Text("\("Dock")、レイヤー\("27 / 29")、\(Text("除外"))")
+                                Text("\(dockDisplayName)、レイヤー\("27 / 29")、\(Text("除外"))")
                                     .font(.subheadline)
                                     .foregroundStyle(.secondary)
                             }
@@ -90,7 +102,7 @@ struct BehaviorSettingsTab: View {
                     Label {
                         VStack(alignment: .leading, spacing: 2) {
                             Text("デスクトップを表示 / Mission Control")
-                            Text("\("Dock")、レイヤー\("18")、\(Text("無視"))")
+                            Text("\(dockDisplayName)、レイヤー\("18")、\(Text("無視"))")
                                 .font(.subheadline)
                                 .foregroundStyle(.secondary)
                         }
@@ -105,9 +117,9 @@ struct BehaviorSettingsTab: View {
                             Text("音量・明るさOSD")
                             Group {
                                 if #available(macOS 26.0, *) {
-                                    Text("\("コントロールセンター")、レイヤー\("2005")、\(Text("除外"))")
+                                    Text("\(controlCenterDisplayName)、レイヤー\("2005")、\(Text("除外"))")
                                 } else {
-                                    Text("\("OSDUIHelper")、レイヤー\("2005")、\(Text("除外"))")
+                                    Text("\(osdUIHelperDisplayName)、レイヤー\("2005")、\(Text("除外"))")
                                 }
                             }
                             .font(.subheadline)
