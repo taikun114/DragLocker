@@ -177,6 +177,7 @@ class AppExclusionAndLimitationDisplayResolver {
 /// リストの1行分を表示するコンポーネント
 struct AppExclusionAndLimitationRow: View {
     @EnvironmentObject var eventManager: EventManager
+    @Environment(\.colorScheme) var colorScheme
     let bundleIdentifier: String
     var showFilterMode: Bool = true
     
@@ -878,6 +879,7 @@ struct PerAppSettingListView: View {
         } message: {
             Text("選択された\(idsToRemove.count)個のアプリをリストから削除してもよろしいですか？")
         }
+        .id(colorScheme)
     }
 
     private var toolbarOverlay: some View {

@@ -329,6 +329,7 @@ struct SystemOverlayHelpPopover: View {
 
 private struct SystemOverlayItemRow: View {
     @EnvironmentObject var eventManager: EventManager
+    @Environment(\.colorScheme) var colorScheme
     let item: SystemOverlayItem
     
     var isAdded: Bool {
