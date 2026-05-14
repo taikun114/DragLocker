@@ -65,7 +65,6 @@ struct InfoView: View {
                         
                         Spacer()
                     }
-                    .frame(maxHeight: 128, alignment: .topLeading)
                 }
                 
                 // ライセンス情報
