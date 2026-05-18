@@ -1698,6 +1698,8 @@ class EventManager: NSObject, ObservableObject {
         let oldState = buttonStates[button]
         buttonStates[button] = newState
 
+        let oldAnyLocked = !lockedButtons.isEmpty
+
         // ロック中のボタンセットを更新
         if newState == .locked {
             if !lockedButtons.contains(button) {
@@ -1707,6 +1709,19 @@ class EventManager: NSObject, ObservableObject {
             if lockedButtons.contains(button) {
                 lockedButtons.remove(button)
             }
+        }
+
+        let newAnyLocked = !lockedButtons.isEmpty
+
+        // ロックが開始された（1つもロックされていない状態から1つ以上ロックされた状態になった）時
+        if !oldAnyLocked && newAnyLocked {
+            ReviewRequestManager.shared.incrementCountIfNeeded()
+            ReviewRequestManager.shared.cancelScheduledReviewRequest()
+        }
+
+        // ロックが完全に解除された（1つ以上ロックされていた状態から完全にロックがゼロになった）時
+        if oldAnyLocked && !newAnyLocked {
+            ReviewRequestManager.shared.scheduleReviewRequest()
         }
 
         // グローバルのロック状態を更新

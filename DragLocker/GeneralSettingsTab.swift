@@ -8,6 +8,7 @@ struct GeneralSettingsTab: View {
     @Environment(\.accessibilityDifferentiateWithoutColor) var differentiateWithoutColor
     @AppStorage("lockDelay") private var lockDelay: Double = 1.0
     @State private var hasRequestedAccessibility = false
+    @ObservedObject private var reviewManager = ReviewRequestManager.shared
     
     var body: some View {
         Form {
@@ -326,6 +327,72 @@ struct GeneralSettingsTab: View {
                     .help(eventManager.isNotificationTrusted ? "現在の通知設定を確認するためのテスト通知を送信します。" : "システム設定の通知設定画面を開きます。")
                 }
             }
+
+            #if DEBUG
+            Section(header: Text(verbatim: "App Store Review Debug")) {
+                LabeledContent {
+                    Text(verbatim: "\(reviewManager.dragLockStartCount) / 100")
+                } label: {
+                    Text(verbatim: "Current Count:")
+                }
+                LabeledContent {
+                    Text(verbatim: "\(reviewManager.todayCount) / 34")
+                } label: {
+                    Text(verbatim: "Today's Count:")
+                }
+                LabeledContent {
+                    Text(verbatim: reviewManager.lastRequestDate.map { "\($0)" } ?? "None")
+                } label: {
+                    Text(verbatim: "Last Request Date:")
+                }
+                LabeledContent {
+                    Text(verbatim: "\(reviewManager.lastUpdateDate)")
+                } label: {
+                    Text(verbatim: "Last Update Date:")
+                }
+                LabeledContent {
+                    Text(verbatim: reviewManager.appVersion)
+                } label: {
+                    Text(verbatim: "App Version:")
+                }
+                
+                Button(action: {
+                    reviewManager.debugSetCountTo99()
+                }) {
+                    Text(verbatim: "Set Count to 99")
+                }
+                
+                Button(action: {
+                    reviewManager.debugResetCount()
+                }) {
+                    Text(verbatim: "Reset Count to 0")
+                }
+                
+                Button(action: {
+                    reviewManager.debugResetLastRequestDate()
+                }) {
+                    Text(verbatim: "Reset Last Request Date")
+                }
+                
+                Button(action: {
+                    reviewManager.debugResetUpdateDate()
+                }) {
+                    Text(verbatim: "Reset Update Date")
+                }
+                
+                Button(action: {
+                    reviewManager.debugSetUpdateDateTo3DaysAgo()
+                }) {
+                    Text(verbatim: "Set Update Date to 3 Days Ago")
+                }
+                
+                Button(action: {
+                    reviewManager.debugForceShowRequest()
+                }) {
+                    Text(verbatim: "Force Show Request Test")
+                }
+            }
+            #endif
         }
         .formStyle(.grouped)
         .onChange(of: lockDelay) { _, newValue in

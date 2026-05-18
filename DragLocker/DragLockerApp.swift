@@ -1,5 +1,6 @@
 import SwiftUI
 import KeyboardShortcuts
+import StoreKit
 
 class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate {
     static var shared: AppDelegate?
@@ -309,12 +310,22 @@ struct AppCommands: Commands {
 struct MenuBarIconView: View {
     @ObservedObject var eventManager = EventManager.shared
     @ObservedObject var lockState = LockStateManager.shared
+    @ObservedObject var reviewManager = ReviewRequestManager.shared
+    @Environment(\.requestReview) private var requestReview
     
     var body: some View {
-        if !eventManager.isTrusted || !eventManager.isEnabled {
-            Image("MenuBarIcon_Paused")
-        } else {
-            Image(lockState.isLocked ? "MenuBarIcon_Locked" : "MenuBarIcon")
+        Group {
+            if !eventManager.isTrusted || !eventManager.isEnabled {
+                Image("MenuBarIcon_Paused")
+            } else {
+                Image(lockState.isLocked ? "MenuBarIcon_Locked" : "MenuBarIcon")
+            }
+        }
+        .onChange(of: reviewManager.shouldPresentReview) { _, newValue in
+            if newValue {
+                requestReview()
+                reviewManager.markReviewAsRequested()
+            }
         }
     }
 }
