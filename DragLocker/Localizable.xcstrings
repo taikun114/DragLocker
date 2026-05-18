@@ -281,6 +281,22 @@
         }
       }
     },
+    "App Store機能" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "App Store Features"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "App Store機能"
+          }
+        }
+      }
+    },
     "Buy Me a Coffeeで、緑茶一杯分の金額からサポートしていただけます。" : {
       "localizations" : {
         "en" : {
@@ -3337,6 +3353,22 @@
         }
       }
     },
+    "レビューを求めないようにする" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Don't Ask for Reviews"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "レビューを求めないようにする"
+          }
+        }
+      }
+    },
     "ログイン時に開く" : {
       "comment" : "ログイン時起動設定のラベル",
       "localizations" : {
@@ -3943,6 +3975,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "完了"
+          }
+        }
+      }
+    },
+    "定期的にApp Storeへのレビューを求める画面が表示されないように設定します。" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Prevent the app from periodically prompting you to review it on the App Store."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "定期的にApp Storeへのレビューを求める画面が表示されないように設定します。"
           }
         }
       }

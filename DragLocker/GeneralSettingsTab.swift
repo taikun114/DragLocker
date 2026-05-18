@@ -327,6 +327,16 @@ struct GeneralSettingsTab: View {
                     .help(eventManager.isNotificationTrusted ? "現在の通知設定を確認するためのテスト通知を送信します。" : "システム設定の通知設定画面を開きます。")
                 }
             }
+            
+            Section(header: Text("App Store機能")) {
+                Toggle(isOn: $reviewManager.isReviewRequestDisabled) {
+                    Text("レビューを求めないようにする")
+                    Text("定期的にApp Storeへのレビューを求める画面が表示されないように設定します。")
+                        .font(.subheadline)
+                        .foregroundStyle(.secondary)
+                }
+                .accessibilityHint("定期的にApp Storeへのレビューを求める画面が表示されないように設定します。")
+            }
 
             #if DEBUG
             Section(header: Text(verbatim: "App Store Review Debug")) {

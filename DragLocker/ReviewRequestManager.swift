@@ -16,6 +16,7 @@ public class ReviewRequestManager: ObservableObject {
     private let kCurrentVersion = "review_currentVersion"
     private let kTodayCount = "review_todayCount"
     private let kLastCountDate = "review_lastCountDate"
+    private let kIsReviewRequestDisabled = "review_isReviewRequestDisabled"
     
     @Published public var shouldPresentReview = false
     private var reviewRequestTimer: Timer?
@@ -77,6 +78,14 @@ public class ReviewRequestManager: ObservableObject {
         set { userDefaults.set(newValue, forKey: kLastCountDate) }
     }
     
+    public var isReviewRequestDisabled: Bool {
+        get { userDefaults.bool(forKey: kIsReviewRequestDisabled) }
+        set {
+            userDefaults.set(newValue, forKey: kIsReviewRequestDisabled)
+            objectWillChange.send()
+        }
+    }
+    
     // アプリの現在のバージョンを取得
     public var appVersion: String {
         Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "1.0.0"
@@ -106,6 +115,9 @@ public class ReviewRequestManager: ObservableObject {
     }
     
     public func incrementCountIfNeeded() {
+        // レビューリクエスト機能が無効化されている場合は何もしない
+        guard !isReviewRequestDisabled else { return }
+        
         // 1. 同一バージョンで既にレビュー要求済みか確認
         if let lastReqVer = lastRequestVersion, lastReqVer == appVersion {
             #if DEBUG
@@ -151,6 +163,9 @@ public class ReviewRequestManager: ObservableObject {
     
     public func scheduleReviewRequest() {
         cancelScheduledReviewRequest()
+        
+        // レビューリクエスト機能が無効化されている場合は何もしない
+        guard !isReviewRequestDisabled else { return }
         
         // カウントが100回未満の場合は何もしない
         guard dragLockStartCount >= 100 else { return }

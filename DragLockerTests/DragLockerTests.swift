@@ -137,6 +137,28 @@ struct DragLockerTests {
         // レビュー要求済みマークをしてカウントが0にリセットされることを確認
         manager.markReviewAsRequested()
         #expect(manager.dragLockStartCount == 0)
+        
+        // --- レビュー機能の無効化（オプトアウト）テスト ---
+        manager.debugResetLastRequestDate() // レビュー要求済みステータスをリセット
+        manager.isReviewRequestDisabled = true
+        
+        // 無効化されているのでカウントが増えないことを確認
+        manager.incrementCountIfNeeded()
+        #expect(manager.dragLockStartCount == 0)
+        
+        // カウントを100にしてスケジュールしようとしても、無効化されていればshouldPresentReviewはtrueにならない
+        manager.isReviewRequestDisabled = false // 一時的に無効化を解除して100にする
+        manager.debugSetCountTo99()
+        manager.incrementCountIfNeeded()
+        #expect(manager.dragLockStartCount == 100)
+        
+        manager.isReviewRequestDisabled = true // 再び無効化
+        manager.scheduleReviewRequest()
+        #expect(manager.shouldPresentReview == false)
+        
+        // テストの後片付け
+        manager.isReviewRequestDisabled = false
+        manager.debugResetCount()
     }
 
 }
