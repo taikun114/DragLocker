@@ -52,10 +52,10 @@ DragLockerを使えば、Macに接続されたあらゆるマウスでドラッ�
 
 ### ダウンロード
 
-DragLockerは[**リリースページ**](https://github.com/taikun114/DragLocker/releases/latest)から無料でダウンロードするか、[**Mac App Store**](https://apps.apple.com/jp/app/リンクが確定次第)から500円で購入することができます。
+DragLockerは[**リリースページ**](https://github.com/taikun114/DragLocker/releases/latest)から無料でダウンロードするか、[**Mac App Store**](https://apps.apple.com/jp/app/draglocker/id6770572129)から500円で購入することができます。
 
 <p align="left">
-  <a href="https://apps.apple.com/jp/app/リンクが確定次第" target="_blank">
+  <a href="https://apps.apple.com/jp/app/draglocker/id6770572129" target="_blank">
     <img alt="Mac App Store からダウンロード" src="images/Mac_App_Store_DL_Badge-ja.webp" height="48">
   </a>
   &nbsp;
