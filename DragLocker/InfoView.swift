@@ -12,8 +12,6 @@ struct InfoView: View {
     @State private var showingBugReportAlert = false
     @State private var showingCommunityAlert = false
     @State private var showingGitHubStarAlert = false
-    @State private var showingBuyMeACoffeeAlert = false
-    @State private var showingPayPalAlert = false
     @State private var showingLicenseInfoModal = false
     
     var body: some View {
@@ -160,54 +158,6 @@ struct InfoView: View {
                 } label: {
                     Text("GitHubリポジトリにスターをつける")
                     Text("リポジトリにスターをつけてくれるととてもうれしいです！")
-                        .font(.caption)
-                        .foregroundStyle(.secondary)
-                }
-                
-                LabeledContent {
-                    Button(action: { showingBuyMeACoffeeAlert = true }) {
-                        Label("緑茶を奢る", systemImage: "cup.and.saucer")
-                    }
-                    .buttonStyle(.bordered)
-                    .help("Buy Me a Coffeeページへのリンクを開きます。")
-                    .alert("リンクを開きますか？", isPresented: $showingBuyMeACoffeeAlert) {
-                        Button("開く") {
-                            if let url = URL(string: "https://www.buymeacoffee.com/i_am_taikun") {
-                                openURL(url)
-                            }
-                        }
-                        .keyboardShortcut(.defaultAction)
-                        Button("キャンセル", role: .cancel) {}
-                    } message: {
-                        Text("Buy Me a Coffeeのページを開いてもよろしいですか？")
-                    }
-                } label: {
-                    Text("緑茶を買ってあげる")
-                    Text("Buy Me a Coffeeで、緑茶一杯分の金額からサポートしていただけます。")
-                        .font(.caption)
-                        .foregroundStyle(.secondary)
-                }
-                
-                LabeledContent {
-                    Button(action: { showingPayPalAlert = true }) {
-                        Label("PayPalで寄付", systemImage: "creditcard")
-                    }
-                    .buttonStyle(.bordered)
-                    .help("PayPal.Meのリンクを開きます。")
-                    .alert("リンクを開きますか？", isPresented: $showingPayPalAlert) {
-                        Button("開く") {
-                            if let url = URL(string: "https://paypal.me/taikun114") {
-                                openURL(url)
-                            }
-                        }
-                        .keyboardShortcut(.defaultAction)
-                        Button("キャンセル", role: .cancel) {}
-                    } message: {
-                        Text("PayPal.Meのページを開いてもよろしいですか？")
-                    }
-                } label: {
-                    Text("PayPalで寄付")
-                    Text("PayPalで直接寄付していただくこともできます。")
                         .font(.caption)
                         .foregroundStyle(.secondary)
                 }

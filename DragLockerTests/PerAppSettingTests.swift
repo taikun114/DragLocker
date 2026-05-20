@@ -2,7 +2,7 @@ import Foundation
 import Testing
 @testable import DragLocker
 
-@Suite("PerAppSetting Resolution Tests")
+@Suite("PerAppSetting Resolution Tests", .serialized)
 struct PerAppSettingTests {
     @Test("Resolve default setting when no app is specified")
     func testResolveDefault() {
