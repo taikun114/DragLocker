@@ -52,13 +52,7 @@ Use DragLocker to enable drag lock with any mouse connected to your Mac.
 
 ### Download
 
-> [!IMPORTANT]
-> I am currently awaiting Apple's review of the App Store version. Once the review is completed, the GitHub version will be released along with it. Please wait a little longer.
-
 You can download DragLocker for free from the [**Releases page**](https://github.com/taikun114/DragLocker/releases/latest) or purchase it for $2.99 on the [**Mac App Store**](https://apps.apple.com/us/app/draglocker/id6770572129).
-
-> [!NOTE]
-> Prices may vary by region. The price is based on 500 JPY, so it may change automatically due to fluctuations in foreign exchange rates.
 
 <p align="left">
   <a href="https://apps.apple.com/us/app/draglocker/id6770572129" target="_blank">
@@ -69,6 +63,9 @@ You can download DragLocker for free from the [**Releases page**](https://github
     <img alt="Free Download on the GitHub" src="docs/images/GitHub_Badge-en.webp" height="48">
   </a>
 </p>
+
+> [!NOTE]
+> Prices may vary by region. The price is based on 500 JPY, so it may change automatically due to fluctuations in foreign exchange rates.
 
 ### System Requirements
 

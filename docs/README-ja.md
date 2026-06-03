@@ -52,9 +52,6 @@ DragLockerを使えば、Macに接続されたあらゆるマウスでドラッ�
 
 ### ダウンロード
 
-> [!IMPORTANT]
-> 現在、AppleによるApp Store版の審査完了を待っているため、App Store版の審査が完了したときにGitHub版もリリースしますので、もうしばらくお待ちください。
-
 DragLockerは[**リリースページ**](https://github.com/taikun114/DragLocker/releases/latest)から無料でダウンロードするか、[**Mac App Store**](https://apps.apple.com/jp/app/draglocker/id6770572129)から500円で購入することができます。
 
 <p align="left">
