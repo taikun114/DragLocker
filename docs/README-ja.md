@@ -5,15 +5,15 @@
 
 <p align="center">
   <a href="https://github.com/taikun114/DragLocker">
-    <img alt="GitHubリポジトリ スター数" src="https://img.shields.io/github/stars/taikun114/DragLocker?style=for-the-badge&label=スター&labelColor=F1F9FF&color=3145B9">
+    <img alt="GitHubリポジトリ スター数" src="https://img.shields.io/github/stars/taikun114/DragLocker?style=for-the-badge&label=%E3%82%B9%E3%82%BF%E3%83%BC&labelColor=F1F9FF&color=3145B9">
   </a>
   &nbsp;
   <a href="https://github.com/taikun114/DragLocker/releases/latest">
-    <img alt="GitHub リリース" src="https://img.shields.io/github/v/release/taikun114/DragLocker?sort=semver&display_name=tag&style=for-the-badge&label=リリース&labelColor=F1F9FF&color=3145B9">
+    <img alt="GitHub リリース" src="https://img.shields.io/github/v/release/taikun114/DragLocker?sort=semver&display_name=tag&style=for-the-badge&label=%E3%83%AA%E3%83%AA%E3%83%BC%E3%82%B9&labelColor=F1F9FF&color=3145B9">
   </a>
   &nbsp;
   <a href="https://github.com/taikun114/DragLocker/releases/latest">
-    <img alt="GitHub ダウンロード数" src="https://img.shields.io/github/downloads/taikun114/DragLocker/total?style=for-the-badge&label=無料ダウンロード数&labelColor=F1F9FF&color=3145B9">
+    <img alt="GitHub ダウンロード数" src="https://img.shields.io/github/downloads/taikun114/DragLocker/total?style=for-the-badge&label=%E7%84%A1%E6%96%99%E3%83%80%E3%82%A6%E3%83%B3%E3%83%AD%E3%83%BC%E3%83%89%E6%95%B0&labelColor=F1F9FF&color=3145B9">
   </a>
 </p>
 
