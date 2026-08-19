@@ -31,6 +31,7 @@ struct PerAppSettingTests {
         #expect(setting.bundleIdentifier == testBID)
         
         // 固有設定を変更してみる
+        eventManager.perAppSettings[testBID]?.overrides.insert("iconEnabled")
         eventManager.perAppSettings[testBID]?.isIconEnabled = false
         
         let updatedSetting = eventManager.resolveSetting(for: testBID)

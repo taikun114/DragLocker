@@ -15,8 +15,9 @@ extension KeyboardShortcuts.Name {
 
 enum EventManagerState: Equatable, Sendable {
     case idle
-    case holding // マウスダウン中、待機
-    case locked  // ロック状態
+    case holding          // マウスダウン中、待機
+    case locked           // ロック状態
+    case unlockingPending // ロック中にマウスダウンされた状態（マウスアップで解除完了するのを待機）
 }
 
 enum MouseButton: Int, CaseIterable, Sendable, Codable {
@@ -273,6 +274,9 @@ class EventManager: NSObject, ObservableObject {
     private var dlLocalMonitor: Any?
     private var dlGlobalMonitor: Any?
 
+    /// DragLocker自身が生成した合成イベントを識別するためのマーカー値 ("DLOCK")
+    private let syntheticEventMarker: Int64 = 0x444C4F434B
+
     /// 各アイコンスタイルごとの設定値を保持する（永続化用）
     private var iconSettings: [String: Double] = [:]
     /// 全てのアイコン設定のコピーを取得する
@@ -318,7 +322,7 @@ class EventManager: NSObject, ObservableObject {
             let removedValues = oldValue.subtracting(enabledButtonRawValues)
             for rawValue in removedValues {
                 if let button = MouseButton(rawValue: rawValue) {
-                    if buttonStates[button] == .locked {
+                    if buttonStates[button] == .locked || buttonStates[button] == .unlockingPending {
                         #if DEBUG
                         print("\(button) was removed from target buttons: Releasing lock")
                         #endif
@@ -1479,6 +1483,11 @@ class EventManager: NSObject, ObservableObject {
 
     // イベント処理のエントリーポイント
     func handleEvent(proxy: CGEventTapProxy, type: CGEventType, event: CGEvent) -> Unmanaged<CGEvent>? {
+        // DragLocker自身が生成・送信した合成イベントは、状態変更やインターセプトを行わずにそのまま通過させる
+        if event.getIntegerValueField(.eventSourceUserData) == syntheticEventMarker {
+            return Unmanaged.passUnretained(event)
+        }
+
         // macOSがタイムアウト等でイベントタップを無効化した場合、再有効化する
         if type == .tapDisabledByTimeout || type == .tapDisabledByUserInput {
             print("Event tap was disabled by system (type: \(type.rawValue)), attempting to re-enable...")
@@ -1589,10 +1598,12 @@ class EventManager: NSObject, ObservableObject {
 
                 if buttonStates[button] == .locked {
                     #if DEBUG
-                    print("\(button) down while locked: Releasing lock (priority)")
+                    print("\(button) down while locked: Preparing to unlock on mouse up")
                     #endif
-                    releaseLock(for: button)
-                    return Unmanaged.passUnretained(event)
+                    updateButtonState(button, to: .unlockingPending)
+                    dragStartLocations[button] = nil
+                    // 2回目のMouseDownは完全に破棄（新規クリックを防ぐ）
+                    return nil
                 }
             }
             
@@ -1600,6 +1611,17 @@ class EventManager: NSObject, ObservableObject {
                 if type == .otherMouseUp {
                     let buttonNumber = event.getIntegerValueField(.mouseEventButtonNumber)
                     if buttonNumber != 2 { continue }
+                }
+                
+                if buttonStates[button] == .unlockingPending {
+                    #if DEBUG
+                    print("\(button) up while unlocking: Releasing lock (priority)")
+                    #endif
+                    updateButtonState(button, to: .idle)
+                    // 指を離した瞬間にドラッグ終了用の合成MouseUpを送信
+                    postSyntheticMouseUp(for: button)
+                    // 物理MouseUpは破棄
+                    return nil
                 }
                 
                 if buttonStates[button] == .locked {
@@ -1679,8 +1701,8 @@ class EventManager: NSObject, ObservableObject {
             // いずれかのボタンがロック中なら、mouseMoved（物理ボタンが押されていない状態での移動）をドラッグに変換
             if !lockedButtons.isEmpty {
                 if type == .mouseMoved {
-                    // 現在ロック中のボタンのうち、最初に見つかったもののドラッグタイプを使用
-                    if let lockedButton = MouseButton.allCases.first(where: { buttonStates[$0] == .locked }) {
+                    // 現在ロック中（または解除待機中）のボタンのうち、最初に見つかったもののドラッグタイプを使用
+                    if let lockedButton = MouseButton.allCases.first(where: { buttonStates[$0] == .locked || buttonStates[$0] == .unlockingPending }) {
                         event.type = lockedButton.mouseDraggedType
                         if lockedButton == .middle {
                             event.setIntegerValueField(.mouseEventButtonNumber, value: 2)
@@ -1698,8 +1720,8 @@ class EventManager: NSObject, ObservableObject {
         let oldState = buttonStates[button]
         buttonStates[button] = newState
 
-        // ロック中のボタンセットを更新
-        if newState == .locked {
+        // ロック中のボタンセットを更新（lockedまたはunlockingPendingはロック中として管理）
+        if newState == .locked || newState == .unlockingPending {
             if !lockedButtons.contains(button) {
                 lockedButtons.insert(button)
             }
@@ -1720,11 +1742,14 @@ class EventManager: NSObject, ObservableObject {
         // サウンド再生の判定
         let currentSetting = effectiveSetting ?? resolveSetting(for: nil)
         if currentSetting.isSoundEnabled {
-            if oldState != .locked && newState == .locked {
+            let wasLocked = (oldState == .locked || oldState == .unlockingPending)
+            let isNowLocked = (newState == .locked || newState == .unlockingPending)
+            
+            if !wasLocked && isNowLocked {
                 // ロックされた
                 SoundManager.shared.play(style: currentSetting.soundStyle, volume: currentSetting.soundVolume, isLocked: true, isInverted: currentSetting.isSoundInverted)
-            } else if oldState == .locked && newState != .locked {
-                // 解除された
+            } else if wasLocked && !isNowLocked {
+                // 解除された（指を離してidleになった瞬間）
                 SoundManager.shared.play(style: currentSetting.soundStyle, volume: currentSetting.soundVolume, isLocked: false, isInverted: currentSetting.isSoundInverted)
             }
         }
@@ -1765,7 +1790,7 @@ class EventManager: NSObject, ObservableObject {
 
     private func releaseAllLocks() {
         for button in MouseButton.allCases {
-            if buttonStates[button] == .locked {
+            if buttonStates[button] == .locked || buttonStates[button] == .unlockingPending {
                 releaseLock(for: button)
             } else if buttonStates[button] == .holding {
                 cancelHold(for: button)
@@ -1821,6 +1846,10 @@ class EventManager: NSObject, ObservableObject {
         } else {
             mouseUpEvent = CGEvent(mouseEventSource: nil, mouseType: button.mouseUpType, mouseCursorPosition: mouseLocation, mouseButton: button.cgButton)
         }
+
+        // DragLocker発の合成イベントであることをマーキング
+        mouseUpEvent?.setIntegerValueField(.eventSourceUserData, value: syntheticEventMarker)
+        mouseUpEvent?.setIntegerValueField(.mouseEventClickState, value: 1)
 
         mouseUpEvent?.post(tap: .cghidEventTap)
         #if DEBUG
