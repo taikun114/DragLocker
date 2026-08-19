@@ -499,6 +499,12 @@ class EventManager: NSObject, ObservableObject {
 
 
 
+    @Published var isIgnoreSyntheticClicksEnabled: Bool = true {
+        didSet {
+            UserDefaults.standard.set(isIgnoreSyntheticClicksEnabled, forKey: "isIgnoreSyntheticClicksEnabled")
+        }
+    }
+
     @Published var isUnlockAllWithEscEnabled: Bool = true {
         didSet {
             UserDefaults.standard.set(isUnlockAllWithEscEnabled, forKey: "isUnlockAllWithEscEnabled")
@@ -600,6 +606,12 @@ class EventManager: NSObject, ObservableObject {
         }
 
 
+
+        if UserDefaults.standard.object(forKey: "isIgnoreSyntheticClicksEnabled") == nil {
+            self.isIgnoreSyntheticClicksEnabled = true
+        } else {
+            self.isIgnoreSyntheticClicksEnabled = UserDefaults.standard.bool(forKey: "isIgnoreSyntheticClicksEnabled")
+        }
 
         if UserDefaults.standard.object(forKey: "isUnlockAllWithEscEnabled") == nil {
             self.isUnlockAllWithEscEnabled = true
@@ -1323,6 +1335,7 @@ class EventManager: NSObject, ObservableObject {
             }
             
             // UIで上書き不可な設定は常にグローバルに従う
+            setting.isIgnoreSyntheticClicksEnabled = self.isIgnoreSyntheticClicksEnabled
             setting.isUnlockAllWithEscEnabled = self.isUnlockAllWithEscEnabled
             
             return setting
@@ -1516,6 +1529,15 @@ class EventManager: NSObject, ObservableObject {
                 setupEventTap()
             }
             return Unmanaged.passUnretained(event)
+        }
+
+        // 物理HIDデバイス（ハードウェアマウス/キーボード）以外の入力（画面共有等のリモート操作や他アプリの合成イベント）は、
+        // 設定が有効な場合はドラッグロック処理の対象外としてそのまま通過させる（リモートアクセス時の二重ロックを防止）
+        if isIgnoreSyntheticClicksEnabled {
+            let sourceStateID = event.getIntegerValueField(.eventSourceStateID)
+            if sourceStateID != Int64(CGEventSourceStateID.hidSystemState.rawValue) {
+                return Unmanaged.passUnretained(event)
+            }
         }
 
         // マウスダウン時に権限を再確認する（オン→オフへの変化を即座に捉えるため）

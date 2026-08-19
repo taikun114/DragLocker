@@ -2199,6 +2199,22 @@
         }
       }
     },
+    "ソフトウェアによるクリックはロックしない" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Do Not Lock on Software Clicks"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ソフトウェアによるクリックはロックしない"
+          }
+        }
+      }
+    },
     "チェックを入れると、この項目のグローバル設定を上書きします。" : {
       "localizations" : {
         "en" : {
@@ -4274,6 +4290,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "生成AIと開発"
+          }
+        }
+      }
+    },
+    "画面共有のようなリモートアクセスツールなどによって発生したクリックではドラッグロックしないようにします。" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Prevents drag lock from activating on clicks made by remote access tools such as Screen Sharing."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "画面共有のようなリモートアクセスツールなどによって発生したクリックではドラッグロックしないようにします。"
           }
         }
       }

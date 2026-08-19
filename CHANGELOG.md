@@ -22,6 +22,11 @@ Notes
 -->
 
 ## 1.0.1
+### New Features
+- **Add "Do Not Lock on Software Clicks" setting to General settings**
+  - Prevents drag lock from activating on clicks made by remote access tools such as Screen Sharing.
+  - For example, when drag lock is enabled on both the remote client and the remote host, this setting prevents drag lock from being triggered on both devices simultaneously (delegating drag lock to the client device).
+
 ### Bug Fixes and Improvements
 - **Fix issue where a click could occur when releasing drag lock in some apps**
   - Releasing drag lock in screen sharing apps or virtual machines no longer triggers an unintended click.
