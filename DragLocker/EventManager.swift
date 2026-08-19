@@ -499,7 +499,7 @@ class EventManager: NSObject, ObservableObject {
 
 
 
-    @Published var isIgnoreSyntheticClicksEnabled: Bool = true {
+    @Published var isIgnoreSyntheticClicksEnabled: Bool = false {
         didSet {
             UserDefaults.standard.set(isIgnoreSyntheticClicksEnabled, forKey: "isIgnoreSyntheticClicksEnabled")
         }
@@ -607,11 +607,7 @@ class EventManager: NSObject, ObservableObject {
 
 
 
-        if UserDefaults.standard.object(forKey: "isIgnoreSyntheticClicksEnabled") == nil {
-            self.isIgnoreSyntheticClicksEnabled = true
-        } else {
-            self.isIgnoreSyntheticClicksEnabled = UserDefaults.standard.bool(forKey: "isIgnoreSyntheticClicksEnabled")
-        }
+        self.isIgnoreSyntheticClicksEnabled = UserDefaults.standard.bool(forKey: "isIgnoreSyntheticClicksEnabled")
 
         if UserDefaults.standard.object(forKey: "isUnlockAllWithEscEnabled") == nil {
             self.isUnlockAllWithEscEnabled = true
