@@ -614,9 +614,11 @@ struct CursorPreviewAreaView<Content: View>: View {
 
     var body: some View {
         ZStack {
-            let isOld = ProcessInfo.processInfo.operatingSystemVersion.majorVersion < 26
+            let major = ProcessInfo.processInfo.operatingSystemVersion.majorVersion
+            let isOld = major < 26
             let suffix = isOld ? "_Old" : ""
-            let cursors = ["Cursor_Pointer\(suffix)", "Cursor_PointingHand\(suffix)", "Cursor_IbeamVertical\(suffix)"]
+            let pointingHandName = major >= 27 ? "Cursor_PointingHand_27" : "Cursor_PointingHand\(suffix)"
+            let cursors = ["Cursor_Pointer\(suffix)", pointingHandName, "Cursor_IbeamVertical\(suffix)"]
             let currentCursorName = cursors[previewCursorPhase % cursors.count]
             
             Group {
