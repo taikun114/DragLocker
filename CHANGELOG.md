@@ -31,6 +31,7 @@ Notes
 - **Fix issue where a click could occur when releasing drag lock in some apps**
   - Releasing drag lock in screen sharing apps or virtual machines no longer triggers an unintended click.
   - Due to this fix, the timing for releasing drag lock has changed from the moment the second mouse button is **pressed** to the moment it is **released**. This may have a slight impact on usability.
+- **Fix issue where per-app settings were not applied in some apps (such as Java apps)**
 - **Improve tracking responsiveness of the icon displayed near the pointer**
 - **Improve the appearance of the license screen**
 

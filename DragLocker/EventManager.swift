@@ -1293,9 +1293,23 @@ class EventManager: NSObject, ObservableObject {
         perAppSettings[setting.bundleIdentifier] = setting
     }
 
-    /// 指定されたアプリ識別子に対する設定を解決する（個別設定があればそれを、なければ現在のグローバル設定を返す）
-    func resolveSetting(for bundleIdentifier: String?) -> PerAppSetting {
-        if let bundleIdentifier = bundleIdentifier, var setting = perAppSettings[bundleIdentifier] {
+    /// 指定されたアプリ識別情報に対する設定を解決する（個別設定があればそれを、なければ現在のグローバル設定を返す）
+    func resolveSetting(
+        for bundleIdentifier: String? = nil,
+        executableName: String? = nil,
+        executablePath: String? = nil
+    ) -> PerAppSetting {
+        // 個別設定の検索（優先度: bundleIdentifier -> executablePath -> executableName）
+        var matchedSetting: PerAppSetting? = nil
+        if let bundleIdentifier = bundleIdentifier, let setting = perAppSettings[bundleIdentifier] {
+            matchedSetting = setting
+        } else if let executablePath = executablePath, let setting = perAppSettings[executablePath] {
+            matchedSetting = setting
+        } else if let executableName = executableName, let setting = perAppSettings[executableName] {
+            matchedSetting = setting
+        }
+        
+        if var setting = matchedSetting {
             // 上書きされていない項目を現在のグローバル設定で同期する
             if !setting.overrides.contains("mouseButtons") { setting.enabledButtonRawValues = self.enabledButtonRawValues }
             if !setting.overrides.contains("lockMethod") { setting.lockType = self.lockType }
@@ -1338,7 +1352,7 @@ class EventManager: NSObject, ObservableObject {
         }
         
         // 個別設定がない場合はグローバル設定を PerAppSetting 構造体にラップして返す
-        return PerAppSetting(bundleIdentifier: "", eventManager: self)
+        return PerAppSetting(bundleIdentifier: bundleIdentifier ?? executablePath ?? executableName ?? "", eventManager: self)
     }
 
     // MARK: - Custom Sound Management
@@ -1592,7 +1606,11 @@ class EventManager: NSObject, ObservableObject {
         let isMouseDown = type == .leftMouseDown || type == .rightMouseDown || type == .otherMouseDown
         if isMouseDown {
             let appIdentity = appIdentityForApplication(at: currentLocation)
-            currentSetting = resolveSetting(for: appIdentity.identifier)
+            currentSetting = resolveSetting(
+                for: appIdentity.identifier,
+                executableName: appIdentity.executableName,
+                executablePath: appIdentity.executablePath
+            )
             
             // ロック中でない場合は effectiveSetting を更新（UI/アイコン用）
             if !isCurrentlyLocked && self.effectiveSetting != currentSetting {

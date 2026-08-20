@@ -2,7 +2,8 @@ import Foundation
 import Testing
 @testable import DragLocker
 
-@Suite("PerAppSetting Resolution Tests")
+@Suite("PerAppSetting Resolution Tests", .serialized)
+@MainActor
 struct PerAppSettingTests {
     @Test("Resolve default setting when no app is specified")
     func testResolveDefault() {
@@ -42,5 +43,28 @@ struct PerAppSettingTests {
         
         // 後片付け
         eventManager.removePerAppSetting(bundleIdentifier: testBID)
+    }
+    
+    @Test("Resolve per-app setting by executablePath and executableName when bundleIdentifier is nil")
+    func testResolvePerAppWithoutBundleIdentifier() {
+        let eventManager = EventManager.shared
+        let testPath = "/Users/test/Library/Application Support/minecraft/runtime/bin/java"
+        let testExeName = "java"
+        
+        // 実行ファイルパスで個別設定を追加
+        eventManager.addPerAppSetting(bundleIdentifier: testPath)
+        #expect(eventManager.perAppSettings[testPath] != nil)
+        
+        // 設定を変更
+        eventManager.perAppSettings[testPath]?.overrides.insert("iconEnabled")
+        eventManager.perAppSettings[testPath]?.isIconEnabled = false
+        
+        // bundleIdentifierがnilでもexecutablePathから解決されることを確認
+        let settingByPath = eventManager.resolveSetting(for: nil, executableName: testExeName, executablePath: testPath)
+        #expect(settingByPath.bundleIdentifier == testPath)
+        #expect(settingByPath.isIconEnabled == false)
+        
+        // 後片付け
+        eventManager.removePerAppSetting(bundleIdentifier: testPath)
     }
 }
