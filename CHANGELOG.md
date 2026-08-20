@@ -28,6 +28,7 @@ Notes
   - For example, when drag lock is enabled on both the remote client and the remote host, this setting prevents drag lock from being triggered on both devices simultaneously (delegating drag lock to the client device).
 
 ### Bug Fixes and Improvements
+- **Add system overlay settings for macOS Golden Gate**
 - **Fix issue where a click could occur when releasing drag lock in some apps**
   - Releasing drag lock in screen sharing apps or virtual machines no longer triggers an unintended click.
   - Due to this fix, the timing for releasing drag lock has changed from the moment the second mouse button is **pressed** to the moment it is **released**. This may have a slight impact on usability.

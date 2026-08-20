@@ -855,6 +855,22 @@
         }
       }
     },
+    "Siri AI、Spotlight検索、アプリピッカーなど" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Siri AI, Spotlight Search, App Picker, etc."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Siri AI、Spotlight検索、アプリピッカーなど"
+          }
+        }
+      }
+    },
     "Spotlight検索、アプリピッカーなど" : {
       "localizations" : {
         "en" : {
@@ -1721,18 +1737,18 @@
         }
       }
     },
-    "コントロールセンター、メニューバーアイテム、音量や明るさのOSDなど" : {
+    "コントロールセンター、メニューバーアイテム、音量や明るさのOSD、ライブアクティビティなど" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Control Center, Menu Bar Items, Volume/Brightness OSD, etc."
+            "value" : "Control Center, Menu Bar Items, Volume/Brightness OSD, Live Activities, etc."
           }
         },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "コントロールセンター、メニューバーアイテム、音量や明るさのOSDなど"
+            "value" : "コントロールセンター、メニューバーアイテム、音量や明るさのOSD、ライブアクティビティなど"
           }
         }
       }
@@ -4895,6 +4911,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "音量・明るさOSD"
+          }
+        }
+      }
+    },
+    "音量・明るさOSD、ライブアクティビティなど" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Volume/Brightness OSD, Live Activities, etc."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "音量・明るさOSD、ライブアクティビティなど"
           }
         }
       }

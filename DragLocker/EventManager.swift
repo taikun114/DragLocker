@@ -517,6 +517,12 @@ class EventManager: NSObject, ObservableObject {
         }
     }
 
+    @Published var isWindowManagerLayer18And19Ignored: Bool = false {
+        didSet {
+            UserDefaults.standard.set(isWindowManagerLayer18And19Ignored, forKey: "isWindowManagerLayer18And19Ignored")
+        }
+    }
+
     @Published var isLaunchpadExcluded: Bool = false {
         didSet {
             UserDefaults.standard.set(isLaunchpadExcluded, forKey: "isLaunchpadExcluded")
@@ -616,6 +622,7 @@ class EventManager: NSObject, ObservableObject {
         }
 
         self.isDockLayer18Ignored = UserDefaults.standard.bool(forKey: "isDockLayer18Ignored")
+        self.isWindowManagerLayer18And19Ignored = UserDefaults.standard.bool(forKey: "isWindowManagerLayer18And19Ignored")
         self.isLaunchpadExcluded = UserDefaults.standard.bool(forKey: "isLaunchpadExcluded") || UserDefaults.standard.bool(forKey: "isLaunchpadIgnored")
 
         if let appListData = UserDefaults.standard.data(forKey: "appExclusionAndLimitationIdentifiersData"),
@@ -1122,9 +1129,16 @@ class EventManager: NSObject, ObservableObject {
                     // 1. 通常のアプリ (layer 0〜19)
                     // 最前面のアプリ (layer 3) などを捕捉
                     if layer < 20 {
-                        // デスクトップ表示中やMission Control中のDock(18)を無視（常にスキップ）
+                        // macOS 27.0未満: デスクトップ表示中やMission Control中のDock(18)を無視（常にスキップ）
                         if isDockLayer18Ignored && layer == 18 && bundleIdentifier == "com.apple.dock" {
                             continue
+                        }
+                        
+                        // macOS 27.0以降: デスクトップ表示中(18)やMission Control中(19)のWindowManagerを無視（常にスキップ）
+                        if #available(macOS 27.0, *) {
+                            if isWindowManagerLayer18And19Ignored && (layer == 18 || layer == 19) && bundleIdentifier == "com.apple.WindowManager" {
+                                continue
+                            }
                         }
                         
                         if bestAppPID == nil || layer > bestAppLayer {
