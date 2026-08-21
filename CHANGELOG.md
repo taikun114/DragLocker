@@ -38,6 +38,7 @@ Notes
 - **Improve tracking responsiveness of the icon displayed near the pointer**
 - **Improve the appearance of the license screen**
 - **Improve app icon display in the Information tab**
+- **Improve the appearance of onboarding on macOS Golden Gate**
 
 ## 1.0.0
 Initial Release!

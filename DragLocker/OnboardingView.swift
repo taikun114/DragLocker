@@ -29,26 +29,30 @@ struct OnboardingView: View {
 
     @ViewBuilder
     private var backgroundLayer: some View {
+        let cornerRadius: CGFloat = {
+            if #available(macOS 27.0, *) {
+                return 18
+            } else if #available(macOS 26.0, *) {
+                return 24
+            } else {
+                return 16
+            }
+        }()
+
         ZStack {
             if #available(macOS 26.0, *) {
                 Color.clear
-                    .glassEffect(.regular, in: .rect(cornerRadius: 24))
+                    .glassEffect(.regular, in: .rect(cornerRadius: cornerRadius))
             } else {
                 VisualEffectView(material: .popover, blendingMode: .behindWindow)
-                    .clipShape(UnevenRoundedRectangle(topLeadingRadius: 16, bottomLeadingRadius: 16, bottomTrailingRadius: 16, topTrailingRadius: 16))
+                    .clipShape(RoundedRectangle(cornerRadius: cornerRadius))
             }
 
-        if colorScheme == .light {
-            if #available(macOS 26.0, *) {
+            if colorScheme == .light {
                 Color(red: 110.0 / 255.0, green: 185.0 / 255.0, blue: 245.0 / 255.0)
                     .opacity(0.5)
-                    .clipShape(RoundedRectangle(cornerRadius: 24))
-            } else {
-                Color(red: 110.0 / 255.0, green: 185.0 / 255.0, blue: 245.0 / 255.0)
-                    .opacity(0.5)
-                    .clipShape(UnevenRoundedRectangle(topLeadingRadius: 16, bottomLeadingRadius: 16, bottomTrailingRadius: 16, topTrailingRadius: 16))
+                    .clipShape(RoundedRectangle(cornerRadius: cornerRadius))
             }
-        }
         }
     }
 
