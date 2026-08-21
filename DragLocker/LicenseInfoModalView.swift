@@ -24,7 +24,7 @@ struct LicenseInfoModalView: View {
     private let geminiCLIVersionString: String = "0.36.0"
     
     // KeyboardShortcutsの使用バージョン
-    private let keyboardShortcutsVersionString: String = "2.4.0"
+    private let keyboardShortcutsVersionString: String = "3.0.1"
     
     var body: some View {
         // メインのコンテンツ（スクロール可能な部分）を定義

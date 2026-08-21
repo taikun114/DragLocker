@@ -10,7 +10,7 @@ import AVFoundation
 import CoreMedia
 
 extension KeyboardShortcuts.Name {
-    static let toggleMonitoring = Self("toggleMonitoring")
+    static let toggleMonitoring = Self("toggleMonitoring", initial: .init(.l, modifiers: [.command, .control, .shift]))
 }
 
 enum EventManagerState: Equatable, Sendable {
@@ -730,11 +730,6 @@ class EventManager: NSObject, ObservableObject {
             self.isEnabled = true
         } else {
             self.isEnabled = UserDefaults.standard.bool(forKey: "isEnabled")
-        }
-
-        // ショートカットが未設定の場合は、デフォルト（⌘ + ⌃ + ⇧ + L）をセット
-        if KeyboardShortcuts.getShortcut(for: .toggleMonitoring) == nil {
-            KeyboardShortcuts.setShortcut(.init(.l, modifiers: [.command, .control, .shift]), for: .toggleMonitoring)
         }
 
         // ショートカットのイベントリスナーを登録

@@ -218,7 +218,7 @@ struct DragLockerApp: App {
                 )
                 .labelStyle(.titleAndIcon)
             }
-            .applyKeyboardShortcut(for: .toggleMonitoring)
+            .globalKeyboardShortcut(.toggleMonitoring)
             .disabled(!hasCompletedOnboarding || !eventManager.isTrusted)
             
             if !eventManager.isTrusted {
@@ -319,43 +319,6 @@ struct MenuBarIconView: View {
     }
 }
 
-// MARK: - KeyboardShortcuts SwiftUI Support
-extension View {
-    @ViewBuilder
-    func applyKeyboardShortcut(for name: KeyboardShortcuts.Name) -> some View {
-        if let shortcut = KeyboardShortcuts.getShortcut(for: name),
-           let char = shortcut.keyEquivalentChar {
-            self.keyboardShortcut(KeyEquivalent(char), modifiers: shortcut.swiftUIModifiers)
-        } else {
-            self
-        }
-    }
-}
-
-extension KeyboardShortcuts.Shortcut {
-    @MainActor
-    var keyEquivalentChar: Character? {
-        // description (例: "⌃⇧⌘L") から装飾キー記号を除去して文字を取り出す
-        let desc = self.description
-        let symbols: Set<Character> = ["⌘", "⌥", "⇧", "⌃", "🌐"]
-        let filtered = desc.filter { !symbols.contains($0) }
-        return filtered.lowercased().first
-    }
-
-    var swiftUIModifiers: EventModifiers {
-        var modifiers: EventModifiers = []
-        let carbonFlags = self.carbonModifiers
-        
-        // Carbonの装飾キー定数を使用して判定
-        if (carbonFlags & 0x0100) != 0 { modifiers.insert(.command) } // cmdKey
-        if (carbonFlags & 0x0800) != 0 { modifiers.insert(.option) }  // optionKey
-        if (carbonFlags & 0x1000) != 0 { modifiers.insert(.control) } // controlKey
-        if (carbonFlags & 0x0200) != 0 { modifiers.insert(.shift) }   // shiftKey
-        if (carbonFlags & 0x0400) != 0 { modifiers.insert(.capsLock) } // alphaLock / capsLock
-        
-        return modifiers
-    }
-}
 
 class AboutWindowController: NSObject, NSWindowDelegate {
     private static var instance: AboutWindowController?
