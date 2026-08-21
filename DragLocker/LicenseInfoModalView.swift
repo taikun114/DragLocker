@@ -5,6 +5,9 @@ struct LicenseInfoModalView: View {
     @Environment(\.dismiss) var dismiss
     @Environment(\.openURL) var openURL
     
+    @State private var showingCreateDmgLinkAlert = false
+    @State private var isCreateDmgLinkHovered: Bool = false
+    
     @State private var showingGeminiCLILinkAlert = false
     @State private var isGeminiCLILinkHovered: Bool = false
     
@@ -19,6 +22,9 @@ struct LicenseInfoModalView: View {
     private var appBuildString: String {
         Bundle.main.infoDictionary?["CFBundleVersion"] as? String ?? "N/A"
     }
+    
+    // create-dmgの使用バージョン
+    private let createDmgVersionString: String = "1.3.0"
     
     // Gemini CLIの使用バージョン
     private let geminiCLIVersionString: String = "0.36.0"
@@ -104,6 +110,50 @@ struct LicenseInfoModalView: View {
                         }
                         
                         Text(verbatim: "MIT License\n\nCopyright (c) Sindre Sorhus <sindresorhus@gmail.com> (https://sindresorhus.com)\n\nPermission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the \"Software\"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:\n\nThe above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.\n\nTHE SOFTWARE IS PROVIDED \"AS IS\", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.")
+                            .font(.callout.monospaced())
+                    }
+                    
+                    // MARK: - create-dmg
+                    VStack(alignment: .leading, spacing: 8) {
+                        VStack(alignment: .leading, spacing: 4) {
+                            Button(action: {
+                                showingCreateDmgLinkAlert = true
+                            }) {
+                                Text("create-dmg by Andrey Tarantsov and Andrew Janke")
+                                    .font(.title2)
+                                    .fontWeight(.bold)
+                                    .foregroundStyle(Color.accentColor)
+                                    .underline(isCreateDmgLinkHovered)
+                            }
+                            .buttonStyle(.plain)
+                            .help("create-dmgのGitHubページへのリンクを開きます。")
+                            .onHover { hovered in
+                                isCreateDmgLinkHovered = hovered
+                            }
+                            
+                            Text("バージョン: \(createDmgVersionString)")
+                                .font(.caption)
+                                .foregroundStyle(.secondary)
+                            
+                            Text(verbatim: "MIT License")
+                                .font(.headline)
+                                .foregroundStyle(.secondary)
+                        }
+                        
+                        .alert("リンクを開きますか？", isPresented: $showingCreateDmgLinkAlert) {
+                            Button("開く") {
+                                if let url = URL(string: "https://github.com/create-dmg/create-dmg") {
+                                    openURL(url)
+                                }
+                            }
+                            Button("キャンセル", role: .cancel) {
+                                // 何もしない
+                            }
+                        } message: {
+                            Text("create-dmgのGitHubページを開いてもよろしいですか？")
+                        }
+                        
+                        Text(verbatim: "The MIT License (MIT)\n\nCopyright (c) 2008-2014 Andrey Tarantsov\nCopyright (c) 2020 Andrew Janke\n\nPermission is hereby granted, free of charge, to any person obtaining a copy\nof this software and associated documentation files (the \"Software\"), to deal\nin the Software without restriction, including without limitation the rights\nto use, copy, modify, merge, publish, distribute, sublicense, and/or sell\ncopies of the Software, and to permit persons to whom the Software is\nfurnished to do so, subject to the following conditions:\n\nThe above copyright notice and this permission notice shall be included in all\ncopies or substantial portions of the Software.\n\nTHE SOFTWARE IS PROVIDED \"AS IS\", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR\nIMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,\nFITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE\nAUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER\nLIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,\nOUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE\nSOFTWARE.")
                             .font(.callout.monospaced())
                     }
                     

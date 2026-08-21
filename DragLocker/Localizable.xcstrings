@@ -345,6 +345,41 @@
         }
       }
     },
+    "create-dmg by Andrey Tarantsov and Andrew Janke" : {
+      "shouldTranslate" : false
+    },
+    "create-dmgのGitHubページへのリンクを開きます。" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Opens a link to the create-dmg GitHub page."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "create-dmgのGitHubページへのリンクを開きます。"
+          }
+        }
+      }
+    },
+    "create-dmgのGitHubページを開いてもよろしいですか？" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Are you sure you want to open the create-dmg GitHub page?"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "create-dmgのGitHubページを開いてもよろしいですか？"
+          }
+        }
+      }
+    },
     "Discussionページへのリンクを開きます。" : {
       "localizations" : {
         "en" : {

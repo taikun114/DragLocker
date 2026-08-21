@@ -164,3 +164,7 @@ These wonderful generative AI tools were used in the development of DragLocker. 
 ### [KeyboardShortcuts](https://github.com/sindresorhus/KeyboardShortcuts) by Sindre Sorhus
 
 The KeyboardShortcuts package was used to implement global shortcut keys in DragLocker. Thanks to this package, I was able to implement the shortcut functionality extremely smoothly.
+
+### [create-dmg](https://github.com/create-dmg/create-dmg) by Andrey Tarantsov and Andrew Janke
+
+The create-dmg shell script was used to create a disk image to distribute the free version. Thanks to this shell script, I was able to easily create a customized disk image.
