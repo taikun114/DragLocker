@@ -37,6 +37,7 @@ Notes
 - **Fix issue where per-app settings were not applied in some apps (such as Java apps)**
 - **Improve tracking responsiveness of the icon displayed near the pointer**
 - **Improve the appearance of the license screen**
+- **Improve app icon display in the Information tab**
 
 ## 1.0.0
 Initial Release!
