@@ -17,16 +17,16 @@ struct BehaviorSettingsTab: View {
         }
     }
 
-    private var controlCenterDisplayName: String {
-        AppExclusionAndLimitationDisplayResolver.shared.resolvedInfo(for: "com.apple.controlcenter")?.name ?? "Control Center"
-    }
-
     private var osdUIHelperDisplayName: String {
         AppExclusionAndLimitationDisplayResolver.shared.resolvedInfo(for: "com.apple.OSDUIHelper")?.name ?? "OSDUIHelper"
     }
 
     private var dockDisplayName: String {
         AppExclusionAndLimitationDisplayResolver.shared.resolvedInfo(for: "com.apple.dock")?.name ?? "Dock"
+    }
+
+    private var windowManagerDisplayName: String {
+        AppExclusionAndLimitationDisplayResolver.shared.resolvedInfo(for: "com.apple.WindowManager")?.name ?? "WindowManager"
     }
 
     private var listModePicker: some View {
@@ -98,36 +98,48 @@ struct BehaviorSettingsTab: View {
                         }
                     }
                 }
-                Toggle(isOn: $eventManager.isDockLayer18Ignored) {
-                    Label {
-                        VStack(alignment: .leading, spacing: 2) {
-                            Text("デスクトップを表示 / Mission Control")
-                            Text("\(dockDisplayName)、レイヤー\("18")、\(Text("無視"))")
-                                .font(.subheadline)
-                                .foregroundStyle(.secondary)
+                if #available(macOS 27.0, *) {
+                    Toggle(isOn: $eventManager.isWindowManagerLayer18And19Ignored) {
+                        Label {
+                            VStack(alignment: .leading, spacing: 2) {
+                                Text("デスクトップを表示 / Mission Control")
+                                Text("\(windowManagerDisplayName)、レイヤー\("18 / 19")、\(Text("無視"))")
+                                    .font(.subheadline)
+                                    .foregroundStyle(.secondary)
+                            }
+                        } icon: {
+                            Image(systemName: "rectangle.3.group")
+                                .frame(width: 24)
                         }
-                    } icon: {
-                        Image(systemName: "rectangle.3.group")
-                            .frame(width: 24)
+                    }
+                } else {
+                    Toggle(isOn: $eventManager.isDockLayer18Ignored) {
+                        Label {
+                            VStack(alignment: .leading, spacing: 2) {
+                                Text("デスクトップを表示 / Mission Control")
+                                Text("\(dockDisplayName)、レイヤー\("18")、\(Text("無視"))")
+                                    .font(.subheadline)
+                                    .foregroundStyle(.secondary)
+                            }
+                        } icon: {
+                            Image(systemName: "rectangle.3.group")
+                                .frame(width: 24)
+                        }
                     }
                 }
-                Toggle(isOn: $eventManager.isOSDExcluded) {
-                    Label {
-                        VStack(alignment: .leading, spacing: 2) {
-                            Text("音量・明るさOSD")
-                            Group {
-                                if #available(macOS 26.0, *) {
-                                    Text("\(controlCenterDisplayName)、レイヤー\("2005")、\(Text("除外"))")
-                                } else {
-                                    Text("\(osdUIHelperDisplayName)、レイヤー\("2005")、\(Text("除外"))")
-                                }
+                if #unavailable(macOS 26.0) {
+                    Toggle(isOn: $eventManager.isOSDExcluded) {
+                        Label {
+                            VStack(alignment: .leading, spacing: 2) {
+                                Text("音量・明るさOSD")
+                                Text("\(osdUIHelperDisplayName)、レイヤー\("2005")、\(Text("除外"))")
+                                    .font(.subheadline)
+                                    .foregroundStyle(.secondary)
                             }
-                            .font(.subheadline)
-                            .foregroundStyle(.secondary)
+                        } icon: {
+                            Image(systemName: "slider.horizontal.below.rectangle")
+                                .frame(width: 24)
                         }
-                    } icon: {
-                        Image(systemName: "slider.horizontal.below.rectangle")
-                            .frame(width: 24)
                     }
                 }
             } header: {
@@ -174,12 +186,7 @@ struct SystemOverlayHelpPopover: View {
     @Environment(\.colorScheme) var colorScheme
     
     private var overlayItems: [SystemOverlayItem] {
-        let items = [
-            SystemOverlayItem(
-                description: spotlightDescription,
-                path: "/System/Library/CoreServices/Spotlight.app/Contents/MacOS/Spotlight",
-                bundleIdentifier: "com.apple.Spotlight"
-            ),
+        var items = [
             SystemOverlayItem(
                 description: "アクセシビリティキーボードやスイッチコントロールなどのアクセシビリティオーバーレイ",
                 path: "/System/Library/Input Methods/Assistive Control.app/Contents/MacOS/Assistive Control",
@@ -189,11 +196,6 @@ struct SystemOverlayHelpPopover: View {
                 description: controlCenterDescription,
                 path: "/System/Library/CoreServices/ControlCenter.app/Contents/MacOS/ControlCenter",
                 bundleIdentifier: "com.apple.controlcenter"
-            ),
-            SystemOverlayItem(
-                description: dockDescription,
-                path: "/System/Library/CoreServices/Dock.app/Contents/MacOS/Dock",
-                bundleIdentifier: "com.apple.dock"
             ),
             SystemOverlayItem(
                 description: "Dockアイコン上のメニュー",
@@ -227,7 +229,48 @@ struct SystemOverlayHelpPopover: View {
             )
         ]
         
+        if #available(macOS 27.0, *) {
+            items.append(SystemOverlayItem(
+                description: siriAIDescription,
+                path: "/System/Applications/Siri AI.app/Contents/MacOS/Siri AI",
+                bundleIdentifier: "com.apple.campo"
+            ))
+            items.append(SystemOverlayItem(
+                description: windowManagerDescription,
+                path: "/System/Library/CoreServices/WindowManager.app/Contents/MacOS/WindowManager",
+                bundleIdentifier: "com.apple.WindowManager"
+            ))
+            items.append(SystemOverlayItem(
+                description: menuBarAgentDescription,
+                path: "/System/Library/CoreServices/MenuBarAgent.app/Contents/MacOS/MenuBarAgent",
+                bundleIdentifier: "com.apple.MenuBarAgent"
+            ))
+        } else {
+            items.append(SystemOverlayItem(
+                description: dockDescription,
+                path: "/System/Library/CoreServices/Dock.app/Contents/MacOS/Dock",
+                bundleIdentifier: "com.apple.dock"
+            ))
+            items.append(SystemOverlayItem(
+                description: spotlightDescription,
+                path: "/System/Library/CoreServices/Spotlight.app/Contents/MacOS/Spotlight",
+                bundleIdentifier: "com.apple.Spotlight"
+            ))
+        }
+        
         return items.sorted { $0.displayName.localizedCaseInsensitiveCompare($1.displayName) == .orderedAscending }
+    }
+    
+    private var menuBarAgentDescription: LocalizedStringKey {
+        return "音量・明るさOSD、ライブアクティビティなど"
+    }
+    
+    private var siriAIDescription: LocalizedStringKey {
+        return "Siri AI、Spotlight検索、アプリピッカーなど"
+    }
+    
+    private var windowManagerDescription: LocalizedStringKey {
+        return "デスクトップを表示、Mission Controlなど"
     }
     
     private var dockDescription: LocalizedStringKey {
@@ -247,8 +290,10 @@ struct SystemOverlayHelpPopover: View {
     }
     
     private var controlCenterDescription: LocalizedStringKey {
-        if #available(macOS 26.0, *) {
-            return "コントロールセンター、メニューバーアイテム、音量や明るさのOSDなど"
+        if #available(macOS 27.0, *) {
+            return "コントロールセンターなど"
+        } else if #available(macOS 26.0, *) {
+            return "コントロールセンター、メニューバーアイテム、音量や明るさのOSD、ライブアクティビティなど"
         } else {
             return "コントロールセンターなど"
         }

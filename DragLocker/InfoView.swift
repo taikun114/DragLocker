@@ -18,23 +18,15 @@ struct InfoView: View {
         Form {
             Section(header: Text("DragLockerについて").font(.headline)) {
                 HStack(alignment: .center, spacing: 20) {
-                    if #available(macOS 26, *) {
-                        Image(nsImage: NSImage(named: NSImage.Name("AppIconLiquidGlass")) ?? NSImage())
-                            .resizable()
-                            .aspectRatio(contentMode: .fit)
-                            .frame(width: 96, height: 96)
-                            .padding(.vertical, 10)
-                            .padding(.leading, 10)
-                            .id(colorScheme)
-                    } else {
-                        Image(nsImage: NSImage(named: NSImage.Name("AppIcon")) ?? NSImage())
-                            .resizable()
-                            .aspectRatio(contentMode: .fit)
-                            .frame(width: 128, height: 128)
-                            .padding(.vertical, 0)
-                            .padding(.leading, 0)
-                            .padding(.trailing, -10)
-                    }
+                    let appIcon = NSWorkspace.shared.icon(forFile: Bundle.main.bundlePath)
+                    Image(nsImage: appIcon)
+                        .resizable()
+                        .aspectRatio(contentMode: .fit)
+                        .frame(width: 128, height: 128)
+                        .padding(.vertical, 0)
+                        .padding(.leading, 0)
+                        .padding(.trailing, -10)
+                        .id(colorScheme)
                     
                     VStack(alignment: .leading) {
                         Spacer()

@@ -54,9 +54,6 @@ Use DragLocker to enable drag lock with any mouse connected to your Mac.
 
 You can download DragLocker for free from the [**Releases page**](https://github.com/taikun114/DragLocker/releases/latest) or purchase it for $2.99 on the [**Mac App Store**](https://apps.apple.com/us/app/draglocker/id6770572129).
 
-> [!NOTE]
-> Prices may vary by region. The price is based on 500 JPY, so it may change automatically due to fluctuations in foreign exchange rates.
-
 <p align="left">
   <a href="https://apps.apple.com/us/app/draglocker/id6770572129" target="_blank">
     <img alt="Download on the Mac App Store" src="docs/images/Mac_App_Store_DL_Badge-en.webp" height="48">
@@ -66,6 +63,9 @@ You can download DragLocker for free from the [**Releases page**](https://github
     <img alt="Free Download on the GitHub" src="docs/images/GitHub_Badge-en.webp" height="48">
   </a>
 </p>
+
+> [!NOTE]
+> Prices may vary by region. The price is based on 500 JPY, so it may change automatically due to fluctuations in foreign exchange rates.
 
 ### System Requirements
 
@@ -81,10 +81,11 @@ The differences are as follows:
 | Feature               | Free Version (GitHub) | Paid Version (App Store)    |
 |-----------------------|-----------------------|-----------------------------|
 | Price                 | Free                  | $2.99                       |
-| All App Features      | ○                     | ○                           |
-| Automatic Updates     | ×                     | ○ (App Store Feature)       |
-| Review Requests       | ×                     | ○ (Can be disabled)         |
-| Support the Developer | ○ (via Donation)      | ○ (via Purchase & Donation) |
+| All App Features      | ✓                     | ✓                           |
+| Automatic Updates     | -                     | ✓ (App Store Feature)       |
+| Donation Link         | ✓                     | - (Due to App Store review) |
+| Review Requests       | -                     | ✓ (Can be disabled)         |
+| Support the Developer | ✓ (via Donation)      | ✓ (via Purchase)            |
 
 Please see the [`app-store-version`](https://github.com/taikun114/DragLocker/tree/app-store-version) branch for the source code of the App Store version.
 
@@ -163,3 +164,7 @@ These wonderful generative AI tools were used in the development of DragLocker. 
 ### [KeyboardShortcuts](https://github.com/sindresorhus/KeyboardShortcuts) by Sindre Sorhus
 
 The KeyboardShortcuts package was used to implement global shortcut keys in DragLocker. Thanks to this package, I was able to implement the shortcut functionality extremely smoothly.
+
+### [create-dmg](https://github.com/create-dmg/create-dmg) by Andrey Tarantsov and Andrew Janke
+
+The create-dmg shell script was used to create a disk image to distribute the free version. Thanks to this shell script, I was able to easily create a customized disk image.

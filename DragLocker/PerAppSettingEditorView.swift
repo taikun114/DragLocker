@@ -115,8 +115,9 @@ struct PerAppSettingEditorView: View {
     
     private func previewIcon(for style: IconStyle) -> some View {
         style.previewImage(eventManager: eventManager)
-            .resizable()
             .frame(width: 16, height: 16)
+            .fixedSize()
+            .id(style == .custom ? (eventManager.customIconPath ?? "custom_none") : style.rawValue)
     }
 
     private func saveAndDismiss() {
@@ -281,6 +282,7 @@ struct PerAppSettingEditorView: View {
                     }
                     .accessibilityHint("ドラッグロック中にマウスポインタ付近に表示されるアイコンのスタイルを選択します。")
                     .labelStyle(.titleAndIcon)
+                    .id(eventManager.customIconPath ?? "custom_icon_empty")
                 }
                 
                 overrideRow(key: "iconAnimation", isDependencyMet: isIconActive) {

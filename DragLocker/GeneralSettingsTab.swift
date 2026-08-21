@@ -138,6 +138,15 @@ struct GeneralSettingsTab: View {
                 .disabled(!isDistanceEnabled)
                 .animation(nil, value: isDistanceEnabled)
                 
+                // ソフトウェアクリック無視
+                Toggle(isOn: $eventManager.isIgnoreSyntheticClicksEnabled) {
+                    Text("ソフトウェアによるクリックはロックしない")
+                    Text("画面共有のようなリモートアクセスツールなどによって発生したクリックではドラッグロックしないようにします。")
+                        .font(.subheadline)
+                        .foregroundStyle(.secondary)
+                }
+                .accessibilityHint("画面共有のようなリモートアクセスツールなどによって発生したクリックではドラッグロックしないようにします。")
+                
                 // Escキー解除
                 Toggle(isOn: $eventManager.isUnlockAllWithEscEnabled) {
                     Text("Escキーですべてのロックを解除")

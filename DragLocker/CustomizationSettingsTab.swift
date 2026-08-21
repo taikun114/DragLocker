@@ -60,6 +60,7 @@ struct CustomizationSettingsTab: View {
                 .labelStyle(.titleAndIcon)
                 .pickerStyle(.menu)
                 .disabled(!eventManager.isIconEnabled)
+                .id(eventManager.customIconPath ?? "custom_icon_empty")
                 
                 customIconSettingsView
                 
@@ -306,8 +307,9 @@ struct CustomizationSettingsTab: View {
     
     private func previewIcon(for style: IconStyle) -> some View {
         style.previewImage(eventManager: eventManager)
-            .resizable()
             .frame(width: 16, height: 16)
+            .fixedSize()
+            .id(style == .custom ? (eventManager.customIconPath ?? "custom_none") : style.rawValue)
     }
     
     private func selectAudioFile(index: Int) {
@@ -614,9 +616,11 @@ struct CursorPreviewAreaView<Content: View>: View {
 
     var body: some View {
         ZStack {
-            let isOld = ProcessInfo.processInfo.operatingSystemVersion.majorVersion < 26
+            let major = ProcessInfo.processInfo.operatingSystemVersion.majorVersion
+            let isOld = major < 26
             let suffix = isOld ? "_Old" : ""
-            let cursors = ["Cursor_Pointer\(suffix)", "Cursor_PointingHand\(suffix)", "Cursor_IbeamVertical\(suffix)"]
+            let pointingHandName = major >= 27 ? "Cursor_PointingHand_27" : "Cursor_PointingHand\(suffix)"
+            let cursors = ["Cursor_Pointer\(suffix)", pointingHandName, "Cursor_IbeamVertical\(suffix)"]
             let currentCursorName = cursors[previewCursorPhase % cursors.count]
             
             Group {

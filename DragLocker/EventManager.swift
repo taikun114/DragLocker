@@ -10,13 +10,14 @@ import AVFoundation
 import CoreMedia
 
 extension KeyboardShortcuts.Name {
-    static let toggleMonitoring = Self("toggleMonitoring")
+    static let toggleMonitoring = Self("toggleMonitoring", initial: .init(.l, modifiers: [.command, .control, .shift]))
 }
 
 enum EventManagerState: Equatable, Sendable {
     case idle
-    case holding // マウスダウン中、待機
-    case locked  // ロック状態
+    case holding          // マウスダウン中、待機
+    case locked           // ロック状態
+    case unlockingPending // ロック中にマウスダウンされた状態（マウスアップで解除完了するのを待機）
 }
 
 enum MouseButton: Int, CaseIterable, Sendable, Codable {
@@ -273,6 +274,9 @@ class EventManager: NSObject, ObservableObject {
     private var dlLocalMonitor: Any?
     private var dlGlobalMonitor: Any?
 
+    /// DragLocker自身が生成した合成イベントを識別するためのマーカー値 ("DLOCK")
+    private let syntheticEventMarker: Int64 = 0x444C4F434B
+
     /// 各アイコンスタイルごとの設定値を保持する（永続化用）
     private var iconSettings: [String: Double] = [:]
     /// 全てのアイコン設定のコピーを取得する
@@ -318,7 +322,7 @@ class EventManager: NSObject, ObservableObject {
             let removedValues = oldValue.subtracting(enabledButtonRawValues)
             for rawValue in removedValues {
                 if let button = MouseButton(rawValue: rawValue) {
-                    if buttonStates[button] == .locked {
+                    if buttonStates[button] == .locked || buttonStates[button] == .unlockingPending {
                         #if DEBUG
                         print("\(button) was removed from target buttons: Releasing lock")
                         #endif
@@ -495,6 +499,12 @@ class EventManager: NSObject, ObservableObject {
 
 
 
+    @Published var isIgnoreSyntheticClicksEnabled: Bool = false {
+        didSet {
+            UserDefaults.standard.set(isIgnoreSyntheticClicksEnabled, forKey: "isIgnoreSyntheticClicksEnabled")
+        }
+    }
+
     @Published var isUnlockAllWithEscEnabled: Bool = true {
         didSet {
             UserDefaults.standard.set(isUnlockAllWithEscEnabled, forKey: "isUnlockAllWithEscEnabled")
@@ -504,6 +514,12 @@ class EventManager: NSObject, ObservableObject {
     @Published var isDockLayer18Ignored: Bool = false {
         didSet {
             UserDefaults.standard.set(isDockLayer18Ignored, forKey: "isDockLayer18Ignored")
+        }
+    }
+
+    @Published var isWindowManagerLayer18And19Ignored: Bool = false {
+        didSet {
+            UserDefaults.standard.set(isWindowManagerLayer18And19Ignored, forKey: "isWindowManagerLayer18And19Ignored")
         }
     }
 
@@ -597,6 +613,8 @@ class EventManager: NSObject, ObservableObject {
 
 
 
+        self.isIgnoreSyntheticClicksEnabled = UserDefaults.standard.bool(forKey: "isIgnoreSyntheticClicksEnabled")
+
         if UserDefaults.standard.object(forKey: "isUnlockAllWithEscEnabled") == nil {
             self.isUnlockAllWithEscEnabled = true
         } else {
@@ -604,6 +622,7 @@ class EventManager: NSObject, ObservableObject {
         }
 
         self.isDockLayer18Ignored = UserDefaults.standard.bool(forKey: "isDockLayer18Ignored")
+        self.isWindowManagerLayer18And19Ignored = UserDefaults.standard.bool(forKey: "isWindowManagerLayer18And19Ignored")
         self.isLaunchpadExcluded = UserDefaults.standard.bool(forKey: "isLaunchpadExcluded") || UserDefaults.standard.bool(forKey: "isLaunchpadIgnored")
 
         if let appListData = UserDefaults.standard.data(forKey: "appExclusionAndLimitationIdentifiersData"),
@@ -711,11 +730,6 @@ class EventManager: NSObject, ObservableObject {
             self.isEnabled = true
         } else {
             self.isEnabled = UserDefaults.standard.bool(forKey: "isEnabled")
-        }
-
-        // ショートカットが未設定の場合は、デフォルト（⌘ + ⌃ + ⇧ + L）をセット
-        if KeyboardShortcuts.getShortcut(for: .toggleMonitoring) == nil {
-            KeyboardShortcuts.setShortcut(.init(.l, modifiers: [.command, .control, .shift]), for: .toggleMonitoring)
         }
 
         // ショートカットのイベントリスナーを登録
@@ -1110,9 +1124,16 @@ class EventManager: NSObject, ObservableObject {
                     // 1. 通常のアプリ (layer 0〜19)
                     // 最前面のアプリ (layer 3) などを捕捉
                     if layer < 20 {
-                        // デスクトップ表示中やMission Control中のDock(18)を無視（常にスキップ）
+                        // macOS 27.0未満: デスクトップ表示中やMission Control中のDock(18)を無視（常にスキップ）
                         if isDockLayer18Ignored && layer == 18 && bundleIdentifier == "com.apple.dock" {
                             continue
+                        }
+                        
+                        // macOS 27.0以降: デスクトップ表示中(18)やMission Control中(19)のWindowManagerを無視（常にスキップ）
+                        if #available(macOS 27.0, *) {
+                            if isWindowManagerLayer18And19Ignored && (layer == 18 || layer == 19) && bundleIdentifier == "com.apple.WindowManager" {
+                                continue
+                            }
                         }
                         
                         if bestAppPID == nil || layer > bestAppLayer {
@@ -1281,9 +1302,23 @@ class EventManager: NSObject, ObservableObject {
         perAppSettings[setting.bundleIdentifier] = setting
     }
 
-    /// 指定されたアプリ識別子に対する設定を解決する（個別設定があればそれを、なければ現在のグローバル設定を返す）
-    func resolveSetting(for bundleIdentifier: String?) -> PerAppSetting {
-        if let bundleIdentifier = bundleIdentifier, var setting = perAppSettings[bundleIdentifier] {
+    /// 指定されたアプリ識別情報に対する設定を解決する（個別設定があればそれを、なければ現在のグローバル設定を返す）
+    func resolveSetting(
+        for bundleIdentifier: String? = nil,
+        executableName: String? = nil,
+        executablePath: String? = nil
+    ) -> PerAppSetting {
+        // 個別設定の検索（優先度: bundleIdentifier -> executablePath -> executableName）
+        var matchedSetting: PerAppSetting? = nil
+        if let bundleIdentifier = bundleIdentifier, let setting = perAppSettings[bundleIdentifier] {
+            matchedSetting = setting
+        } else if let executablePath = executablePath, let setting = perAppSettings[executablePath] {
+            matchedSetting = setting
+        } else if let executableName = executableName, let setting = perAppSettings[executableName] {
+            matchedSetting = setting
+        }
+        
+        if var setting = matchedSetting {
             // 上書きされていない項目を現在のグローバル設定で同期する
             if !setting.overrides.contains("mouseButtons") { setting.enabledButtonRawValues = self.enabledButtonRawValues }
             if !setting.overrides.contains("lockMethod") { setting.lockType = self.lockType }
@@ -1319,13 +1354,14 @@ class EventManager: NSObject, ObservableObject {
             }
             
             // UIで上書き不可な設定は常にグローバルに従う
+            setting.isIgnoreSyntheticClicksEnabled = self.isIgnoreSyntheticClicksEnabled
             setting.isUnlockAllWithEscEnabled = self.isUnlockAllWithEscEnabled
             
             return setting
         }
         
         // 個別設定がない場合はグローバル設定を PerAppSetting 構造体にラップして返す
-        return PerAppSetting(bundleIdentifier: "", eventManager: self)
+        return PerAppSetting(bundleIdentifier: bundleIdentifier ?? executablePath ?? executableName ?? "", eventManager: self)
     }
 
     // MARK: - Custom Sound Management
@@ -1383,6 +1419,7 @@ class EventManager: NSObject, ObservableObject {
         DispatchQueue.main.async {
             self.customIconPath = nil
             self.customIconName = nil
+            self.cachedCustomIconImage = nil
             self.cleanupUnusedCustomFiles()
         }
     }
@@ -1479,6 +1516,11 @@ class EventManager: NSObject, ObservableObject {
 
     // イベント処理のエントリーポイント
     func handleEvent(proxy: CGEventTapProxy, type: CGEventType, event: CGEvent) -> Unmanaged<CGEvent>? {
+        // DragLocker自身が生成・送信した合成イベントは、状態変更やインターセプトを行わずにそのまま通過させる
+        if event.getIntegerValueField(.eventSourceUserData) == syntheticEventMarker {
+            return Unmanaged.passUnretained(event)
+        }
+
         // macOSがタイムアウト等でイベントタップを無効化した場合、再有効化する
         if type == .tapDisabledByTimeout || type == .tapDisabledByUserInput {
             print("Event tap was disabled by system (type: \(type.rawValue)), attempting to re-enable...")
@@ -1507,6 +1549,15 @@ class EventManager: NSObject, ObservableObject {
                 setupEventTap()
             }
             return Unmanaged.passUnretained(event)
+        }
+
+        // 物理HIDデバイス（ハードウェアマウス/キーボード）以外の入力（画面共有等のリモート操作や他アプリの合成イベント）は、
+        // 設定が有効な場合はドラッグロック処理の対象外としてそのまま通過させる（リモートアクセス時の二重ロックを防止）
+        if isIgnoreSyntheticClicksEnabled {
+            let sourceStateID = event.getIntegerValueField(.eventSourceStateID)
+            if sourceStateID != Int64(CGEventSourceStateID.hidSystemState.rawValue) {
+                return Unmanaged.passUnretained(event)
+            }
         }
 
         // マウスダウン時に権限を再確認する（オン→オフへの変化を即座に捉えるため）
@@ -1565,7 +1616,11 @@ class EventManager: NSObject, ObservableObject {
         let isMouseDown = type == .leftMouseDown || type == .rightMouseDown || type == .otherMouseDown
         if isMouseDown {
             let appIdentity = appIdentityForApplication(at: currentLocation)
-            currentSetting = resolveSetting(for: appIdentity.identifier)
+            currentSetting = resolveSetting(
+                for: appIdentity.identifier,
+                executableName: appIdentity.executableName,
+                executablePath: appIdentity.executablePath
+            )
             
             // ロック中でない場合は effectiveSetting を更新（UI/アイコン用）
             if !isCurrentlyLocked && self.effectiveSetting != currentSetting {
@@ -1589,10 +1644,12 @@ class EventManager: NSObject, ObservableObject {
 
                 if buttonStates[button] == .locked {
                     #if DEBUG
-                    print("\(button) down while locked: Releasing lock (priority)")
+                    print("\(button) down while locked: Preparing to unlock on mouse up")
                     #endif
-                    releaseLock(for: button)
-                    return Unmanaged.passUnretained(event)
+                    updateButtonState(button, to: .unlockingPending)
+                    dragStartLocations[button] = nil
+                    // 2回目のMouseDownは完全に破棄（新規クリックを防ぐ）
+                    return nil
                 }
             }
             
@@ -1600,6 +1657,17 @@ class EventManager: NSObject, ObservableObject {
                 if type == .otherMouseUp {
                     let buttonNumber = event.getIntegerValueField(.mouseEventButtonNumber)
                     if buttonNumber != 2 { continue }
+                }
+                
+                if buttonStates[button] == .unlockingPending {
+                    #if DEBUG
+                    print("\(button) up while unlocking: Releasing lock (priority)")
+                    #endif
+                    updateButtonState(button, to: .idle)
+                    // 指を離した瞬間にドラッグ終了用の合成MouseUpを送信
+                    postSyntheticMouseUp(for: button)
+                    // 物理MouseUpは破棄
+                    return nil
                 }
                 
                 if buttonStates[button] == .locked {
@@ -1679,8 +1747,8 @@ class EventManager: NSObject, ObservableObject {
             // いずれかのボタンがロック中なら、mouseMoved（物理ボタンが押されていない状態での移動）をドラッグに変換
             if !lockedButtons.isEmpty {
                 if type == .mouseMoved {
-                    // 現在ロック中のボタンのうち、最初に見つかったもののドラッグタイプを使用
-                    if let lockedButton = MouseButton.allCases.first(where: { buttonStates[$0] == .locked }) {
+                    // 現在ロック中（または解除待機中）のボタンのうち、最初に見つかったもののドラッグタイプを使用
+                    if let lockedButton = MouseButton.allCases.first(where: { buttonStates[$0] == .locked || buttonStates[$0] == .unlockingPending }) {
                         event.type = lockedButton.mouseDraggedType
                         if lockedButton == .middle {
                             event.setIntegerValueField(.mouseEventButtonNumber, value: 2)
@@ -1700,8 +1768,8 @@ class EventManager: NSObject, ObservableObject {
 
         let oldAnyLocked = !lockedButtons.isEmpty
 
-        // ロック中のボタンセットを更新
-        if newState == .locked {
+        // ロック中のボタンセットを更新（lockedまたはunlockingPendingはロック中として管理）
+        if newState == .locked || newState == .unlockingPending {
             if !lockedButtons.contains(button) {
                 lockedButtons.insert(button)
             }
@@ -1735,11 +1803,14 @@ class EventManager: NSObject, ObservableObject {
         // サウンド再生の判定
         let currentSetting = effectiveSetting ?? resolveSetting(for: nil)
         if currentSetting.isSoundEnabled {
-            if oldState != .locked && newState == .locked {
+            let wasLocked = (oldState == .locked || oldState == .unlockingPending)
+            let isNowLocked = (newState == .locked || newState == .unlockingPending)
+            
+            if !wasLocked && isNowLocked {
                 // ロックされた
                 SoundManager.shared.play(style: currentSetting.soundStyle, volume: currentSetting.soundVolume, isLocked: true, isInverted: currentSetting.isSoundInverted)
-            } else if oldState == .locked && newState != .locked {
-                // 解除された
+            } else if wasLocked && !isNowLocked {
+                // 解除された（指を離してidleになった瞬間）
                 SoundManager.shared.play(style: currentSetting.soundStyle, volume: currentSetting.soundVolume, isLocked: false, isInverted: currentSetting.isSoundInverted)
             }
         }
@@ -1780,7 +1851,7 @@ class EventManager: NSObject, ObservableObject {
 
     private func releaseAllLocks() {
         for button in MouseButton.allCases {
-            if buttonStates[button] == .locked {
+            if buttonStates[button] == .locked || buttonStates[button] == .unlockingPending {
                 releaseLock(for: button)
             } else if buttonStates[button] == .holding {
                 cancelHold(for: button)
@@ -1836,6 +1907,10 @@ class EventManager: NSObject, ObservableObject {
         } else {
             mouseUpEvent = CGEvent(mouseEventSource: nil, mouseType: button.mouseUpType, mouseCursorPosition: mouseLocation, mouseButton: button.cgButton)
         }
+
+        // DragLocker発の合成イベントであることをマーキング
+        mouseUpEvent?.setIntegerValueField(.eventSourceUserData, value: syntheticEventMarker)
+        mouseUpEvent?.setIntegerValueField(.mouseEventClickState, value: 1)
 
         mouseUpEvent?.post(tap: .cghidEventTap)
         #if DEBUG
@@ -2108,9 +2183,10 @@ extension NSImage {
 
 extension IconStyle {
     // プロジェクト全体で共有するキャッシュ
-    private static var iconCache = NSCache<NSString, NSImage>()
+    @MainActor private static var iconCache = NSCache<NSString, NSImage>()
     
     /// 指定されたスタイルのプレビュー画像を生成またはキャッシュから取得します
+    @MainActor
     func previewImage(eventManager: EventManager) -> Image {
         if self == .custom {
             return Image(nsImage: generateNSImage(eventManager: eventManager))
@@ -2127,144 +2203,171 @@ extension IconStyle {
     }
     
     /// ビットマップ画像を生成します
+    @MainActor
     private func generateNSImage(eventManager: EventManager) -> NSImage {
         let view: AnyView
         
         switch self {
         case .padlock:
-            view = AnyView(Image("Pointer_Locked").frame(width: 16, height: 16, alignment: .center))
+            view = AnyView(
+                Image("Pointer_Locked")
+                    .resizable()
+                    .scaledToFit()
+                    .frame(width: 10, height: 16)
+                    .frame(width: 16, height: 16, alignment: .center)
+            )
         case .dot:
-            view = AnyView(ZStack(alignment: .center) {
-                Circle().fill(Color.white).frame(width: 8, height: 8)
-                Circle().fill(Color.black).frame(width: 6, height: 6)
-            }.frame(width: 16, height: 16, alignment: .center))
+            view = AnyView(
+                ZStack(alignment: .center) {
+                    Circle().fill(Color.white).frame(width: 8, height: 8)
+                    Circle().fill(Color.black).frame(width: 6, height: 6)
+                }
+                .frame(width: 16, height: 16, alignment: .center)
+            )
         case .largeRing:
-            view = AnyView(Circle()
-                .stroke(Color.white, lineWidth: 3)
-                .frame(width: 13, height: 13)
-                .overlay(
-                    Circle()
-                        .stroke(Color.black, lineWidth: 1)
-                        .frame(width: 13, height: 13)
-                )
-                .frame(width: 16, height: 16, alignment: .center))
+            view = AnyView(
+                Circle()
+                    .stroke(Color.white, lineWidth: 3)
+                    .frame(width: 13, height: 13)
+                    .overlay(
+                        Circle()
+                            .stroke(Color.black, lineWidth: 1)
+                            .frame(width: 13, height: 13)
+                    )
+                    .frame(width: 16, height: 16, alignment: .center)
+            )
         case .trafficLight:
             let scale = 16.0 / 35.0
-            view = AnyView(HStack(spacing: 3 * scale) {
-                Circle().fill(Color.green).frame(width: 7 * scale, height: 7 * scale)
-                Circle().fill(Color.yellow).frame(width: 7 * scale, height: 7 * scale)
-                Circle().fill(Color.red).frame(width: 7 * scale, height: 7 * scale)
-            }
-            .padding(.horizontal, 4 * scale)
-            .padding(.vertical, 3 * scale)
-            .background(
-                Capsule()
-                    .fill(Color.black)
-                    .overlay(
-                        Capsule()
-                            .stroke(Color.white, lineWidth: 1.0 * scale)
-                    )
+            view = AnyView(
+                HStack(spacing: 3 * scale) {
+                    Circle().fill(Color.green).frame(width: 7 * scale, height: 7 * scale)
+                    Circle().fill(Color.yellow).frame(width: 7 * scale, height: 7 * scale)
+                    Circle().fill(Color.red).frame(width: 7 * scale, height: 7 * scale)
+                }
+                .padding(.horizontal, 4 * scale)
+                .padding(.vertical, 3 * scale)
+                .background(
+                    Capsule()
+                        .fill(Color.black)
+                        .overlay(
+                            Capsule()
+                                .stroke(Color.white, lineWidth: 1.0 * scale)
+                        )
+                )
+                .frame(width: 16, height: 16, alignment: .center)
             )
-            .frame(width: 16, height: 16, alignment: .center))
         case .smallTrafficLight:
             let scale = 16.0 / 24.0
-            view = AnyView(HStack(spacing: 2 * scale) {
-                Circle().fill(Color.green).frame(width: 5 * scale, height: 5 * scale)
-                Circle().fill(Color.yellow).frame(width: 5 * scale, height: 5 * scale)
-                Circle().fill(Color.red).frame(width: 5 * scale, height: 5 * scale)
-            }
-            .padding(.horizontal, 2.5 * scale)
-            .padding(.vertical, 2 * scale)
-            .background(
-                Capsule()
-                    .fill(Color.black)
-                    .overlay(
-                        Capsule()
-                            .stroke(Color.white, lineWidth: 1.0 * scale)
-                    )
+            view = AnyView(
+                HStack(spacing: 2 * scale) {
+                    Circle().fill(Color.green).frame(width: 5 * scale, height: 5 * scale)
+                    Circle().fill(Color.yellow).frame(width: 5 * scale, height: 5 * scale)
+                    Circle().fill(Color.red).frame(width: 5 * scale, height: 5 * scale)
+                }
+                .padding(.horizontal, 2.5 * scale)
+                .padding(.vertical, 2 * scale)
+                .background(
+                    Capsule()
+                        .fill(Color.black)
+                        .overlay(
+                            Capsule()
+                                .stroke(Color.white, lineWidth: 1.0 * scale)
+                        )
+                )
+                .frame(width: 16, height: 16, alignment: .center)
             )
-            .frame(width: 16, height: 16, alignment: .center))
         case .trafficLightVertical:
             let scale = 16.0 / 35.0
-            view = AnyView(VStack(spacing: 3 * scale) {
-                Circle().fill(Color.green).frame(width: 7 * scale, height: 7 * scale)
-                Circle().fill(Color.yellow).frame(width: 7 * scale, height: 7 * scale)
-                Circle().fill(Color.red).frame(width: 7 * scale, height: 7 * scale)
-            }
-            .padding(.horizontal, 3 * scale)
-            .padding(.vertical, 4 * scale)
-            .background(
-                Capsule()
-                    .fill(Color.black)
-                    .overlay(
-                        Capsule()
-                            .stroke(Color.white, lineWidth: 1.0 * scale)
-                    )
+            view = AnyView(
+                VStack(spacing: 3 * scale) {
+                    Circle().fill(Color.green).frame(width: 7 * scale, height: 7 * scale)
+                    Circle().fill(Color.yellow).frame(width: 7 * scale, height: 7 * scale)
+                    Circle().fill(Color.red).frame(width: 7 * scale, height: 7 * scale)
+                }
+                .padding(.horizontal, 3 * scale)
+                .padding(.vertical, 4 * scale)
+                .background(
+                    Capsule()
+                        .fill(Color.black)
+                        .overlay(
+                            Capsule()
+                                .stroke(Color.white, lineWidth: 1.0 * scale)
+                        )
+                )
+                .frame(width: 16, height: 16, alignment: .center)
             )
-            .frame(width: 16, height: 16, alignment: .center))
         case .smallTrafficLightVertical:
             let scale = 16.0 / 24.0
-            view = AnyView(VStack(spacing: 2 * scale) {
-                Circle().fill(Color.green).frame(width: 5 * scale, height: 5 * scale)
-                Circle().fill(Color.yellow).frame(width: 5 * scale, height: 5 * scale)
-                Circle().fill(Color.red).frame(width: 5 * scale, height: 5 * scale)
-            }
-            .padding(.horizontal, 2 * scale)
-            .padding(.vertical, 2.5 * scale)
-            .background(
-                Capsule()
-                    .fill(Color.black)
-                    .overlay(
-                        Capsule()
-                            .stroke(Color.white, lineWidth: 1.0 * scale)
-                    )
+            view = AnyView(
+                VStack(spacing: 2 * scale) {
+                    Circle().fill(Color.green).frame(width: 5 * scale, height: 5 * scale)
+                    Circle().fill(Color.yellow).frame(width: 5 * scale, height: 5 * scale)
+                    Circle().fill(Color.red).frame(width: 5 * scale, height: 5 * scale)
+                }
+                .padding(.horizontal, 2 * scale)
+                .padding(.vertical, 2.5 * scale)
+                .background(
+                    Capsule()
+                        .fill(Color.black)
+                        .overlay(
+                            Capsule()
+                                .stroke(Color.white, lineWidth: 1.0 * scale)
+                        )
+                )
+                .frame(width: 16, height: 16, alignment: .center)
             )
-            .frame(width: 16, height: 16, alignment: .center))
         case .textHorizontal:
-            view = AnyView(HStack(spacing: 1) {
-                Text(verbatim: "L")
-                Text(verbatim: "M").padding(.leading, -1.5)
-                Text(verbatim: "R")
-            }
-            .font(.system(size: 6.5, weight: .bold, design: .monospaced))
-            .foregroundColor(.white)
-            .padding(.horizontal, 2)
-            .frame(height: 9)
-            .background(
-                Capsule()
-                    .fill(Color.black)
-                    .overlay(
-                        Capsule()
-                            .stroke(Color.white, lineWidth: 1.0)
-                    )
+            view = AnyView(
+                HStack(spacing: 1) {
+                    Text(verbatim: "L")
+                    Text(verbatim: "M").padding(.leading, -1.5)
+                    Text(verbatim: "R")
+                }
+                .font(.system(size: 6.5, weight: .bold, design: .monospaced))
+                .foregroundColor(.white)
+                .padding(.horizontal, 2)
+                .frame(height: 9)
+                .background(
+                    Capsule()
+                        .fill(Color.black)
+                        .overlay(
+                            Capsule()
+                                .stroke(Color.white, lineWidth: 1.0)
+                        )
+                )
+                .frame(width: 16, height: 16, alignment: .center)
             )
-            .frame(width: 16, height: 16, alignment: .center))
         case .textVertical:
-            view = AnyView(VStack(spacing: -1.2) {
-                Text(verbatim: "L")
-                Text(verbatim: "M")
-                Text(verbatim: "R")
-            }
-            .font(.system(size: 4, weight: .bold, design: .monospaced))
-            .foregroundColor(.white)
-            .padding(.vertical, 0.5)
-            .frame(width: 7)
-            .background(
-                Capsule()
-                    .fill(Color.black)
-                    .overlay(
-                        Capsule()
-                            .stroke(Color.white, lineWidth: 1.0)
-                    )
+            view = AnyView(
+                VStack(spacing: -1.2) {
+                    Text(verbatim: "L")
+                    Text(verbatim: "M")
+                    Text(verbatim: "R")
+                }
+                .font(.system(size: 4, weight: .bold, design: .monospaced))
+                .foregroundColor(.white)
+                .padding(.vertical, 0.5)
+                .frame(width: 7)
+                .background(
+                    Capsule()
+                        .fill(Color.black)
+                        .overlay(
+                            Capsule()
+                                .stroke(Color.white, lineWidth: 1.0)
+                        )
+                )
+                .frame(width: 16, height: 16, alignment: .center)
             )
-            .frame(width: 16, height: 16, alignment: .center))
         case .focus:
-            view = AnyView(ZStack {
-                FocusCorner(length: 5, thickness: 2, innerThickness: 1, alignment: .topLeading, containerSize: 16)
-                FocusCorner(length: 5, thickness: 2, innerThickness: 1, alignment: .topTrailing, containerSize: 16)
-                FocusCorner(length: 5, thickness: 2, innerThickness: 1, alignment: .bottomLeading, containerSize: 16)
-                FocusCorner(length: 5, thickness: 2, innerThickness: 1, alignment: .bottomTrailing, containerSize: 16)
-            }.frame(width: 16, height: 16, alignment: .center))
+            view = AnyView(
+                ZStack {
+                    FocusCorner(length: 5, thickness: 2, innerThickness: 1, alignment: .topLeading, containerSize: 16)
+                    FocusCorner(length: 5, thickness: 2, innerThickness: 1, alignment: .topTrailing, containerSize: 16)
+                    FocusCorner(length: 5, thickness: 2, innerThickness: 1, alignment: .bottomLeading, containerSize: 16)
+                    FocusCorner(length: 5, thickness: 2, innerThickness: 1, alignment: .bottomTrailing, containerSize: 16)
+                }
+                .frame(width: 16, height: 16, alignment: .center)
+            )
         case .custom:
             if let image = eventManager.cachedCustomIconImage {
                 let fitScale = min(1.0, 80.0 / max(1, image.size.width), 80.0 / max(1, image.size.height))
@@ -2285,10 +2388,22 @@ extension IconStyle {
             }
         }
         
+        let targetSize = CGSize(width: 16, height: 16)
+        let renderer = ImageRenderer(content: view.frame(width: targetSize.width, height: targetSize.height))
+        renderer.scale = 2.0
+        if let image = renderer.nsImage {
+            image.size = targetSize
+            return image
+        }
+        
         let hostingView = NSHostingView(rootView: view)
-        hostingView.setFrameSize(CGSize(width: 16, height: 16))
-        let bitmap = hostingView.bitmapImageRepForCachingDisplay(in: NSRect(x: 0, y: 0, width: 16, height: 16))!
-        hostingView.cacheDisplay(in: NSRect(x: 0, y: 0, width: 16, height: 16), to: bitmap)
-        return NSImage(cgImage: bitmap.cgImage!, size: CGSize(width: 16, height: 16))
+        hostingView.setFrameSize(targetSize)
+        if let bitmap = hostingView.bitmapImageRepForCachingDisplay(in: NSRect(origin: .zero, size: targetSize)) {
+            hostingView.cacheDisplay(in: NSRect(origin: .zero, size: targetSize), to: bitmap)
+            if let cgImage = bitmap.cgImage {
+                return NSImage(cgImage: cgImage, size: targetSize)
+            }
+        }
+        return NSImage(size: targetSize)
     }
 }

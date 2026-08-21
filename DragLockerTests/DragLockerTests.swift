@@ -9,6 +9,8 @@ import Foundation
 import Testing
 @testable import DragLocker
 
+@Suite("DragLocker Tests", .serialized)
+@MainActor
 struct DragLockerTests {
 
     @Test func testSoundManagerGetFileName() {
@@ -161,4 +163,13 @@ struct DragLockerTests {
         manager.debugResetCount()
     }
 
+    @Test func testEventManagerStateEnum() {
+        // EventManagerState の全ケースが期待通り定義されていることを確認
+        let states: [EventManagerState] = [.idle, .holding, .locked, .unlockingPending]
+        #expect(states.count == 4)
+        #expect(EventManagerState.idle != EventManagerState.unlockingPending)
+        #expect(EventManagerState.locked != EventManagerState.unlockingPending)
+        #expect(EventManagerState.holding != EventManagerState.unlockingPending)
+    }
 }
+

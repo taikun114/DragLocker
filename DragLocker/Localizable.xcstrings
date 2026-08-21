@@ -361,6 +361,41 @@
         }
       }
     },
+    "create-dmg by Andrey Tarantsov and Andrew Janke" : {
+      "shouldTranslate" : false
+    },
+    "create-dmgのGitHubページへのリンクを開きます。" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Opens a link to the create-dmg GitHub page."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "create-dmgのGitHubページへのリンクを開きます。"
+          }
+        }
+      }
+    },
+    "create-dmgのGitHubページを開いてもよろしいですか？" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Are you sure you want to open the create-dmg GitHub page?"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "create-dmgのGitHubページを開いてもよろしいですか？"
+          }
+        }
+      }
+    },
     "Discussionページへのリンクを開きます。" : {
       "localizations" : {
         "en" : {
@@ -867,6 +902,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "PID: %1$@、%2$@（%3$@）"
+          }
+        }
+      }
+    },
+    "Siri AI、Spotlight検索、アプリピッカーなど" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Siri AI, Spotlight Search, App Picker, etc."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Siri AI、Spotlight検索、アプリピッカーなど"
           }
         }
       }
@@ -1737,18 +1788,18 @@
         }
       }
     },
-    "コントロールセンター、メニューバーアイテム、音量や明るさのOSDなど" : {
+    "コントロールセンター、メニューバーアイテム、音量や明るさのOSD、ライブアクティビティなど" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Control Center, Menu Bar Items, Volume/Brightness OSD, etc."
+            "value" : "Control Center, Menu Bar Items, Volume/Brightness OSD, Live Activities, etc."
           }
         },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "コントロールセンター、メニューバーアイテム、音量や明るさのOSDなど"
+            "value" : "コントロールセンター、メニューバーアイテム、音量や明るさのOSD、ライブアクティビティなど"
           }
         }
       }
@@ -2211,6 +2262,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "ソフト"
+          }
+        }
+      }
+    },
+    "ソフトウェアによるクリックはロックしない" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Do Not Lock on Software Clicks"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ソフトウェアによるクリックはロックしない"
           }
         }
       }
@@ -4326,6 +4393,22 @@
         }
       }
     },
+    "画面共有のようなリモートアクセスツールなどによって発生したクリックではドラッグロックしないようにします。" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Prevents drag lock from activating on clicks made by remote access tools such as Screen Sharing."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "画面共有のようなリモートアクセスツールなどによって発生したクリックではドラッグロックしないようにします。"
+          }
+        }
+      }
+    },
     "終了" : {
       "comment" : "アプリを終了するメニュー項目",
       "localizations" : {
@@ -4911,6 +4994,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "音量・明るさOSD"
+          }
+        }
+      }
+    },
+    "音量・明るさOSD、ライブアクティビティなど" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Volume/Brightness OSD, Live Activities, etc."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "音量・明るさOSD、ライブアクティビティなど"
           }
         }
       }

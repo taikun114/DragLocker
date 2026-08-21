@@ -12,6 +12,7 @@ struct PerAppSetting: Codable, Identifiable, Equatable {
     var lockDelay: Double
     var lockDistance: Double
     var isUnlockAllWithEscEnabled: Bool
+    var isIgnoreSyntheticClicksEnabled: Bool
     
     // MARK: - アイコン設定
     var isIconEnabled: Bool
@@ -40,6 +41,7 @@ struct PerAppSetting: Codable, Identifiable, Equatable {
         self.lockDelay = eventManager.lockDelay
         self.lockDistance = eventManager.lockDistance
         self.isUnlockAllWithEscEnabled = eventManager.isUnlockAllWithEscEnabled
+        self.isIgnoreSyntheticClicksEnabled = eventManager.isIgnoreSyntheticClicksEnabled
         
         self.isIconEnabled = eventManager.isIconEnabled
         self.pointerIconStyle = eventManager.pointerIconStyle
