@@ -1424,6 +1424,7 @@ class EventManager: NSObject, ObservableObject {
         DispatchQueue.main.async {
             self.customIconPath = nil
             self.customIconName = nil
+            self.cachedCustomIconImage = nil
             self.cleanupUnusedCustomFiles()
         }
     }
@@ -2172,9 +2173,10 @@ extension NSImage {
 
 extension IconStyle {
     // プロジェクト全体で共有するキャッシュ
-    private static var iconCache = NSCache<NSString, NSImage>()
+    @MainActor private static var iconCache = NSCache<NSString, NSImage>()
     
     /// 指定されたスタイルのプレビュー画像を生成またはキャッシュから取得します
+    @MainActor
     func previewImage(eventManager: EventManager) -> Image {
         if self == .custom {
             return Image(nsImage: generateNSImage(eventManager: eventManager))
@@ -2191,144 +2193,171 @@ extension IconStyle {
     }
     
     /// ビットマップ画像を生成します
+    @MainActor
     private func generateNSImage(eventManager: EventManager) -> NSImage {
         let view: AnyView
         
         switch self {
         case .padlock:
-            view = AnyView(Image("Pointer_Locked").frame(width: 16, height: 16, alignment: .center))
+            view = AnyView(
+                Image("Pointer_Locked")
+                    .resizable()
+                    .scaledToFit()
+                    .frame(width: 10, height: 16)
+                    .frame(width: 16, height: 16, alignment: .center)
+            )
         case .dot:
-            view = AnyView(ZStack(alignment: .center) {
-                Circle().fill(Color.white).frame(width: 8, height: 8)
-                Circle().fill(Color.black).frame(width: 6, height: 6)
-            }.frame(width: 16, height: 16, alignment: .center))
+            view = AnyView(
+                ZStack(alignment: .center) {
+                    Circle().fill(Color.white).frame(width: 8, height: 8)
+                    Circle().fill(Color.black).frame(width: 6, height: 6)
+                }
+                .frame(width: 16, height: 16, alignment: .center)
+            )
         case .largeRing:
-            view = AnyView(Circle()
-                .stroke(Color.white, lineWidth: 3)
-                .frame(width: 13, height: 13)
-                .overlay(
-                    Circle()
-                        .stroke(Color.black, lineWidth: 1)
-                        .frame(width: 13, height: 13)
-                )
-                .frame(width: 16, height: 16, alignment: .center))
+            view = AnyView(
+                Circle()
+                    .stroke(Color.white, lineWidth: 3)
+                    .frame(width: 13, height: 13)
+                    .overlay(
+                        Circle()
+                            .stroke(Color.black, lineWidth: 1)
+                            .frame(width: 13, height: 13)
+                    )
+                    .frame(width: 16, height: 16, alignment: .center)
+            )
         case .trafficLight:
             let scale = 16.0 / 35.0
-            view = AnyView(HStack(spacing: 3 * scale) {
-                Circle().fill(Color.green).frame(width: 7 * scale, height: 7 * scale)
-                Circle().fill(Color.yellow).frame(width: 7 * scale, height: 7 * scale)
-                Circle().fill(Color.red).frame(width: 7 * scale, height: 7 * scale)
-            }
-            .padding(.horizontal, 4 * scale)
-            .padding(.vertical, 3 * scale)
-            .background(
-                Capsule()
-                    .fill(Color.black)
-                    .overlay(
-                        Capsule()
-                            .stroke(Color.white, lineWidth: 1.0 * scale)
-                    )
+            view = AnyView(
+                HStack(spacing: 3 * scale) {
+                    Circle().fill(Color.green).frame(width: 7 * scale, height: 7 * scale)
+                    Circle().fill(Color.yellow).frame(width: 7 * scale, height: 7 * scale)
+                    Circle().fill(Color.red).frame(width: 7 * scale, height: 7 * scale)
+                }
+                .padding(.horizontal, 4 * scale)
+                .padding(.vertical, 3 * scale)
+                .background(
+                    Capsule()
+                        .fill(Color.black)
+                        .overlay(
+                            Capsule()
+                                .stroke(Color.white, lineWidth: 1.0 * scale)
+                        )
+                )
+                .frame(width: 16, height: 16, alignment: .center)
             )
-            .frame(width: 16, height: 16, alignment: .center))
         case .smallTrafficLight:
             let scale = 16.0 / 24.0
-            view = AnyView(HStack(spacing: 2 * scale) {
-                Circle().fill(Color.green).frame(width: 5 * scale, height: 5 * scale)
-                Circle().fill(Color.yellow).frame(width: 5 * scale, height: 5 * scale)
-                Circle().fill(Color.red).frame(width: 5 * scale, height: 5 * scale)
-            }
-            .padding(.horizontal, 2.5 * scale)
-            .padding(.vertical, 2 * scale)
-            .background(
-                Capsule()
-                    .fill(Color.black)
-                    .overlay(
-                        Capsule()
-                            .stroke(Color.white, lineWidth: 1.0 * scale)
-                    )
+            view = AnyView(
+                HStack(spacing: 2 * scale) {
+                    Circle().fill(Color.green).frame(width: 5 * scale, height: 5 * scale)
+                    Circle().fill(Color.yellow).frame(width: 5 * scale, height: 5 * scale)
+                    Circle().fill(Color.red).frame(width: 5 * scale, height: 5 * scale)
+                }
+                .padding(.horizontal, 2.5 * scale)
+                .padding(.vertical, 2 * scale)
+                .background(
+                    Capsule()
+                        .fill(Color.black)
+                        .overlay(
+                            Capsule()
+                                .stroke(Color.white, lineWidth: 1.0 * scale)
+                        )
+                )
+                .frame(width: 16, height: 16, alignment: .center)
             )
-            .frame(width: 16, height: 16, alignment: .center))
         case .trafficLightVertical:
             let scale = 16.0 / 35.0
-            view = AnyView(VStack(spacing: 3 * scale) {
-                Circle().fill(Color.green).frame(width: 7 * scale, height: 7 * scale)
-                Circle().fill(Color.yellow).frame(width: 7 * scale, height: 7 * scale)
-                Circle().fill(Color.red).frame(width: 7 * scale, height: 7 * scale)
-            }
-            .padding(.horizontal, 3 * scale)
-            .padding(.vertical, 4 * scale)
-            .background(
-                Capsule()
-                    .fill(Color.black)
-                    .overlay(
-                        Capsule()
-                            .stroke(Color.white, lineWidth: 1.0 * scale)
-                    )
+            view = AnyView(
+                VStack(spacing: 3 * scale) {
+                    Circle().fill(Color.green).frame(width: 7 * scale, height: 7 * scale)
+                    Circle().fill(Color.yellow).frame(width: 7 * scale, height: 7 * scale)
+                    Circle().fill(Color.red).frame(width: 7 * scale, height: 7 * scale)
+                }
+                .padding(.horizontal, 3 * scale)
+                .padding(.vertical, 4 * scale)
+                .background(
+                    Capsule()
+                        .fill(Color.black)
+                        .overlay(
+                            Capsule()
+                                .stroke(Color.white, lineWidth: 1.0 * scale)
+                        )
+                )
+                .frame(width: 16, height: 16, alignment: .center)
             )
-            .frame(width: 16, height: 16, alignment: .center))
         case .smallTrafficLightVertical:
             let scale = 16.0 / 24.0
-            view = AnyView(VStack(spacing: 2 * scale) {
-                Circle().fill(Color.green).frame(width: 5 * scale, height: 5 * scale)
-                Circle().fill(Color.yellow).frame(width: 5 * scale, height: 5 * scale)
-                Circle().fill(Color.red).frame(width: 5 * scale, height: 5 * scale)
-            }
-            .padding(.horizontal, 2 * scale)
-            .padding(.vertical, 2.5 * scale)
-            .background(
-                Capsule()
-                    .fill(Color.black)
-                    .overlay(
-                        Capsule()
-                            .stroke(Color.white, lineWidth: 1.0 * scale)
-                    )
+            view = AnyView(
+                VStack(spacing: 2 * scale) {
+                    Circle().fill(Color.green).frame(width: 5 * scale, height: 5 * scale)
+                    Circle().fill(Color.yellow).frame(width: 5 * scale, height: 5 * scale)
+                    Circle().fill(Color.red).frame(width: 5 * scale, height: 5 * scale)
+                }
+                .padding(.horizontal, 2 * scale)
+                .padding(.vertical, 2.5 * scale)
+                .background(
+                    Capsule()
+                        .fill(Color.black)
+                        .overlay(
+                            Capsule()
+                                .stroke(Color.white, lineWidth: 1.0 * scale)
+                        )
+                )
+                .frame(width: 16, height: 16, alignment: .center)
             )
-            .frame(width: 16, height: 16, alignment: .center))
         case .textHorizontal:
-            view = AnyView(HStack(spacing: 1) {
-                Text(verbatim: "L")
-                Text(verbatim: "M").padding(.leading, -1.5)
-                Text(verbatim: "R")
-            }
-            .font(.system(size: 6.5, weight: .bold, design: .monospaced))
-            .foregroundColor(.white)
-            .padding(.horizontal, 2)
-            .frame(height: 9)
-            .background(
-                Capsule()
-                    .fill(Color.black)
-                    .overlay(
-                        Capsule()
-                            .stroke(Color.white, lineWidth: 1.0)
-                    )
+            view = AnyView(
+                HStack(spacing: 1) {
+                    Text(verbatim: "L")
+                    Text(verbatim: "M").padding(.leading, -1.5)
+                    Text(verbatim: "R")
+                }
+                .font(.system(size: 6.5, weight: .bold, design: .monospaced))
+                .foregroundColor(.white)
+                .padding(.horizontal, 2)
+                .frame(height: 9)
+                .background(
+                    Capsule()
+                        .fill(Color.black)
+                        .overlay(
+                            Capsule()
+                                .stroke(Color.white, lineWidth: 1.0)
+                        )
+                )
+                .frame(width: 16, height: 16, alignment: .center)
             )
-            .frame(width: 16, height: 16, alignment: .center))
         case .textVertical:
-            view = AnyView(VStack(spacing: -1.2) {
-                Text(verbatim: "L")
-                Text(verbatim: "M")
-                Text(verbatim: "R")
-            }
-            .font(.system(size: 4, weight: .bold, design: .monospaced))
-            .foregroundColor(.white)
-            .padding(.vertical, 0.5)
-            .frame(width: 7)
-            .background(
-                Capsule()
-                    .fill(Color.black)
-                    .overlay(
-                        Capsule()
-                            .stroke(Color.white, lineWidth: 1.0)
-                    )
+            view = AnyView(
+                VStack(spacing: -1.2) {
+                    Text(verbatim: "L")
+                    Text(verbatim: "M")
+                    Text(verbatim: "R")
+                }
+                .font(.system(size: 4, weight: .bold, design: .monospaced))
+                .foregroundColor(.white)
+                .padding(.vertical, 0.5)
+                .frame(width: 7)
+                .background(
+                    Capsule()
+                        .fill(Color.black)
+                        .overlay(
+                            Capsule()
+                                .stroke(Color.white, lineWidth: 1.0)
+                        )
+                )
+                .frame(width: 16, height: 16, alignment: .center)
             )
-            .frame(width: 16, height: 16, alignment: .center))
         case .focus:
-            view = AnyView(ZStack {
-                FocusCorner(length: 5, thickness: 2, innerThickness: 1, alignment: .topLeading, containerSize: 16)
-                FocusCorner(length: 5, thickness: 2, innerThickness: 1, alignment: .topTrailing, containerSize: 16)
-                FocusCorner(length: 5, thickness: 2, innerThickness: 1, alignment: .bottomLeading, containerSize: 16)
-                FocusCorner(length: 5, thickness: 2, innerThickness: 1, alignment: .bottomTrailing, containerSize: 16)
-            }.frame(width: 16, height: 16, alignment: .center))
+            view = AnyView(
+                ZStack {
+                    FocusCorner(length: 5, thickness: 2, innerThickness: 1, alignment: .topLeading, containerSize: 16)
+                    FocusCorner(length: 5, thickness: 2, innerThickness: 1, alignment: .topTrailing, containerSize: 16)
+                    FocusCorner(length: 5, thickness: 2, innerThickness: 1, alignment: .bottomLeading, containerSize: 16)
+                    FocusCorner(length: 5, thickness: 2, innerThickness: 1, alignment: .bottomTrailing, containerSize: 16)
+                }
+                .frame(width: 16, height: 16, alignment: .center)
+            )
         case .custom:
             if let image = eventManager.cachedCustomIconImage {
                 let fitScale = min(1.0, 80.0 / max(1, image.size.width), 80.0 / max(1, image.size.height))
@@ -2349,10 +2378,22 @@ extension IconStyle {
             }
         }
         
+        let targetSize = CGSize(width: 16, height: 16)
+        let renderer = ImageRenderer(content: view.frame(width: targetSize.width, height: targetSize.height))
+        renderer.scale = 2.0
+        if let image = renderer.nsImage {
+            image.size = targetSize
+            return image
+        }
+        
         let hostingView = NSHostingView(rootView: view)
-        hostingView.setFrameSize(CGSize(width: 16, height: 16))
-        let bitmap = hostingView.bitmapImageRepForCachingDisplay(in: NSRect(x: 0, y: 0, width: 16, height: 16))!
-        hostingView.cacheDisplay(in: NSRect(x: 0, y: 0, width: 16, height: 16), to: bitmap)
-        return NSImage(cgImage: bitmap.cgImage!, size: CGSize(width: 16, height: 16))
+        hostingView.setFrameSize(targetSize)
+        if let bitmap = hostingView.bitmapImageRepForCachingDisplay(in: NSRect(origin: .zero, size: targetSize)) {
+            hostingView.cacheDisplay(in: NSRect(origin: .zero, size: targetSize), to: bitmap)
+            if let cgImage = bitmap.cgImage {
+                return NSImage(cgImage: cgImage, size: targetSize)
+            }
+        }
+        return NSImage(size: targetSize)
     }
 }

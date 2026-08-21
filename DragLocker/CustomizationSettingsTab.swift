@@ -60,6 +60,7 @@ struct CustomizationSettingsTab: View {
                 .labelStyle(.titleAndIcon)
                 .pickerStyle(.menu)
                 .disabled(!eventManager.isIconEnabled)
+                .id(eventManager.customIconPath ?? "custom_icon_empty")
                 
                 customIconSettingsView
                 
@@ -306,8 +307,9 @@ struct CustomizationSettingsTab: View {
     
     private func previewIcon(for style: IconStyle) -> some View {
         style.previewImage(eventManager: eventManager)
-            .resizable()
             .frame(width: 16, height: 16)
+            .fixedSize()
+            .id(style == .custom ? (eventManager.customIconPath ?? "custom_none") : style.rawValue)
     }
     
     private func selectAudioFile(index: Int) {
