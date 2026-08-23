@@ -21,6 +21,10 @@ Notes
 - When linking to Issues, Pull Requests, or Discussions, include the full URL
 -->
 
+## 1.0.2
+### Bug Fixes and Improvements
+- **Fix issue where the "Volume/Brightness OSD" setting was not displayed on macOS Tahoe**
+
 ## 1.0.1
 ### New Features
 - **Add "Do Not Lock on Software Clicks" setting to General settings**

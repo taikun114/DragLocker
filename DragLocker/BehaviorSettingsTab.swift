@@ -17,6 +17,10 @@ struct BehaviorSettingsTab: View {
         }
     }
 
+    private var controlCenterDisplayName: String {
+        AppExclusionAndLimitationDisplayResolver.shared.resolvedInfo(for: "com.apple.controlcenter")?.name ?? "Control Center"
+    }
+
     private var osdUIHelperDisplayName: String {
         AppExclusionAndLimitationDisplayResolver.shared.resolvedInfo(for: "com.apple.OSDUIHelper")?.name ?? "OSDUIHelper"
     }
@@ -127,14 +131,20 @@ struct BehaviorSettingsTab: View {
                         }
                     }
                 }
-                if #unavailable(macOS 26.0) {
+                if #unavailable(macOS 27.0) {
                     Toggle(isOn: $eventManager.isOSDExcluded) {
                         Label {
                             VStack(alignment: .leading, spacing: 2) {
                                 Text("音量・明るさOSD")
-                                Text("\(osdUIHelperDisplayName)、レイヤー\("2005")、\(Text("除外"))")
-                                    .font(.subheadline)
-                                    .foregroundStyle(.secondary)
+                                Group {
+                                    if #available(macOS 26.0, *) {
+                                        Text("\(controlCenterDisplayName)、レイヤー\("2005")、\(Text("除外"))")
+                                    } else {
+                                        Text("\(osdUIHelperDisplayName)、レイヤー\("2005")、\(Text("除外"))")
+                                    }
+                                }
+                                .font(.subheadline)
+                                .foregroundStyle(.secondary)
                             }
                         } icon: {
                             Image(systemName: "slider.horizontal.below.rectangle")
